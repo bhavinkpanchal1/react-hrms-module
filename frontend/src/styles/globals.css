@@ -1,0 +1,205 @@
+/* ─── Layer order (matches Lineone's app.css structure) ─────────── */
+@layer theme, base, components, utilities;
+
+/* ─── Tailwind v4 import ─────────────────────────────────────────── */
+@import "tailwindcss";
+
+/* ─── Dark mode variant (class-based, matches Lineone) ──────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Self-hosted fonts ──────────────────────────────────────────── */
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins/Poppins-Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins/Poppins-Medium.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins/Poppins-SemiBold.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins/Poppins-Bold.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter/Inter-Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter/Inter-Medium.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+
+/* ─── @theme: Tailwind v4 token registration ─────────────────────── */
+@theme {
+  /* Fonts */
+  --font-sans:  'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-inter: 'Inter', sans-serif;
+
+  /* Navy scale (dark mode backgrounds) — exact from Lineone */
+  --color-navy-50:  #e7e9ef;
+  --color-navy-100: #c2c9d6;
+  --color-navy-200: #a3adc2;
+  --color-navy-300: #697a9b;
+  --color-navy-400: #5c6b8a;
+  --color-navy-450: #465675;
+  --color-navy-500: #384766;
+  --color-navy-600: #313e59;
+  --color-navy-700: #26334d;
+  --color-navy-750: #222e45;
+  --color-navy-800: #202b40;
+  --color-navy-900: #192132;
+
+  /* Extra slate step */
+  --color-slate-150: #e9eef5;
+
+  /* Brand */
+  --color-primary:       #4f46e5;
+  --color-primary-focus: #4338ca;
+  --color-accent-light:  #818cf8;
+  --color-accent:        #5f5af6;
+  --color-accent-focus:  #4d47f5;
+
+  /* Semantic */
+  --color-success:       #10b981;
+  --color-success-focus: #059669;
+  --color-warning:       #ff9800;
+  --color-warning-focus: #e68200;
+  --color-error:         #ff5724;
+  --color-error-focus:   #f03000;
+  --color-info:          #0ea5e9;
+  --color-info-focus:    #0284c7;
+
+  /* Shadows */
+  --shadow-soft:      0 3px 10px 0 rgb(48 46 56 / 6%);
+  --shadow-soft-dark: 0 3px 10px 0 rgb(25 33 50 / 30%);
+
+  /* Custom text sizes from Lineone */
+  --text-xs-plus:      0.8125rem; /* 13px */
+  --text-xs-plus--line-height: 1.125rem;
+  --text-sm-plus:      0.9375rem; /* 15px */
+  --text-sm-plus--line-height: 1.375rem;
+
+  /* Layout dimensions */
+  --main-sidebar-width:    4.5rem;
+  --sidebar-panel-width:   230px;
+  --sidebar-panel-min-width: 64px;
+  --header-height:         61px;
+
+  /* Shimmer animation for skeletons */
+  --animate-shimmer: shimmer 2s linear infinite;
+
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+  }
+}
+
+/* ─── Base layer ─────────────────────────────────────────────────── */
+@layer base {
+  html {
+    @apply h-full overflow-x-hidden;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-full bg-slate-50 font-sans text-sm leading-5
+           text-slate-500 antialiased
+           dark:bg-navy-900 dark:text-navy-200;
+  }
+
+  /* Responsive layout dimensions */
+  :root {
+    --margin-x: 1rem;
+  }
+  @media (min-width: 768px) {
+    :root { --margin-x: 1.5rem; }
+  }
+  @media (min-width: 1024px) {
+    :root {
+      --main-sidebar-width: 5rem;
+      --sidebar-panel-width: 240px;
+    }
+  }
+  @media (min-width: 1280px) {
+    :root { --margin-x: 4rem; }
+  }
+
+  /* Borders default to slate-200 (matches Lineone *,::before,::after rule) */
+  *, ::after, ::before {
+    border-color: theme(colors.slate.200);
+  }
+  .dark *, .dark ::after, .dark ::before {
+    border-color: theme(colors.navy.600);
+  }
+}
+
+/* ─── Component layer: layout primitives ────────────────────────── */
+@layer components {
+
+  /* Card — exact match to Lineone .card */
+  .card {
+    @apply relative flex min-w-0 flex-col break-words rounded-lg
+           bg-white text-slate-500 shadow-soft
+           dark:bg-navy-700 dark:text-navy-200 dark:shadow-none;
+  }
+
+  /* Button base — exact match to Lineone .btn */
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center
+           rounded-lg px-5 py-2 text-center tracking-wide
+           outline-none transition-all duration-200
+           focus:outline-none disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  /* Badge — exact match to Lineone .badge */
+  .badge {
+    @apply inline-flex items-center justify-center px-2 py-1.5
+           text-xs font-inter tracking-wide align-baseline
+           transition-all duration-200 leading-none rounded-sm font-medium;
+  }
+
+  /* Avatar — exact match to Lineone .avatar */
+  .avatar {
+    @apply relative inline-flex size-10 shrink-0;
+  }
+  .avatar > img {
+    @apply h-full w-full object-cover object-center;
+  }
+  .avatar > .is-initial {
+    @apply flex h-full w-full items-center justify-center font-medium;
+  }
+
+  /* Form input — exact match to Lineone .form-input */
+  .form-input {
+    @apply appearance-none tracking-wide outline-none
+           placeholder:font-light focus:outline-none
+           transition-all duration-200 ease-in-out;
+    contain: paint;
+  }
+
+  /* Table hover/zebra — exact match to Lineone */
+  table.is-hoverable > tbody > tr:hover > td,
+  table.is-zebra > tbody > tr:nth-child(even) > td {
+    @apply bg-slate-100 dark:bg-navy-600;
+  }
+}
