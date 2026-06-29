@@ -1,4 +1,4 @@
-function EmployeePage() {
+const EmployeeListPage = () => {
   return(
     <h1 className="text-3xl">
       Employee Page
@@ -6,4 +6,4 @@ function EmployeePage() {
   )
 }
 
-export default EmployeePage;
+export default EmployeeListPage;
