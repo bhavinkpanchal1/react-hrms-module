@@ -1,0 +1,18 @@
+// Barrel export — import all shared UI from '@/shared/ui'
+export { Button } from './button/Button';
+export type { ButtonProps, ButtonVariant, ButtonSize } from './button/Button';
+export { Input } from './input/Input';
+export type { InputProps } from './input/Input';
+export { Textarea } from './textarea/Textarea';
+export type { TextareaProps } from './textarea/Textarea';
+export { Select } from './select/Select';
+export type { SelectProps, SelectOption } from './select/Select';
+export { Checkbox } from './checkbox/Checkbox';
+export type { CheckboxProps } from './checkbox/Checkbox';
+export { Radio, RadioGroup } from './radio/Radio';
+export type { RadioProps, RadioGroupProps } from './radio/Radio';
+export { Badge } from './badge/Badge';
+export type { BadgeProps, BadgeVariant } from './badge/Badge';
+export { Skeleton, TableRowSkeleton, CardSkeleton } from './skeleton/Skeleton';
+export { Modal } from './modal/Modal';
+export { Spinner, PageSpinner } from './spinner/Spinner';

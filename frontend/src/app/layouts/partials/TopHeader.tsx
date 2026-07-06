@@ -1,4 +1,5 @@
 import { cn } from "@/shared/lib/cn";
+import { Button } from "@/shared/ui";
 import { Moon, Sun } from "lucide-react";
 
 interface TopHeaderProps {
@@ -58,7 +59,9 @@ export const TopHeader = ({
 
         {/* RIGHT — actions */}
         <div className="flex items-center gap-1">
-          <button className="bg-primary text-white px-2 py-1.5">Clock In</button>
+          <Button className="px-2">
+            Clock In
+          </Button>
           <button
             onClick={onToggleTheme}
             className="btn size-8 rounded-full p-0 hover:bg-slate-300/20 dark:hover:bg-navy-300/20"

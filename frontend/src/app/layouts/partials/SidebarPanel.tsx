@@ -15,7 +15,7 @@ const NAV_GROUPS = [
   {
     label: "Recruitment",
     items: [
-      { to: "/recruitment", label: "Job Listings" },
+      { to: "/recruitment/jobs", label: "Job Listings" },
       { to: "/recruitment/candidates", label: "Candidates" },
     ],
   },

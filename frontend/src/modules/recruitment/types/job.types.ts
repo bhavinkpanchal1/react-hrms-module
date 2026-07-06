@@ -1,12 +1,15 @@
-export type JobStatus = "draft" | "open" | "closed";
+export type JobStatus = 'draft' | 'open' | 'closed' | 'on_hold';
 
 export interface Job {
   id: number;
   title: string;
-  departmentId: number;
-  description: number;
+  department: string;
+  departmentId?: number;
+  description: string;        // was incorrectly typed as number
   experience: number;
-  locations: string;
+  location: string;        // was incorrectly "locations"
   openings: number;
-  status: string;
+  status: JobStatus;
+  created_at?: string;
+  closing_date?: string | null;
 }
