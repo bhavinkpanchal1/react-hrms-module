@@ -12,6 +12,7 @@ const EmployeeCreatePage = lazy(() => import('@/modules/employee/pages/EmployeeC
 // Recruitment — ALL routes lazy-loaded correctly
 const JobsPage = lazy(() => import('@/modules/recruitment/pages/JobsPage'));
 const CandidatesPage = lazy(() => import('@/modules/recruitment/pages/CandidatesPage'));
+const CandidateCreatePage = lazy(() => import ('@/modules/recruitment/pages/CandidateCreatePage'));
 const PipelinePage = lazy(() => import('@/modules/recruitment/pages/PipelinePage'));
 const InterviewsPage = lazy(() => import('@/modules/recruitment/pages/InterviewsPage'));
 const OffersPage = lazy(() => import('@/modules/recruitment/pages/OffersPage'));
@@ -47,7 +48,12 @@ export const router = createBrowserRouter([
 
       // Recruitment — 5 routes, all correctly lazy-loaded
       { path: '/recruitment/jobs', element: lazy_(<JobsPage />) },
-      { path: '/recruitment/candidates', element: lazy_(<CandidatesPage />) },
+      { path: '/recruitment/candidates',
+        children:[
+          { index: true, element: lazy_(<CandidatesPage />) },
+          {path:'new', element: lazy_(<CandidateCreatePage />)}
+        ]
+      },
       { path: '/recruitment/pipeline', element: lazy_(<PipelinePage />) },
       { path: '/recruitment/interviews', element: lazy_(<InterviewsPage />) },
       { path: '/recruitment/offers', element: lazy_(<OffersPage />) },

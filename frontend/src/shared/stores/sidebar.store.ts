@@ -22,12 +22,26 @@ export const useSidebarStore = create<SidebarState>()(
       // Later: replace this with: const role = getAuthRole() or from API
       const defaultRole: Role = "hr";
       const defaultModules = getModulesForRole(defaultRole);
-      const defaultModuleId = defaultModules[0]?.id ?? "";
+      
+      // 1. Check the current path immediately on boot
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+      
+      // 2. Find if the URL matches a module right away
+      const initialMatchingModule = defaultModules.find((mod) =>
+        currentPath.includes(`/${mod.id}`) || currentPath === mod.id
+      );
+
+      // Fallback to the first module if no URL match
+      const activeMod = initialMatchingModule || defaultModules[0];
+      const defaultModuleId = activeMod?.id ?? "";
+      
+      // 3. Determine if the matching module has sub-items to display
+      const hasSubItems = activeMod && activeMod.items && activeMod.items.length > 0;
 
       return {
         role: defaultRole,
         activeModuleId: defaultModuleId,
-        isPanelOpen: false, // Default to collapsed on first load
+        isPanelOpen: !!hasSubItems, // Default to collapsed on first load
         
         // Computed: re-derived whenever role changes
         visibleModules: defaultModules,
@@ -65,6 +79,29 @@ export const useSidebarStore = create<SidebarState>()(
     {
       name: "sidebar-preferences",
       partialize: (state) => ({ isPanelOpen: state.isPanelOpen }), // Only persist the toggle state
+
+      // ADD THIS CONFIGURATION BLOCK BELOW PARTIALIZE:
+      onRehydrateStorage: () => {
+        return (hydratedState, error) => {
+          if (error || !hydratedState) return;
+
+          const currentPath = window.location.pathname; 
+          const matchingModule = hydratedState.visibleModules.find((mod) =>
+            currentPath.includes(`/${mod.id}`) || currentPath === mod.id
+          );
+
+          // 3. Force update the active states directly in the store on boot
+          if (matchingModule) {
+            hydratedState.activeModuleId = matchingModule.id;
+            hydratedState.activeModule = matchingModule;
+            
+            // Auto open panel if it contains nested items
+            if (matchingModule.items && matchingModule.items.length > 0) {
+              hydratedState.isPanelOpen = true;
+            }
+          }
+        };
+      },
     }
   )
 );

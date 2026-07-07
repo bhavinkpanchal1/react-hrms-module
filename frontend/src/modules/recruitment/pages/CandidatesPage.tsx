@@ -1,15 +1,12 @@
 import { useState }            from 'react';
-import { Plus, Users }          from 'lucide-react';
-import { useCandidates, useCreateCandidate, useDeleteCandidate } from '../hooks/useCandidates';
-import { useJobs }              from '../hooks/useJobs';
-import { CandidateForm }        from '../components/CandidateForm';
+import { CalendarCheck2, Eye, MoreVertical, Plus, Trash, Users }          from 'lucide-react';
+import { useCandidates, useDeleteCandidate } from '../hooks/useCandidates';
 import { CandidateStatusBadge } from '../components/CandidateStatusBadge';
-import { Modal }                from '@/shared/ui/modal/Modal';
 import { Button }               from '@/shared/ui/button/Button';
 import { TableRowSkeleton }     from '@/shared/ui/skeleton/Skeleton';
 import EmptyState               from '@/shared/ui/empty-state/EmptyState';
-import type { CandidateFormData } from '../schema/candidate.schema';
 import type { CandidateStatus }   from '../types';
+import { useNavigate } from 'react-router-dom';
 
 const STATUS_FILTERS: { label: string; value: CandidateStatus | 'all' }[] = [
   { label: 'All',       value: 'all'       },
@@ -22,13 +19,11 @@ const STATUS_FILTERS: { label: string; value: CandidateStatus | 'all' }[] = [
 ];
 
 const CandidatesPage = () => {
-  const [isOpen, setIsOpen]     = useState(false);
   const [search, setSearch]     = useState('');
   const [statusFilter, setStatusFilter] = useState<CandidateStatus | 'all'>('all');
 
   const { data: candidates = [], isLoading } = useCandidates();
-  const { data: jobs = [] }                  = useJobs();
-  const createCandidate = useCreateCandidate();
+  const navigate = useNavigate();
   const deleteCandidate = useDeleteCandidate();
 
   const filtered = candidates.filter((c) => {
@@ -38,13 +33,18 @@ const CandidatesPage = () => {
     return matchSearch && matchStatus;
   });
 
-  const handleSubmit = (data: CandidateFormData) => {
-    createCandidate.mutate(data, { onSuccess: () => setIsOpen(false) });
-  };
 
   const handleDelete = (id: number) => {
     if (window.confirm('Remove this candidate?')) deleteCandidate.mutate({ id });
   };
+
+  const showMore = () => {
+    window.alert("More clicked");
+  }
+
+  const handleSchedule = (id: number) => {
+    window.alert(`Handle Schedule ${id}`);
+  }
 
   return (
     <div className="space-y-5">
@@ -56,7 +56,7 @@ const CandidatesPage = () => {
             {candidates.length} total across all jobs
           </p>
         </div>
-        <Button onClick={() => setIsOpen(true)} leftIcon={<Plus className="size-4" />}>
+        <Button onClick={ () => navigate("/recruitment/candidates/new") } leftIcon={ <Plus className="size-4" /> }>
           Add Candidate
         </Button>
       </div>
@@ -121,8 +121,16 @@ const CandidatesPage = () => {
                       {new Date(c.applied_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-4 py-3 text-right">
+                      <Button variant="ghost" size="sm"><Eye  size={18}/></Button>
+                      { c.status === "interview" && (<Button variant="ghost" size="sm" onClick={()=> handleSchedule(c.id)}>
+                        <CalendarCheck2 size={18} />
+                      </Button>)
+                      }
                       <Button variant="ghost" size="sm" onClick={() => handleDelete(c.id)}
-                        className="text-error hover:bg-error/10">Remove</Button>
+                        className="text-error hover:bg-error/10"><Trash size={18}/></Button>
+                        <Button variant='ghost' size='sm' onClick={()=>showMore()}>
+                          <MoreVertical size={18}/> 
+                        </Button>
                     </td>
                   </tr>
                 ))}
@@ -130,12 +138,6 @@ const CandidatesPage = () => {
           </table>
         </div>
       </div>
-
-      {/* Modal */}
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Add Candidate" size="lg">
-        <CandidateForm jobs={jobs} onSubmit={handleSubmit} onCancel={() => setIsOpen(false)}
-          isSubmitting={createCandidate.isPending} />
-      </Modal>
     </div>
   );
 };

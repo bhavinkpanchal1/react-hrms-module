@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/cn";
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import type { NavGroup, NavItems, NavPanelLink } from "@/app/config/nav-config";
 import { useSidebarStore } from "@/shared/stores/sidebar.store";
 
@@ -25,7 +25,17 @@ const LeafLink = ({ item }: { item: NavPanelLink }) => (
 
 // ── Collapsible group ─────────────────────────
 const GroupLink = ({ item }: { item: NavGroup }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
+  const [isOpen, setIsOpen] = useState(() => {
+    return item.children.some(child => location.pathname.includes(child.to)); 
+  });
+
+ // 2. Compute if a child is active directly during rendering
+  const hasActiveChild = item.children.some((child) => location.pathname.includes(child.to));
+
+  // 3. Combine your local toggle state with the computed active path state
+  const shouldBeExpanded = isOpen || hasActiveChild;
 
   return (
     <div>
@@ -44,7 +54,7 @@ const GroupLink = ({ item }: { item: NavGroup }) => {
       </button>
 
       {/* Children — only shown when open */}
-      {isOpen && (
+      {shouldBeExpanded && (
         <ul className="ml-2 border-l border-slate-200 dark:border-navy-600 pl-3">
           {item.children.map((child) => (
             <li key={child.to}>

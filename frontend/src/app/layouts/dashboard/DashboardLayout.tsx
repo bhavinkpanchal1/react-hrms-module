@@ -56,16 +56,6 @@ function DashboardLayout() {
         </main>
       </div>
     </>
-
-    // <div className="min-h-screen flex">
-    //   <AppSidebar />
-    //   <div className="flex-1">
-    //     <AppHeader isDark={isDark} onToggleTheme={toggleTheme} />
-    //     <main className="p-6">
-    //       <Outlet />
-    //     </main>
-    //   </div>
-    // </div>
   );
 }
 

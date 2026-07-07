@@ -73,7 +73,7 @@ export const MainSideBarIcon = () => {
               className={[
                 "flex size-11 items-center justify-center rounded-lg transition-colors duration-200",
                 isActive
-                  ? "bg-primary text-white"                          // active = filled colour
+                  ? "bg-primary text-white"
                   : "text-slate-500 hover:bg-primary/10 hover:text-primary dark:text-navy-300",
               ].join(" ")}
             >

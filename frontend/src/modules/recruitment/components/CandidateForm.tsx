@@ -19,11 +19,10 @@ const SOURCE_OPTIONS = [
 interface CandidateFormProps {
   jobs:          Job[];
   onSubmit:      (data: CandidateFormData) => void;
-  onCancel:      () => void;
   isSubmitting?: boolean;
 }
 
-export const CandidateForm = ({ jobs, onSubmit, onCancel, isSubmitting }: CandidateFormProps) => {
+export const CandidateForm = ({ jobs, onSubmit, isSubmitting }: CandidateFormProps) => {
   const { register, handleSubmit, formState: { errors } } = useForm<CandidateFormData>({
     resolver: zodResolver(candidateSchema as never),
     defaultValues: { notes: '' },
@@ -57,7 +56,6 @@ export const CandidateForm = ({ jobs, onSubmit, onCancel, isSubmitting }: Candid
         </div>
       </div>
       <div className="mt-6 flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         <Button type="submit" isLoading={isSubmitting}>Add Candidate</Button>
       </div>
     </form>
