@@ -20,12 +20,18 @@ interface CandidateFormProps {
   jobs:          Job[];
   onSubmit:      (data: CandidateFormData) => void;
   isSubmitting?: boolean;
+  defaultValues?: Partial<CandidateFormData>;
+  mode?: "create" | "edit";
 }
 
-export const CandidateForm = ({ jobs, onSubmit, isSubmitting }: CandidateFormProps) => {
-  const { register, handleSubmit, formState: { errors } } = useForm<CandidateFormData>({
+export const CandidateForm = ({ jobs, onSubmit, isSubmitting, defaultValues, mode="create" }: CandidateFormProps) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CandidateFormData>({
     resolver: zodResolver(candidateSchema as never),
-    defaultValues: { notes: '' },
+    defaultValues: { notes: "", ...defaultValues },
   });
 
   const openJobs = jobs.filter((j) => j.status === 'open').map((j) => ({
@@ -56,7 +62,7 @@ export const CandidateForm = ({ jobs, onSubmit, isSubmitting }: CandidateFormPro
         </div>
       </div>
       <div className="mt-6 flex justify-end gap-3">
-        <Button type="submit" isLoading={isSubmitting}>Add Candidate</Button>
+        <Button type="submit" isLoading={isSubmitting}>{mode === "edit" ? "Update Candidate": "Add Candidate"}</Button>
       </div>
     </form>
   );

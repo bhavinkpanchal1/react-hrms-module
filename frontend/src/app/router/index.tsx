@@ -1,5 +1,5 @@
 // src/app/router/index.tsx — complete fixed version
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import DashboardLayout from "../layouts/dashboard/DashboardLayout";
 import { AuthLayout } from "../layouts/AuthLayout";
 import React, { lazy, Suspense } from "react";
@@ -36,6 +36,10 @@ const PipelinePage = lazy(
 const InterviewsPage = lazy(
   () => import("@/modules/recruitment/pages/InterviewsPage"),
 );
+const ScheduleInterviewPage = lazy(
+  () => import("@/modules/recruitment/pages/Interview/scheduleInterviewPage"),
+);
+
 const OffersPage = lazy(() => import("@/modules/recruitment/pages/OffersPage"));
 
 // ── Suspense wrapper ──────────────────────────────────────────────
@@ -71,15 +75,28 @@ export const router = createBrowserRouter([
       { path: "/recruitment/jobs", element: lazy_(<JobsPage />) },
       {
         path: "/recruitment/candidates",
+        element: <Outlet />,
         children: [
           { index: true, element: lazy_(<CandidatesPage />) },
           { path: "new", element: lazy_(<CandidateCreatePage />) },
-          { path: ":candidateId", element: lazy_(<CandidateDetailPage />) },
-          { path: ":candidateId/edit", element: lazy_(<CandidateEditPage />) },
+          { path: ":id", element: lazy_(<CandidateDetailPage />) },
+          { path: ":id/edit", element: lazy_(<CandidateEditPage />) },
         ],
       },
       { path: "/recruitment/pipeline", element: lazy_(<PipelinePage />) },
-      { path: "/recruitment/interviews", element: lazy_(<InterviewsPage />) },
+
+      //Interview
+      {
+        path: "/recruitment/interviews",
+        element: <Outlet />,
+        children: [
+          { index: true, element: lazy_(<InterviewsPage />) },
+          //{ path: "schedule", element: lazy_(<ScheduleInterviewPage />) },
+          //{path: ":id", element: <div className="card p-6">Schedule Detail page — coming soon</div>},
+          //{path: ":id/", element: <div className="card p-6">Edit Schduled Interview page — coming soon</div>},
+        ],
+      },
+
       { path: "/recruitment/offers", element: lazy_(<OffersPage />) },
 
       // Module stubs — replace as you build them

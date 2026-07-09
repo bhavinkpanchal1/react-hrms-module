@@ -12,24 +12,24 @@ import type { Job }          from '../types';
 import type { JobFormData }  from '../schema/job.schema';
 
 const STATS = (jobs: Job[]) => [
-  { label: 'Total',   value: jobs.length,                                  cls: 'text-slate-800 dark:text-navy-100' },
-  { label: 'Open',    value: jobs.filter((j) => j.status === 'open').length,    cls: 'text-success'  },
-  { label: 'Draft',   value: jobs.filter((j) => j.status === 'draft').length,   cls: 'text-slate-400 dark:text-navy-400' },
-  { label: 'Closed',  value: jobs.filter((j) => j.status === 'closed').length,  cls: 'text-error'    },
+  { label: 'Total',   value: jobs.length, cls: 'text-slate-800 dark:text-navy-100' },
+  { label: 'Open',    value: jobs.filter((j) => j.status === 'open').length, cls: 'text-success'  },
+  { label: 'Draft',   value: jobs.filter((j) => j.status === 'draft').length, cls: 'text-slate-400 dark:text-navy-400' },
+  { label: 'Closed',  value: jobs.filter((j) => j.status === 'closed').length, cls: 'text-error'    },
 ];
 
 const JobsPage = () => {
-  const [isOpen, setIsOpen]       = useState(false);
-  const [selected, setSelected]   = useState<Job | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState<Job | null>(null);
 
   const { data: jobs = [], isLoading } = useJobs();
   const createJob = useCreateJob();
   const updateJob = useUpdateJob();
   const deleteJob = useDeleteJob();
 
-  const openCreate = ()         => { setSelected(null); setIsOpen(true); };
-  const openEdit   = (j: Job)   => { setSelected(j);    setIsOpen(true); };
-  const close      = ()         => { setIsOpen(false);  setSelected(null); };
+  const openCreate = () => { setSelected(null); setIsOpen(true); };
+  const openEdit = (j: Job) => { setSelected(j); setIsOpen(true); };
+  const close = () => { setIsOpen(false);  setSelected(null); };
 
   const handleSubmit = (data: JobFormData) => {
     if (selected) {
@@ -45,7 +45,7 @@ const JobsPage = () => {
     }
   };
 
-  const isMutating    = createJob.isPending || updateJob.isPending;
+  const isMutating = createJob.isPending || updateJob.isPending;
   const mutationError = createJob.error || updateJob.error || deleteJob.error;
 
   return (

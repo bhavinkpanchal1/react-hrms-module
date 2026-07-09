@@ -6,11 +6,28 @@ import type { CreateCandidateInput, Candidate } from '../types';
 export const useCandidates = () =>
   useQuery({ queryKey: queryKeys.recruitment.candidates(), queryFn: recruitmentApi.getCandidates });
 
+export const useCandidate =(id: number) => useQuery({
+  queryKey: queryKeys.recruitment.candidate(id),
+  queryFn: () => recruitmentApi.getCandidateById(id),
+  enabled: !!id,
+})
+
 export const useCreateCandidate = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateCandidateInput) => recruitmentApi.createCandidate(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.recruitment.candidates() }),
+  });
+};
+
+export const useUpdateCandidate = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Candidate> }) =>
+      recruitmentApi.updateCandidate(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.recruitment.candidates() });
+    },
   });
 };
 

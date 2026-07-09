@@ -291,6 +291,21 @@ export const recruitmentApi = {
     return r.data.results;
   },
 
+  getCandidateById: async (id: number): Promise<Candidate> => {
+
+    if(USE_MOCK) {
+      await delay();
+      const c = mockCandidates.find((c) => c.id === id )
+     if (!c) throw new Error("Job not found");
+      return c;
+    }
+
+    const r = await httpClient.get<Candidate>(
+      `${API_ENDPOINTS.recruitment.candidates}${id}/`,
+    );
+    return r.data;
+  },
+
   createCandidate: async (data: CreateCandidateInput): Promise<Candidate> => {
     if (USE_MOCK) {
       await delay(600);
@@ -310,6 +325,26 @@ export const recruitmentApi = {
       API_ENDPOINTS.recruitment.candidates,
       data,
     );
+    return r.data;
+  },
+
+  updateCandidate: async (id: number , data: Partial<Candidate>): Promise<Candidate> => {
+    if(USE_MOCK) {
+      await delay(400);
+       mockCandidates = mockCandidates.map((c) => c.id === id ? {...c, ...data}: c);
+       const updatedCandidate = mockCandidates.find((c) => c.id === id);
+
+    if (!updatedCandidate) {
+      throw new Error("Candidate not found");
+    }
+
+    return updatedCandidate;
+    }
+
+    const r = await httpClient.patch(
+      API_ENDPOINTS.recruitment.candidates,
+      data,
+    )
     return r.data;
   },
 

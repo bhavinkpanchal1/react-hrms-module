@@ -20,7 +20,7 @@ interface AppDropdownProps {
 export const AppDropdown = ({ trigger, items }: AppDropdownProps) => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      <DropdownMenuTrigger >{trigger}</DropdownMenuTrigger>
 
       <DropdownMenuContent align="end">
         {items.map((item, index) => (
