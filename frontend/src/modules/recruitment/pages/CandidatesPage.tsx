@@ -5,9 +5,10 @@ import { CandidateStatusBadge } from '../components/CandidateStatusBadge';
 import { Button }               from '@/shared/ui/button/Button';
 import { TableRowSkeleton }     from '@/shared/ui/skeleton/Skeleton';
 import EmptyState               from '@/shared/ui/empty-state/EmptyState';
-import type { CandidateStatus }   from '../types';
+import type { Candidate, CandidateStatus }   from '../types';
 import { useNavigate } from 'react-router-dom';
 import { AppDropdown } from '@/shared/ui/dropdown/AppDropdown';
+import ScheduleInterviewPage from './Interview/scheduleInterviewPage';
 
 const STATUS_FILTERS: { label: string; value: CandidateStatus | 'all' }[] = [
   { label: 'All',       value: 'all'       },
@@ -22,6 +23,8 @@ const STATUS_FILTERS: { label: string; value: CandidateStatus | 'all' }[] = [
 const CandidatesPage = () => {
   const [search, setSearch]     = useState('');
   const [statusFilter, setStatusFilter] = useState<CandidateStatus | 'all'>('all');
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
 
   const { data: candidates = [], isLoading } = useCandidates();
   const navigate = useNavigate();
@@ -39,8 +42,14 @@ const CandidatesPage = () => {
     if (window.confirm('Remove this candidate?')) deleteCandidate.mutate({ id });
   };
 
-  const handleSchedule = (id: number) => {
-    navigate(`/recruitment/candidates/${id}`)
+  const handleSchedule = (c: Candidate) => {
+    setIsOpen(true);
+    setSelectedCandidate(c);
+  }
+
+  const close = () => {
+    setIsOpen(false);
+    //setSelectedCandidate(null);
   }
 
   return (
@@ -173,7 +182,7 @@ const CandidatesPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleSchedule(c.id)}
+                          onClick={() => handleSchedule(c)}
                         >
                           <CalendarCheck2 size={18} />
                         </Button>
@@ -204,6 +213,13 @@ const CandidatesPage = () => {
           </table>
         </div>
       </div>
+
+      <ScheduleInterviewPage 
+      isOpen={isOpen}
+      close={close}
+      title='Schedule Interview'
+      candidate={selectedCandidate}
+      />
     </div>
   );
 };

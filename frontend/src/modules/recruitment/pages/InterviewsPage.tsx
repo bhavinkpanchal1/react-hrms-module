@@ -1,17 +1,16 @@
 import { CalendarClock } from 'lucide-react';
 import { useInterviews }    from '../hooks/useInterviews';
-import { Badge }            from '@/shared/ui/badge/Badge';
+import { Badge, type BadgeVariant }            from '@/shared/ui/badge/Badge';
 import { TableRowSkeleton } from '@/shared/ui/skeleton/Skeleton';
 import EmptyState           from '@/shared/ui/empty-state/EmptyState';
-import type { InterviewStatus } from '../types';
-import type { BadgeVariant }    from '@/shared/ui/badge/Badge';
+import type { InterviewStatus } from '../types/interview.type';
 
-const statusVariant: Record<InterviewStatus, BadgeVariant> = {
+const statusVariant = {
   scheduled:  'info',
   completed:  'success',
   cancelled:  'error',
   no_show:    'warning',
-};
+} satisfies Record<InterviewStatus, BadgeVariant>;
 
 const InterviewsPage = () => {
   const { data: interviews = [], isLoading } = useInterviews();

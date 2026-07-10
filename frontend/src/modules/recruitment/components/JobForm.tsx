@@ -14,7 +14,7 @@ const STATUS_OPTIONS = [
   { value: 'closed',  label: 'Closed'   },
   { value: 'on_hold', label: 'On Hold'  },
 ];
-const DEPARTMENT_OPTIONS = [
+export const DEPARTMENT_OPTIONS = [
   { value: 'Engineering',     label: 'Engineering'     },
   { value: 'Human Resources', label: 'Human Resources' },
   { value: 'Product',         label: 'Product'         },
