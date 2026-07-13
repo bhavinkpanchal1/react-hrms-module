@@ -30,7 +30,7 @@ export const CandidateForm = ({ jobs, onSubmit, isSubmitting, defaultValues, mod
     handleSubmit,
     formState: { errors },
   } = useForm<CandidateFormData>({
-    resolver: zodResolver(candidateSchema as never),
+    resolver: zodResolver(candidateSchema),
     defaultValues: { notes: "", ...defaultValues },
   });
 
@@ -39,7 +39,7 @@ export const CandidateForm = ({ jobs, onSubmit, isSubmitting, defaultValues, mod
   }));
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as never)} noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Input label="First Name" required placeholder="Ravi"
           error={errors.first_name?.message} {...register('first_name')} />

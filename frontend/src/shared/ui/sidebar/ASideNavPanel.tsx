@@ -1,5 +1,5 @@
 import { cn } from "@/shared/lib/cn";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { NavGroup, NavItems, NavPanelLink } from "@/app/config/nav-config";
 import { useSidebarStore } from "@/shared/stores/sidebar.store";

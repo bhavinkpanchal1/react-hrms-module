@@ -7,7 +7,7 @@ export const candidateSchema = z.object({
   phone: z.string().trim().min(10, 'Enter a valid 10-digit phone number').max(15),
   jobId: z.number({ error: 'Please select a job' }).min(1, 'Please select a job'),
   source: z.string().trim().min(1, 'Please select a source'),
-  notes: z.string().trim().default(''),
+  notes: z.string().trim(),
 });
 
 export type CandidateFormData = z.infer<typeof candidateSchema>;

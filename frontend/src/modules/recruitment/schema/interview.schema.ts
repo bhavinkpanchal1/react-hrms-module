@@ -7,7 +7,7 @@ export const interviewSchema = z.object({
   date: z.string().trim().min(1, "Date is required"),
   time: z.string().trim().min(1, "Time is required"),
   round: z.string().trim().min(1, "Round is required"),
-  mode: z.string().trim().min(1, "Interview Mode is required"),
+  mode: z.enum(["online", "in_person"], "Interview Mode is required"),
   interviewer: z.string().trim().min(1, "Interviewer is required"),
 })
 

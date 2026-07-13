@@ -36,10 +36,6 @@ const PipelinePage = lazy(
 const InterviewsPage = lazy(
   () => import("@/modules/recruitment/pages/InterviewsPage"),
 );
-const ScheduleInterviewPage = lazy(
-  () => import("@/modules/recruitment/pages/Interview/scheduleInterviewPage"),
-);
-
 const OffersPage = lazy(() => import("@/modules/recruitment/pages/OffersPage"));
 
 // ── Suspense wrapper ──────────────────────────────────────────────
