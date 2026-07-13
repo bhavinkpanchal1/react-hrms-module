@@ -1,69 +1,116 @@
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { candidateSchema, type CandidateFormData } from '../schema/candidate.schema';
 import { Button } from '@/shared/ui/button/Button';
-import { Input } from '@/shared/ui/input/Input';
-import { Textarea } from '@/shared/ui/textarea/Textarea';
-import { Select } from '@/shared/ui/select/Select';
 import type { Job } from '../types';
+import { useState } from 'react';
+import { CANDIDATE_STEPS } from '../constant/candidate-steps';
+import { CandidateBasicStep } from './forms/CandidateBasicStep';
+import { CandidatePersonalStep } from './forms/CandidatePersonalStep';
 
-const SOURCE_OPTIONS = [
-  { value: 'LinkedIn',        label: 'LinkedIn'        },
-  { value: 'Referral',        label: 'Referral'        },
-  { value: 'Job Portal',      label: 'Job Portal'      },
-  { value: 'Company Website', label: 'Company Website' },
-  { value: 'Walk-in',         label: 'Walk-in'         },
-  { value: 'Other',           label: 'Other'           },
-];
 
 interface CandidateFormProps {
-  jobs:          Job[];
-  onSubmit:      (data: CandidateFormData) => void;
+  jobs: Job[];
+  onSubmit: (data: CandidateFormData) => void;
   isSubmitting?: boolean;
   defaultValues?: Partial<CandidateFormData>;
   mode?: "create" | "edit";
 }
 
-export const CandidateForm = ({ jobs, onSubmit, isSubmitting, defaultValues, mode="create" }: CandidateFormProps) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CandidateFormData>({
+export const CandidateForm = ({
+  jobs,
+  onSubmit,
+  isSubmitting,
+  defaultValues,
+  mode = "create",
+}: CandidateFormProps) => {
+
+  const methods = useForm<CandidateFormData>({
     resolver: zodResolver(candidateSchema),
-    defaultValues: { notes: "", ...defaultValues },
+    defaultValues: {
+      notes: "",
+      ...defaultValues,
+    },
   });
 
-  const openJobs = jobs.filter((j) => j.status === 'open').map((j) => ({
-    value: j.id, label: `${j.title} — ${j.department}`,
-  }));
-
+  const [step, setStep] = useState(0);
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Input label="First Name" required placeholder="Ravi"
-          error={errors.first_name?.message} {...register('first_name')} />
-        <Input label="Last Name" required placeholder="Sharma"
-          error={errors.last_name?.message} {...register('last_name')} />
-        <Input label="Email" required type="email" placeholder="ravi@example.com"
-          error={errors.email?.message} {...register('email')} />
-        <Input label="Phone" required placeholder="9876543210"
-          error={errors.phone?.message} {...register('phone')} />
-        <Select label="Applying For" required options={openJobs}
-          placeholder="— Select a job —"
-          error={errors.jobId?.message}
-          {...register('jobId', { valueAsNumber: true })} />
-        <Select label="Source" required options={SOURCE_OPTIONS}
-          placeholder="— How did they apply? —"
-          error={errors.source?.message} {...register('source')} />
-        <div className="sm:col-span-2">
-          <Textarea label="Notes" rows={3} placeholder="Any initial notes about this candidate..."
-            error={errors.notes?.message} {...register('notes')} />
+    <FormProvider {...methods}>
+      <form
+        onSubmit={methods.handleSubmit(onSubmit)}
+        noValidate
+      >
+
+        {/* Stepper */}
+        <div className="mb-8 flex items-center justify-between">
+          {CANDIDATE_STEPS.map((s, index) => (
+            <div
+              key={s.key}
+              className={`flex flex-col items-center ${index <= step
+                ? "text-primary"
+                : "text-slate-400"
+                }`}
+            >
+              <div
+                className={`
+                  mb-2 flex h-10 w-10 items-center justify-center rounded-full border
+                  ${index <= step
+                    ? "border-primary bg-primary text-white"
+                    : "border-slate-300"
+                  }
+                `}
+              >
+                {index + 1}
+              </div>
+
+              <span className="text-xs">
+                {s.title}
+              </span>
+            </div>
+          ))}
         </div>
-      </div>
-      <div className="mt-6 flex justify-end gap-3">
-        <Button type="submit" isLoading={isSubmitting}>{mode === "edit" ? "Update Candidate": "Add Candidate"}</Button>
-      </div>
-    </form>
+
+        {/* Step Content */}
+        {step === 0 && (
+          <CandidateBasicStep jobs={jobs} />
+        )}
+
+        {/* future */}
+        {step === 1 && (<CandidatePersonalStep />)}
+        {/* step === 2 && <CandidateProfessionalStep /> */}
+
+        {/* Navigation */}
+        <div className="mt-6 flex justify-between">
+
+          <Button
+            type="button"
+            disabled={step === 0}
+            onClick={() => setStep((s) => s - 1)}
+          >
+            Previous
+          </Button>
+
+          {step === CANDIDATE_STEPS.length - 1 ? (
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+            >
+              {mode === "edit"
+                ? "Update Candidate"
+                : "Add Candidate"}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => setStep((s) => s + 1)}
+            >
+              Next
+            </Button>
+          )}
+
+        </div>
+
+      </form>
+    </FormProvider>
   );
 };
