@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { GENDER_VALUES, MARITAL_STATUS_VALUES } from '../constant/candidate';
+import { z } from "zod";
+import { GENDER_VALUES, MARITAL_STATUS_VALUES } from "../constant/candidate";
 
 export const candidateBasicSchema = z.object({
   first_name: z
@@ -23,26 +23,25 @@ export const candidatePersonalSchema = z.object({
   marital_status: z.enum(MARITAL_STATUS_VALUES).optional(),
   address_line1: z.string().optional(),
   address_line2: z.string().optional(),
-  country_id: z.number().optional(),
-  state_id: z.number().optional(),
-  city_id: z.number().optional(),
+  country_id: z.coerce.number().optional(),
+  state_id: z.coerce.number().optional(),
+  city_id: z.coerce.number().optional(),
   pincode: z.string().optional(),
 });
-
 
 export const candidateProfessionalSchema = z.object({
   current_position: z.string().optional(),
   current_company: z.string().optional(),
-  current_salary: z.number().optional(),
-  expected_salary: z.number().optional(),
-  notice_period: z.number().optional(),
-  total_experience: z.number().optional(),
+  current_salary: z.coerce.number().optional(),
+  expected_salary: z.coerce.number().optional(),
+  notice_period: z.coerce.number().optional(),
+  total_experience: z.coerce.number().optional(),
 });
 
 export const candidateEducationSchema = z.object({
   highest_education: z.string().optional(),
   institution: z.string().optional(),
-  graduation_year: z.number().optional(),
+  graduation_year: z.coerce.number().optional(),
 });
 
 export const candidateAdditionalSchema = z.object({
@@ -51,16 +50,14 @@ export const candidateAdditionalSchema = z.object({
   linkedin_url: z.string().url().optional(),
   github_url: z.string().url().optional(),
   portfolio_url: z.string().url().optional(),
-  skills: z.array(z.string()).optional(),
-  certifications: z.array(z.string()).optional(),
+  skills: z.string().optional(),
+  certifications: z.string().optional(),
 });
 
-
-export const candidateSchema =
-  candidateBasicSchema
-    .extend(candidatePersonalSchema.shape)
-    .extend(candidateProfessionalSchema.shape)
-    .extend(candidateEducationSchema.shape)
-    .extend(candidateAdditionalSchema.shape);
+export const candidateSchema = candidateBasicSchema
+  .extend(candidatePersonalSchema.shape)
+  .extend(candidateProfessionalSchema.shape)
+  .extend(candidateEducationSchema.shape)
+  .extend(candidateAdditionalSchema.shape);
 
 export type CandidateFormData = z.infer<typeof candidateSchema>;

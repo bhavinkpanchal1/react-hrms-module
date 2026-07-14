@@ -21,7 +21,7 @@ const CandidatesPage = lazy(
   () => import("@/modules/recruitment/pages/CandidatesPage"),
 );
 const CandidateCreatePage = lazy(
-  () => import("@/modules/recruitment/pages/CandidateCreatePage"),
+  () => import("@/modules/recruitment/pages/candidate/CandidateCreatePage"),
 );
 const CandidateDetailPage = lazy(
   () => import("@/modules/recruitment/pages/candidate/CandidateDetailsPage"),

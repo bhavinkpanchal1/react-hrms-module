@@ -20,12 +20,12 @@ export const MARITAL_STATUS_VALUES = [
 ] as const
 
 export const COUNTRY_OPTIONS = [
-  {value: "1", label: 'India'},
-];
+  {value: 1, label: 'India'},
+] as const;
 
 export const STATE_OPTIONS = [
-  {value: "101", label: "Gujarat"},
-  {value: "102", label: "Maharatshtra"},
+  {value: 101, label: "Gujarat"},
+  {value: 102, label: "Maharatshtra"},
 ];
 
 export const CITY_OPTIONS = [

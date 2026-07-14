@@ -1,4 +1,18 @@
-export const CANDIDATE_STEPS = [
+import type { CandidateFormData } from "../schema/candidate.schema";
+
+export type StepState =
+  | "completed"
+  | "active"
+  | "pending";
+
+  export interface StepItem {
+  key: string;
+  title: string;
+  fields: (keyof CandidateFormData)[];
+}
+
+
+export const CANDIDATE_STEPS: StepItem[]= [
   {
     key: "basic",
     title: "Basic Information",

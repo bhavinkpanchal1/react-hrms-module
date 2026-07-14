@@ -1,63 +1,116 @@
-import { useFormContext } from "react-hook-form"
-import type { CandidateFormData } from "../../schema/candidate.schema"
+import { useFormContext } from "react-hook-form";
+import type { CandidateFormData } from "../../schema/candidate.schema";
 import { Input, Select } from "@/shared/ui";
-import { CITY_OPTIONS, COUNTRY_OPTIONS, GENDERS_OPTIONS, MARITAL_STATUS_OPTIONS, STATE_OPTIONS } from "../../constant/candidate";
+import {
+  CITY_OPTIONS,
+  COUNTRY_OPTIONS,
+  GENDERS_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
+  STATE_OPTIONS,
+} from "../../constant/candidate";
 
 export const CandidatePersonalStep = () => {
-  const { register, formState: { errors }, } = useFormContext<CandidateFormData>();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<CandidateFormData>();
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-      <Input
-        label="Date of Birth"
-        error={errors.dob?.message}
-        {...register("dob")}
-      />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="border-b border-slate-200 pb-4 dark:border-navy-600">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-navy-100">
+          Personal Information
+        </h3>
 
-      <Select options={GENDERS_OPTIONS}
-        label="Gender"
-        error={errors.gender?.message}
-        {...register("gender")}
-      />
+        <p className="mt-1 text-sm text-slate-500 dark:text-navy-300">
+          Personal and contact details of the candidate.
+        </p>
+      </div>
 
-      <Select options={MARITAL_STATUS_OPTIONS}
-        label="marital_status"
-        error={errors.marital_status?.message}
-        {...register("marital_status")}
-      />
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-      <Input
-        label="Address Line 1"
-        error={errors.address_line1?.message}
-        {...register("address_line1")}
-      />
+        {/* DOB */}
+        <Input
+          type="date"
+          label="Date of Birth"
+          error={errors.dob?.message}
+          {...register("dob")}
+        />
 
-      <Input
-        label="Address Line 2"
-        error={errors.address_line2?.message}
-        {...register("address_line2")}
-      />
+        {/* Gender */}
+        <Select
+          options={GENDERS_OPTIONS}
+          label="Gender"
+          placeholder="Select Gender"
+          error={errors.gender?.message}
+          {...register("gender")}
+        />
 
-      <Select options={COUNTRY_OPTIONS}
-        label="Country"
-        error={errors.country_id?.message}
-        {...register("country_id")}
-      />
+        {/* Marital Status */}
+        <Select
+          options={MARITAL_STATUS_OPTIONS}
+          label="Marital Status"
+          placeholder="Select Marital Status"
+          error={errors.marital_status?.message}
+          {...register("marital_status")}
+        />
 
-      <Select options={STATE_OPTIONS}
-        label="State"
-        error={errors.state_id?.message}
-        {...register("state_id")}
-      />
+        {/* Country */}
+        <Select
+          options={COUNTRY_OPTIONS}
+          label="Country"
+          placeholder="Select Country"
+          error={errors.country_id?.message}
+          {...register("country_id")}
+        />
 
+        {/* State */}
+        <Select
+          options={STATE_OPTIONS}
+          label="State"
+          placeholder="Select State"
+          error={errors.state_id?.message}
+          {...register("state_id")}
+        />
 
-      <Select options={CITY_OPTIONS}
-        label="City"
-        error={errors.city_id?.message}
-        {...register("city_id")}
-      />
+        {/* City */}
+        <Select
+          options={CITY_OPTIONS}
+          label="City"
+          placeholder="Select City"
+          error={errors.city_id?.message}
+          {...register("city_id")}
+        />
 
+        {/* Pincode */}
+        <Input
+          label="Pincode"
+          placeholder="380015"
+          error={errors.pincode?.message}
+          {...register("pincode")}
+        />
 
+        {/* Address 1 */}
+        <div className="md:col-span-2 xl:col-span-3">
+          <Input
+            label="Address Line 1"
+            placeholder="Street, Building, Area"
+            error={errors.address_line1?.message}
+            {...register("address_line1")}
+          />
+        </div>
+
+        {/* Address 2 */}
+        <div className="md:col-span-2 xl:col-span-3">
+          <Input
+            label="Address Line 2"
+            placeholder="Apartment, Landmark (Optional)"
+            error={errors.address_line2?.message}
+            {...register("address_line2")}
+          />
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
