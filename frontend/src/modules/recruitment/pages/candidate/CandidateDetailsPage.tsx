@@ -86,7 +86,7 @@ const CandidateDetailsPage = () => {
 
       {/* Hero Card */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-8">
+        <div className="bg-linear-to-r from-primary/10 to-primary/5 p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
             <div className="flex items-center gap-5">

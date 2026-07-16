@@ -16,15 +16,15 @@ const ScheduleInterviewPage = ({
   isOpen,
   close,
   title,
-  candidate
+  candidate,
 }: ScheduleInterviewPageProps) => {
   const createInterview = useCreateInterview();
   const [mutationError, setMutationError] = useState<string | null>(null);
 
-  if (!candidate) {
-    return null;
-  }
-  
+  // if (!candidate) {
+  //   return null;
+  // }
+
   const handleSubmit = (data: InterviewFormData) => {
     setMutationError(null);
     createInterview.mutate(
@@ -42,7 +42,11 @@ const ScheduleInterviewPage = ({
       {
         onSuccess: close,
         onError: (error) => {
-          setMutationError(error instanceof Error ? error.message : "Unable to schedule interview.");
+          setMutationError(
+            error instanceof Error
+              ? error.message
+              : "Unable to schedule interview.",
+          );
         },
       },
     );
@@ -51,16 +55,26 @@ const ScheduleInterviewPage = ({
   const isMutating = createInterview.isPending;
   return (
     <>
-      <Modal isOpen={isOpen} onClose={close} title={title}>   
-        <p>Candidate ID: {candidate.id}</p>
-        <p>Candidate Name: {candidate.first_name} {candidate.last_name}</p>
-        <p>Job Title: {candidate.job_title}</p>
+      <Modal isOpen={isOpen} onClose={close} title={title}>
+        {candidate && (
+          <>
+            <p>Candidate ID: {candidate?.id}</p>
+            <p>
+              Candidate Name: {candidate?.first_name} {candidate?.last_name}
+            </p>
+            <p>Job Title: {candidate?.job_title}</p>
+          </>
+        )}
         {mutationError && (
           <div className="mb-5 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
             {mutationError}
           </div>
         )}
-        <InterviewForm onSubmit={handleSubmit} onCancel={close} isSubmitting={isMutating}/>
+        <InterviewForm
+          onSubmit={handleSubmit}
+          onCancel={close}
+          isSubmitting={isMutating}
+        />
       </Modal>
     </>
   );

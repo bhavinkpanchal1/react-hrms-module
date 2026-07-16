@@ -127,6 +127,7 @@ export const ALL_MODULES: NavModule[] = [
     roles: ["hr", "manager"],
     sectionLabel: "Recruitment",
     items: [
+      { kind: "link", label: "Job Listings", to: "/recruitment/jobs" },
       {
         kind: "group",
         label: "Candidates",
@@ -136,7 +137,6 @@ export const ALL_MODULES: NavModule[] = [
           { kind: "link", label: "Interviews",      to: "/recruitment/interviews" },
         ],
       },
-      { kind: "link", label: "Job Listings", to: "/recruitment/jobs" },
       { kind: "link", label: "Offers",       to: "/recruitment/offers" },
     ],
   },

@@ -1,4 +1,4 @@
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   candidateSchema,
@@ -17,7 +17,7 @@ import { CandidateAdditionalStep } from "./forms/CandidateAdditionalStep";
 
 interface CandidateFormProps {
   jobs: Job[];
-  onSubmit: (data: CandidateFormData) => void;
+  onSubmit: SubmitHandler<CandidateFormData>;
   isSubmitting?: boolean;
   defaultValues?: Partial<CandidateFormData>;
   mode?: "create" | "edit";
@@ -47,7 +47,7 @@ export const CandidateForm = ({
     const isValid = await methods.trigger(
       fields as (keyof CandidateFormData)[]
     );
-
+    
     if(!isValid) return;
 
     setCompletedSteps(prev => {

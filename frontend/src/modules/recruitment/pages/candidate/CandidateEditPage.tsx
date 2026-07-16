@@ -1,7 +1,8 @@
-import {  useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCandidate, useUpdateCandidate } from "../../hooks/useCandidates";
 import { CandidateForm } from "../../components/CandidateForm";
 import { useJobs } from "../../hooks/useJobs";
+import type { CandidateFormData } from "../../schema/candidate.schema";
 
 const CandidateEditPage = () => {
   const { id } = useParams();
@@ -9,6 +10,7 @@ const CandidateEditPage = () => {
   const { data: jobs = [] } = useJobs();
   const { data: candidate, isLoading, error } = useCandidate(candidateId);
   const { mutate: updateCandidate, isPending } = useUpdateCandidate();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -17,6 +19,18 @@ const CandidateEditPage = () => {
   if (error || !candidate) {
     return <div>Candidate not found</div>;
   }
+
+  const handleSubmitUpdateCandiddate = (data: CandidateFormData) => {
+    updateCandidate(
+      { id: candidateId, data },
+      {
+        onSuccess: () => {
+          navigate(`/recruitment/candidates/${candidateId}`);
+        },
+      },
+    );
+  };
+
   return (
     <>
       <h1>Edit Candidate</h1>
@@ -27,9 +41,7 @@ const CandidateEditPage = () => {
         jobs={jobs}
         mode="edit"
         defaultValues={candidate}
-        onSubmit={(data) => {
-          updateCandidate({ id: candidateId, data });
-        }}
+        onSubmit={handleSubmitUpdateCandiddate}
         isSubmitting={isPending}
       />
     </>

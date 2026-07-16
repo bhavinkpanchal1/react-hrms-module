@@ -25,8 +25,9 @@ export const useUpdateCandidate = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Candidate> }) =>
       recruitmentApi.updateCandidate(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variable) => {
       qc.invalidateQueries({ queryKey: queryKeys.recruitment.candidates() });
+      qc.invalidateQueries({ queryKey: queryKeys.recruitment.candidate(variable.id)});
     },
   });
 };

@@ -63,93 +63,326 @@ let mockJobs: Job[] = [
   },
 ];
 
+// let mockCandidates: Candidate[] = [
+//   {
+//     id: 1,
+//     first_name: "Ravi",
+//     last_name: "Sharma",
+//     email: "ravi@example.com",
+//     phone: "9876543210",
+//     jobId: 1,
+//     job_title: "Frontend Developer",
+//     status: "interview",
+//     source: "LinkedIn",
+//     resume_url: null,
+//     applied_at: "2025-02-10",
+//     notes: "Strong React skills, noticed portfolio on GitHub.",
+//   },
+//   {
+//     id: 2,
+//     first_name: "Priya",
+//     last_name: "Patel",
+//     email: "priya@example.com",
+//     phone: "9876500001",
+//     jobId: 1,
+//     job_title: "Frontend Developer",
+//     status: "applied",
+//     source: "Referral",
+//     resume_url: null,
+//     applied_at: "2025-02-12",
+//     notes: "",
+//   },
+//   {
+//     id: 3,
+//     first_name: "Amit",
+//     last_name: "Shah",
+//     email: "amit@example.com",
+//     phone: "9876500002",
+//     jobId: 2,
+//     job_title: "HR Executive",
+//     status: "screening",
+//     source: "Job Portal",
+//     resume_url: null,
+//     applied_at: "2025-02-14",
+//     notes: "5 years HR experience.",
+//   },
+//   {
+//     id: 4,
+//     first_name: "Sneha",
+//     last_name: "Mehta",
+//     email: "sneha@example.com",
+//     phone: "9876500003",
+//     jobId: 1,
+//     job_title: "Frontend Developer",
+//     status: "offer",
+//     source: "LinkedIn",
+//     resume_url: null,
+//     applied_at: "2025-01-28",
+//     notes: "Excellent candidate.",
+//   },
+//   {
+//     id: 5,
+//     first_name: "Karan",
+//     last_name: "Joshi",
+//     email: "karan@example.com",
+//     phone: "9876500004",
+//     jobId: 1,
+//     job_title: "Frontend Developer",
+//     status: "rejected",
+//     source: "Walk-in",
+//     resume_url: null,
+//     applied_at: "2025-02-01",
+//     notes: "Not enough React experience.",
+//   },
+//   {
+//     id: 6,
+//     first_name: "Nisha",
+//     last_name: "Verma",
+//     email: "nisha@example.com",
+//     phone: "9876500005",
+//     jobId: 2,
+//     job_title: "HR Executive",
+//     status: "hired",
+//     source: "Referral",
+//     resume_url: null,
+//     applied_at: "2025-01-15",
+//     notes: "Joining 1st March.",
+//   },
+// ];
+
+const defaultCandidateData = {
+  dob: "",
+
+  gender: undefined,
+  marital_status: undefined,
+
+  address_line1: "",
+  address_line2: "",
+
+  country_id: 1,
+  state_id: 1,
+  city_id: 1,
+
+  pincode: "",
+
+  current_position: "",
+  current_company: "",
+
+  current_salary: 0,
+  expected_salary: 0,
+  notice_period: 0,
+  total_experience: 0,
+
+  highest_education: "",
+  institution: "",
+  graduation_year: 0,
+
+  resume_url: null,
+
+  referenced_by: "",
+
+  linkedin_url: null,
+  github_url: null,
+  portfolio_url: null,
+
+  skills: [],
+  certifications: [],
+};
+
 let mockCandidates: Candidate[] = [
   {
+    ...defaultCandidateData,
+
     id: 1,
     first_name: "Ravi",
     last_name: "Sharma",
     email: "ravi@example.com",
     phone: "9876543210",
+
     jobId: 1,
     job_title: "Frontend Developer",
+
     status: "interview",
     source: "LinkedIn",
+
     resume_url: null,
     applied_at: "2025-02-10",
+
     notes: "Strong React skills, noticed portfolio on GitHub.",
+
+    gender: "male",
+    marital_status: "single",
+
+    current_position: "Frontend Developer",
+    current_company: "TechNova Solutions",
+
+    current_salary: 850000,
+    expected_salary: 1100000,
+    notice_period: 30,
+    total_experience: 4,
+
+    highest_education: "B.E Computer Engineering",
+    institution: "GTU",
+    graduation_year: 2020,
+
+    skills: ["React", "TypeScript", "Next.js", "Tailwind"],
+    certifications: ["AWS Cloud Practitioner"],
+
+    linkedin_url: "https://linkedin.com/in/ravi",
+    github_url: "https://github.com/ravi",
+    portfolio_url: "https://ravi.dev",
   },
+
   {
+    ...defaultCandidateData,
+
     id: 2,
     first_name: "Priya",
     last_name: "Patel",
     email: "priya@example.com",
     phone: "9876500001",
+
     jobId: 1,
     job_title: "Frontend Developer",
+
     status: "applied",
     source: "Referral",
+
     resume_url: null,
     applied_at: "2025-02-12",
+
     notes: "",
+
+    gender: "female",
+    marital_status: "single",
+
+    current_position: "UI Developer",
+    current_company: "Innotech",
+
+    total_experience: 2,
+
+    skills: ["HTML", "CSS", "JavaScript"],
   },
   {
+    ...defaultCandidateData,
     id: 3,
     first_name: "Amit",
     last_name: "Shah",
     email: "amit@example.com",
     phone: "9876500002",
+
     jobId: 2,
     job_title: "HR Executive",
+
     status: "screening",
     source: "Job Portal",
+
     resume_url: null,
     applied_at: "2025-02-14",
+
     notes: "5 years HR experience.",
+
+    gender: "male",
+
+    current_position: "HR Executive",
+    current_company: "PeopleFirst HR",
+
+    total_experience: 5,
+
+    skills: ["Recruitment", "Payroll", "HRMS"],
   },
+
   {
+    ...defaultCandidateData,
+
     id: 4,
     first_name: "Sneha",
     last_name: "Mehta",
     email: "sneha@example.com",
     phone: "9876500003",
+
     jobId: 1,
     job_title: "Frontend Developer",
+
     status: "offer",
     source: "LinkedIn",
+
     resume_url: null,
     applied_at: "2025-01-28",
+
     notes: "Excellent candidate.",
+
+    gender: "female",
+
+    current_position: "Senior Frontend Developer",
+    current_company: "CodeWave",
+
+    current_salary: 1400000,
+    expected_salary: 1700000,
+
+    notice_period: 60,
+    total_experience: 6,
+
+    skills: ["React", "Redux", "TypeScript", "GraphQL"],
   },
+
   {
+    ...defaultCandidateData,
+
     id: 5,
     first_name: "Karan",
     last_name: "Joshi",
     email: "karan@example.com",
     phone: "9876500004",
+
     jobId: 1,
     job_title: "Frontend Developer",
+
     status: "rejected",
     source: "Walk-in",
+
     resume_url: null,
     applied_at: "2025-02-01",
+
     notes: "Not enough React experience.",
+
+    gender: "male",
+
+    total_experience: 1,
+
+    skills: ["HTML", "CSS"],
   },
+
   {
+    ...defaultCandidateData,
+
     id: 6,
     first_name: "Nisha",
     last_name: "Verma",
     email: "nisha@example.com",
     phone: "9876500005",
+
     jobId: 2,
     job_title: "HR Executive",
+
     status: "hired",
     source: "Referral",
+
     resume_url: null,
     applied_at: "2025-01-15",
+
     notes: "Joining 1st March.",
+
+    gender: "female",
+
+    current_position: "Senior HR Executive",
+    current_company: "TalentSphere",
+
+    total_experience: 7,
+
+    skills: ["Recruitment", "Compliance", "Employee Engagement"],
   },
 ];
-
 let mockInterviews: Interview[] = [
   {
     id: 1,
@@ -213,7 +446,10 @@ let mockOffers: Offer[] = [
   },
 ];
 
-let nextJobId = 5, nextCandId = 7, nextIntId = 4, nextOffId = 3;
+let nextJobId = 5,
+  nextCandId = 7,
+  nextIntId = 4,
+  nextOffId = 3;
 
 // ── Jobs ─────────────────────────────────────────────────────────────
 export const recruitmentApi = {
@@ -292,11 +528,10 @@ export const recruitmentApi = {
   },
 
   getCandidateById: async (id: number): Promise<Candidate> => {
-
-    if(USE_MOCK) {
+    if (USE_MOCK) {
       await delay();
-      const c = mockCandidates.find((c) => c.id === id )
-     if (!c) throw new Error("Job not found");
+      const c = mockCandidates.find((c) => c.id === id);
+      if (!c) throw new Error("Job not found");
       return c;
     }
 
@@ -328,23 +563,28 @@ export const recruitmentApi = {
     return r.data;
   },
 
-  updateCandidate: async (id: number , data: Partial<Candidate>): Promise<Candidate> => {
-    if(USE_MOCK) {
+  updateCandidate: async (
+    id: number,
+    data: Partial<Candidate>,
+  ): Promise<Candidate> => {
+    if (USE_MOCK) {
       await delay(400);
-       mockCandidates = mockCandidates.map((c) => c.id === id ? {...c, ...data}: c);
-       const updatedCandidate = mockCandidates.find((c) => c.id === id);
+      mockCandidates = mockCandidates.map((c) =>
+        c.id === id ? { ...c, ...data } : c,
+      );
+      const updatedCandidate = mockCandidates.find((c) => c.id === id);
 
-    if (!updatedCandidate) {
-      throw new Error("Candidate not found");
-    }
+      if (!updatedCandidate) {
+        throw new Error("Candidate not found");
+      }
 
-    return updatedCandidate;
+      return updatedCandidate;
     }
 
     const r = await httpClient.patch(
       API_ENDPOINTS.recruitment.candidates,
       data,
-    )
+    );
     return r.data;
   },
 
@@ -365,7 +605,7 @@ export const recruitmentApi = {
     );
     return r.data;
   },
-  
+
   deleteCandidate: async (id: number): Promise<void> => {
     if (USE_MOCK) {
       await delay(400);
