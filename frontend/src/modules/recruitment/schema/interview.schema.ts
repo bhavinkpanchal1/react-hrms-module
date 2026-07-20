@@ -4,8 +4,7 @@ import { INTERVIEW_ROUND } from "../types/interview.type";
 const ROUND_VALUES = INTERVIEW_ROUND.map((r) => r.value) as [string, ...string[]];
 
 export const interviewSchema = z.object({
-  date: z.string().trim().min(1, "Date is required"),
-  time: z.string().trim().min(1, "Time is required"),
+  scheduled_at: z.string().trim().min(1, "Date & time is required"),
   round: z.enum(ROUND_VALUES, "Round is required"),
   mode: z.enum(["online", "in_person"], "Interview Mode is required"),
   interviewer: z.string().trim().min(1, "Interviewer is required"),

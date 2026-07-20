@@ -16,3 +16,5 @@ export type { BadgeProps, BadgeVariant } from './badge/Badge';
 export { Skeleton, TableRowSkeleton, CardSkeleton } from './skeleton/Skeleton';
 export { Modal } from './modal/Modal';
 export { Spinner, PageSpinner } from './spinner/Spinner';
+export { DatePicker } from './date-picker/DatePicker';
+export type { DatePickerProps, DatePickerMode, DateRangeValue } from './date-picker/DatePicker';

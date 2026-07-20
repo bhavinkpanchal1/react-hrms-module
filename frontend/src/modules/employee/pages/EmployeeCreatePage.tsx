@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, UserCheck } from "lucide-react";
-import { Button, Input, Select } from "@/shared/ui";
+import { Button, Input, Select, DatePicker } from "@/shared/ui";
 import { PageSpinner } from "@/shared/ui/spinner/Spinner";
 import {
   useCandidate,
@@ -21,6 +21,7 @@ import {
   type EmployeeFormData,
 } from "../schema/employee.schema";
 import { EMPLOYMENT_TYPE_OPTIONS } from "../types/employee.type";
+import { getDateYearsAgo } from "@/shared/utils/date";
 
 const ReviewField = ({
   label,
@@ -85,6 +86,7 @@ const EmployeeCreatePage = () => {
     handleSubmit,
     reset,
     watch,
+    control,
     formState: { errors },
   } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
@@ -238,11 +240,20 @@ const EmployeeCreatePage = () => {
                   error={errors.phone?.message}
                   {...register("phone")}
                 />
-                <Input
-                  type="date"
-                  label="Date of Birth"
-                  error={errors.dob?.message}
-                  {...register("dob")}
+                <Controller
+                  control={control}
+                  name="dob"
+                  render={({ field, fieldState }) => (
+                    <DatePicker
+                      mode="date"
+                      minDate={getDateYearsAgo(100)}
+                      maxDate={getDateYearsAgo(18)}
+                      label="Date of Birth" 
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={fieldState.error?.message}
+                    />
+                  )}
                 />
                 <Select
                   label="Gender"
@@ -308,12 +319,19 @@ const EmployeeCreatePage = () => {
                   error={errors.employment_type?.message}
                   {...register("employment_type")}
                 />
-                <Input
-                  type="date"
-                  label="Date of Joining"
-                  required
-                  error={errors.date_of_joining?.message}
-                  {...register("date_of_joining")}
+                <Controller
+                  control={control}
+                  name="date_of_joining"
+                  render={({ field, fieldState }) => (
+                    <DatePicker
+                      mode="date"
+                      label="Date of Joining"
+                      required
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={fieldState.error?.message}
+                    />
+                  )}
                 />
                 <Input
                   type="number"

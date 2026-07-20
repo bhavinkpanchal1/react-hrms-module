@@ -1,5 +1,5 @@
-import { useForm } from "react-hook-form"
-import { Button, Input, Select } from "@/shared/ui";
+import { useForm, Controller } from "react-hook-form"
+import { Button, DatePicker, Select,  } from "@/shared/ui";
 import { interviewSchema, type InterviewFormData } from "../schema/interview.schema";
 import { INTERVIEW_MODES, INTERVIEW_ROUND } from "../types/interview.type";
 import { EMPLOYEE_LIST } from "../constant/employee";
@@ -14,7 +14,7 @@ interface InterviewFormProps {
 }
 
 export const InterviewForm = ({ onSubmit, onCancel, isSubmitting, defaultValues, submitLabel = "Submit" }: InterviewFormProps) => {
-  const { register, handleSubmit, formState: { errors } } = useForm<InterviewFormData>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<InterviewFormData>({
     resolver: zodResolver(interviewSchema),
     defaultValues,
   });
@@ -22,8 +22,21 @@ export const InterviewForm = ({ onSubmit, onCancel, isSubmitting, defaultValues,
     <div className="scrollbar-sm overflow-y-auto">
       <form onSubmit={ handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Input label="Date" type="date" required  error={errors.date?.message} {...register('date')}/>
-          <Input label="Time" type="time" required error={errors.time?.message} {...register('time')} />
+          <Controller
+            control={control}
+            name="scheduled_at"
+            render={({ field, fieldState }) => (
+              <DatePicker
+                mode="datetime"
+                label="Date & Time"
+                required
+                placeholder="Select date & time"
+                value={field.value}
+                onChange={field.onChange}
+                error={fieldState.error?.message}
+              />
+            )}
+          />
           <Select label="Round" required options={INTERVIEW_ROUND} placeholder="— Select round —" error={errors.round?.message} {...register('round')}
           />
           <Select label="Mode" required options={INTERVIEW_MODES} placeholder="— Select mode —" error={errors.mode?.message} {...register('mode')}

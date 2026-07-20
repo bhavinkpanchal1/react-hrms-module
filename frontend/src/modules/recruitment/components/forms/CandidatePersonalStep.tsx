@@ -1,6 +1,6 @@
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import type { CandidateFormData } from "../../schema/candidate.schema";
-import { Input, Select } from "@/shared/ui";
+import { Input, Select, DatePicker } from "@/shared/ui";
 import {
   CITY_OPTIONS,
   COUNTRY_OPTIONS,
@@ -13,6 +13,7 @@ import { getDateYearsAgo } from "@/shared/utils/date";
 export const CandidatePersonalStep = () => {
   const {
     register,
+    control,
     formState: { errors },
   } = useFormContext<CandidateFormData>();
 
@@ -31,13 +32,20 @@ export const CandidatePersonalStep = () => {
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
         {/* DOB */}
-        <Input
-          type="date"
-          label="Date of Birth"
-          min={getDateYearsAgo(100)}
-          max={getDateYearsAgo(18)}
-          error={errors.dob?.message}
-          {...register("dob")}
+        <Controller
+          control={control}
+          name="dob"
+          render={({ field, fieldState }) => (
+            <DatePicker
+              mode="date"
+              minDate={getDateYearsAgo(100)}
+              maxDate={getDateYearsAgo(18)}
+              label="Date of Birth"
+              value={field.value}
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}
         />
 
         {/* Gender */}
@@ -88,10 +96,6 @@ export const CandidatePersonalStep = () => {
         {/* Pincode */}
         <Input
           label="Pincode"
-          type="text"
-          inputMode="numeric"
-          min={6}
-          maxLength={6}
           placeholder="380015"
           error={errors.pincode?.message}
           {...register("pincode")}

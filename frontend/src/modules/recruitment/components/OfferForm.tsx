@@ -1,6 +1,6 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Textarea } from "@/shared/ui";
+import { Button, Input, Textarea, DatePicker } from "@/shared/ui";
 import { offerSchema, type OfferFormData } from "../schema/offer.schema";
 
 interface OfferFormProps {
@@ -10,7 +10,7 @@ interface OfferFormProps {
 }
 
 export const OfferForm = ({ onSubmit, onCancel, isSubmitting }: OfferFormProps) => {
-  const { register, handleSubmit, formState: { errors } } = useForm<OfferFormData>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<OfferFormData>({
     resolver: zodResolver(offerSchema),
   });
 
@@ -21,23 +21,38 @@ export const OfferForm = ({ onSubmit, onCancel, isSubmitting }: OfferFormProps) 
           type="number"
           label="Offered Salary (Annual)"
           required
+          min={0}
           placeholder="600000"
           error={errors.offered_salary?.message}
           {...register("offered_salary", { valueAsNumber: true })}
         />
-        <Input
-          type="date"
-          label="Joining Date"
-          required
-          error={errors.joining_date?.message}
-          {...register("joining_date")}
+        <Controller
+          control={control}
+          name="joining_date"
+          render={({ field, fieldState }) => (
+            <DatePicker
+              mode="date"
+              label="Joining Date"
+              required
+              value={field.value}
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}
         />
-        <Input
-          type="date"
-          label="Offer Expires On"
-          hint="Leave blank for no deadline"
-          error={errors.expires_at?.message}
-          {...register("expires_at")}
+        <Controller
+          control={control}
+          name="expires_at"
+          render={({ field, fieldState }) => (
+            <DatePicker
+              mode="date"
+              label="Offer Expires On"
+              hint="Leave blank for no deadline"
+              value={field.value}
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}
         />
         <div className="sm:col-span-2">
           <Textarea
