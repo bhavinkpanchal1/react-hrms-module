@@ -36,10 +36,6 @@ export const candidatePersonalSchema = z.object({
   pincode: z.string(),
 });
 
-//  country_id: z.union([z.number(), z.string()]).transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val)),
-//   state_id: z.union([z.number(), z.string()]).transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val)),
-//   city_id: z.union([z.number(), z.string()]).transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val)),
-
 export const candidateProfessionalSchema = z.object({
   current_position: z.string().optional(),
   current_company: z.string().optional(),
@@ -48,11 +44,6 @@ export const candidateProfessionalSchema = z.object({
   notice_period: z.coerce.number().optional(),
   total_experience: z.coerce.number().optional(),
 });
-
-//  current_salary: z.union([z.number(), z.string()]).transform((val) => (typeof val === 'string' ? parseFloat(val) : val)),
-//   expected_salary: z.union([z.number(), z.string()]).transform((val) => (typeof val === 'string' ? parseFloat(val) : val)).optional(),
-//   notice_period: z.union([z.number(), z.string()]).transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val)).optional(),
-//   total_experience: z.union([z.number(), z.string()]).transform((val) => (typeof val === 'string' ? parseFloat(val) : val)).optional(),
 
 export const candidateEducationSchema = z.object({
   highest_education: z.string(),

@@ -563,30 +563,37 @@ export const recruitmentApi = {
     return r.data;
   },
 
-  updateCandidate: async (
-    id: number,
-    data: Partial<Candidate>,
-  ): Promise<Candidate> => {
-    if (USE_MOCK) {
-      await delay(400);
-      mockCandidates = mockCandidates.map((c) =>
-        c.id === id ? { ...c, ...data } : c,
-      );
-      const updatedCandidate = mockCandidates.find((c) => c.id === id);
+ updateCandidate: async (
+  id: number,
+  data: Partial<Candidate>,
+): Promise<Candidate> => {
+  if (USE_MOCK) {
+    await delay(400);
+    // job_title is derived from jobId (same as on create) — if jobId
+    // changed, recompute it so the display field doesn't go stale.
+    const patch = { ...data };
+    if (patch.jobId !== undefined) {
+      const job = mockJobs.find((j) => j.id === patch.jobId);
+      patch.job_title = job?.title ?? "";
+    }
+    mockCandidates = mockCandidates.map((c) =>
+      c.id === id ? { ...c, ...patch } : c,
+    );
+    const updatedCandidate = mockCandidates.find((c) => c.id === id);
 
-      if (!updatedCandidate) {
-        throw new Error("Candidate not found");
-      }
-
-      return updatedCandidate;
+    if (!updatedCandidate) {
+      throw new Error("Candidate not found");
     }
 
-    const r = await httpClient.patch(
-      API_ENDPOINTS.recruitment.candidates,
-      data,
-    );
-    return r.data;
-  },
+    return updatedCandidate;
+  }
+
+  const r = await httpClient.patch<Candidate>(
+    `${API_ENDPOINTS.recruitment.candidates}${id}/`,
+    data,
+  );
+  return r.data;
+},
 
   updateCandidateStatus: async (
     id: number,
@@ -635,6 +642,28 @@ export const recruitmentApi = {
     }
     const r = await httpClient.post<Interview>(
       API_ENDPOINTS.recruitment.interviews,
+      data,
+    );
+    return r.data;
+  },
+  // Used for both "Add Response" (status/result/feedback) and "Reschedule"
+  // (scheduled_at/interviewer/mode + status reset to 'scheduled') — same
+  // interview record, never a new one, so round history stays accurate.
+  updateInterview: async (
+    id: number,
+    data: Partial<Interview>,
+  ): Promise<Interview> => {
+    if (USE_MOCK) {
+      await delay(400);
+      mockInterviews = mockInterviews.map((iv) =>
+        iv.id === id ? { ...iv, ...data } : iv,
+      );
+      const updated = mockInterviews.find((iv) => iv.id === id);
+      if (!updated) throw new Error("Interview not found");
+      return updated;
+    }
+    const r = await httpClient.patch<Interview>(
+      `${API_ENDPOINTS.recruitment.interviews}${id}/`,
       data,
     );
     return r.data;

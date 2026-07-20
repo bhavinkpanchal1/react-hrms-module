@@ -55,8 +55,9 @@ export const CANDIDATE_STATUS_VALUES = [
   "screening",
   "interview",
   "offer",
-  "rejected",
+  "onboarding",
   "hired",
+  "rejected",
 ] as const;
 
 export const CANDIDATE_STATUS_OPTIONS = [
@@ -64,8 +65,9 @@ export const CANDIDATE_STATUS_OPTIONS = [
   { value: "screening", label: 'Screening' },
   { value: "interview", label: 'Interview' },
   { value: "offer", label: 'Offer' },
-  { value: "rejected", label: 'Rejected' },
+  {value: "onboarding", label: "Onboarding"},
   { value: "hired", label: 'Hired' },
+  { value: "rejected", label: 'Rejected' },
 ];
 
 export type Gender = typeof GENDERS_OPTIONS[number]["value"];

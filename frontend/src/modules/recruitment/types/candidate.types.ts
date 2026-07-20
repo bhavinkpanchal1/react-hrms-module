@@ -55,6 +55,7 @@ export interface Candidate {
   job_title: string;
   applied_at: string;
   status: CandidateStatus;
+  converted_to_employee?: boolean;
 }
 
 export type CreateCandidateInput = Omit<

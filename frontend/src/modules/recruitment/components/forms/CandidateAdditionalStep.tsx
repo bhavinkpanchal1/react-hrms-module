@@ -76,7 +76,7 @@ export const CandidateAdditionalStep = () => {
         label="Skills"
         rows={3}
         placeholder="React, TypeScript, Tailwind CSS, Node.js"
-        helperText="Separate multiple skills with commas."
+        //helperText="Separate multiple skills with commas."
         error={errors.skills?.message}
         {...register("skills")}
       />
@@ -85,7 +85,7 @@ export const CandidateAdditionalStep = () => {
         label="Certifications"
         rows={3}
         placeholder="AWS Certified Developer, Google UX Certification"
-        helperText="Separate multiple certifications with commas."
+        //helperText="Separate multiple certifications with commas."
         error={errors.certifications?.message}
         {...register("certifications")}
       />

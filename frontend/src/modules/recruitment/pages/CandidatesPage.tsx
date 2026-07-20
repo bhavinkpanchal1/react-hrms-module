@@ -1,14 +1,15 @@
 import { useState }            from 'react';
 import { CalendarCheck2, Eye, MoreVertical, Plus, Users }          from 'lucide-react';
-import { useCandidates, useDeleteCandidate } from '../hooks/useCandidates';
+import { useCandidates, useDeleteCandidate, useUpdateCandidateStatus } from '../hooks/useCandidates';
 import { CandidateStatusBadge } from '../components/CandidateStatusBadge';
 import { Button }               from '@/shared/ui/button/Button';
 import { TableRowSkeleton }     from '@/shared/ui/skeleton/Skeleton';
 import EmptyState               from '@/shared/ui/empty-state/EmptyState';
-import type { Candidate, CandidateStatus }   from '../types';
+import type { Candidate }   from '../types';
 import { useNavigate } from 'react-router-dom';
 import { AppDropdown } from '@/shared/ui/dropdown/AppDropdown';
 import ScheduleInterviewPage from './Interview/scheduleInterviewPage';
+import type { CandidateStatus } from '../constant/candidate';
 
 const STATUS_FILTERS: { label: string; value: CandidateStatus | 'all' }[] = [
   { label: 'All',       value: 'all'       },
@@ -16,6 +17,7 @@ const STATUS_FILTERS: { label: string; value: CandidateStatus | 'all' }[] = [
   { label: 'Screening', value: 'screening' },
   { label: 'Interview', value: 'interview' },
   { label: 'Offer',     value: 'offer'     },
+  { label: 'Onboarding', value: 'onboarding' },
   { label: 'Hired',     value: 'hired'     },
   { label: 'Rejected',  value: 'rejected'  },
 ];
@@ -29,6 +31,7 @@ const CandidatesPage = () => {
   const { data: candidates = [], isLoading } = useCandidates();
   const navigate = useNavigate();
   const deleteCandidate = useDeleteCandidate();
+  const updateStatus = useUpdateCandidateStatus();
 
   const filtered = candidates.filter((c) => {
     const matchSearch = `${c.first_name} ${c.last_name} ${c.email} ${c.job_title} ${c.source}` 
@@ -42,6 +45,12 @@ const CandidatesPage = () => {
     if (window.confirm('Remove this candidate?')) deleteCandidate.mutate({ id });
   };
 
+  const handleReject = (id: number) => {
+    if (window.confirm('Reject this candidate? This can be reversed later by editing their status.')) {
+      updateStatus.mutate({ id, status: 'rejected' });
+    }
+  };
+
   const handleSchedule = (c: Candidate) => {
     setIsOpen(true);
     setSelectedCandidate(c);
@@ -49,7 +58,6 @@ const CandidatesPage = () => {
 
   const close = () => {
     setIsOpen(false);
-    //setSelectedCandidate(null);
   }
 
   return (
@@ -178,11 +186,12 @@ const CandidatesPage = () => {
                       >
                         <Eye size={18} />
                       </Button>
-                      {c.status === "interview" && (
+                      {(c.status === "screening" || c.status === "interview") && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleSchedule(c)}
+                          title={c.status === "screening" ? "Schedule Interview" : "Manage Interview"}
                         >
                           <CalendarCheck2 size={18} />
                         </Button>
@@ -194,11 +203,23 @@ const CandidatesPage = () => {
                           </Button>
                         }
                         items={[
+                          ...(c.status === "applied"
+                            ? [{
+                                label: "Move to Screening",
+                                onClick: () => updateStatus.mutate({ id: c.id, status: "screening" }),
+                              }]
+                            : []),
                           {
                             label: "Edit",
                             onClick: () =>
                               navigate(`/recruitment/candidates/${c.id}/edit`),
                           },
+                          ...(["applied", "screening", "interview"].includes(c.status)
+                            ? [{
+                                label: "Reject",
+                                onClick: () => handleReject(c.id),
+                              }]
+                            : []),
                           {
                             label: "Delete",
                             onClick: () => handleDelete(c.id),

@@ -12,6 +12,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCandidate } from "../../hooks/useCandidates";
+import { InterviewRoundsCard } from "../../components/InterviewRoundsCard";
 
 const InfoItem = ({
   label,
@@ -259,6 +260,9 @@ const CandidateDetailsPage = () => {
         </CardContent>
       </Card>
 
+      {/* Interview Rounds */}
+      <InterviewRoundsCard candidate={candidate} />
+
       {/* Education */}
       <Card>
         <CardContent className="p-6">
@@ -338,19 +342,26 @@ const CandidateDetailsPage = () => {
       {/* Skills */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="mb-6 text-lg font-semibold">
-            Skills & Certifications
-          </h3>
-
+          <h3 className="mb-4 text-lg font-semibold">Skills</h3>
           <div className="flex flex-wrap gap-2">
-            {candidate.skills?.map((skill) => (
-              <span
-                key={skill}
-                className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
-              >
-                {skill}
-              </span>
-            ))}
+            {candidate.skills && candidate.skills.length > 0
+              ? candidate.skills.map((skill) => (
+                  <span key={skill} className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                    {skill}
+                  </span>
+                ))
+              : <p className="text-sm text-slate-400 dark:text-navy-400">No skills listed</p>}
+          </div>
+
+          <h3 className="mt-6 mb-4 text-lg font-semibold">Certifications</h3>
+          <div className="flex flex-wrap gap-2">
+            {candidate.certifications && candidate.certifications.length > 0
+              ? candidate.certifications.map((cert) => (
+                  <span key={cert} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600 dark:bg-navy-700 dark:text-navy-100">
+                    {cert}
+                  </span>
+                ))
+              : <p className="text-sm text-slate-400 dark:text-navy-400">No certifications listed</p>}
           </div>
         </CardContent>
       </Card>

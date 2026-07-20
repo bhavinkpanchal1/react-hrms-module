@@ -133,7 +133,8 @@ export const ALL_MODULES: NavModule[] = [
         label: "Candidates",
         children: [
           { kind: "link", label: "All Candidates", to: "/recruitment/candidates" },
-          { kind: "link", label: "Pipeline",        to: "/recruitment/pipeline" },
+          //dont remove temporary commmented
+          // { kind: "link", label: "Pipeline",        to: "/recruitment/pipeline" },
           { kind: "link", label: "Interviews",      to: "/recruitment/interviews" },
         ],
       },

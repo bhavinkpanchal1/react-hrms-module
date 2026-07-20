@@ -1,12 +1,9 @@
-import { CalendarClock, Plus } from "lucide-react";
 import { useInterviews } from "../hooks/useInterviews";
 import { Badge, type BadgeVariant } from "@/shared/ui/badge/Badge";
 import { TableRowSkeleton } from "@/shared/ui/skeleton/Skeleton";
 import EmptyState from "@/shared/ui/empty-state/EmptyState";
 import type { InterviewStatus } from "../types/interview.type";
-import { Button } from "@/shared/ui";
-import ScheduleInterviewPage from "./Interview/scheduleInterviewPage";
-import { useState } from "react";
+import { CalendarClock, MapPin, Monitor } from "lucide-react";
 
 const statusVariant = {
   scheduled: "info",
@@ -15,18 +12,8 @@ const statusVariant = {
   no_show: "warning",
 } satisfies Record<InterviewStatus, BadgeVariant>;
 
-
 const InterviewsPage = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const { data: interviews = [], isLoading } = useInterviews();
-  const handleScheduleInterview = ()=>{
-    setIsOpen(true);
-  }
-    const close = () => {
-    setIsOpen(false);
-    //setSelectedCandidate(null);
-  }
-
 
   return (
     <div className="space-y-5">
@@ -39,12 +26,6 @@ const InterviewsPage = () => {
             Scheduled and completed interview sessions
           </p>
         </div>
-        <Button
-          onClick={handleScheduleInterview}
-          leftIcon={<Plus className="size-4" />}
-        >
-          Schedule Interview
-        </Button>
       </div>
 
       {/* Stats */}
@@ -143,7 +124,17 @@ const InterviewsPage = () => {
                       {iv.duration_minutes} min
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {iv.mode === "online" ? "🖥 Online" : "🏢 In Person"}
+                      {iv.mode === "online" ? (
+                        <div className="flex items-center gap-2">
+                          <Monitor className="size-4 text-info" />
+                          <span>Online</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="size-4 text-warning" />
+                          <span>In Person</span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <Badge
@@ -158,11 +149,6 @@ const InterviewsPage = () => {
           </table>
         </div>
       </div>
-      <ScheduleInterviewPage
-        isOpen={isOpen}
-        close={close}
-        title='Schedule Interview'
-        />
     </div>
   );
 };

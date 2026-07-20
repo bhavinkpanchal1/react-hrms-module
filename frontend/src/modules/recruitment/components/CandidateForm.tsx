@@ -20,7 +20,7 @@ interface CandidateFormProps {
   onSubmit: SubmitHandler<CandidateFormData>;
   isSubmitting?: boolean;
   defaultValues?: Partial<CandidateFormData>;
-  mode?: "create" | "edit";
+  mode?: "create" | "edit"; 
 }
 
 export const CandidateForm = ({
@@ -39,7 +39,13 @@ export const CandidateForm = ({
   });
 
   const [step, setStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const handleFinalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(step !== CANDIDATE_STEPS.length -1) return;
+    methods.handleSubmit(onSubmit)(e);
+  }
+
 
   const handleStepsValidation = async () => {
     const fields = CANDIDATE_STEPS[step].fields;
@@ -50,17 +56,18 @@ export const CandidateForm = ({
     
     if(!isValid) return;
 
-    setCompletedSteps(prev => {
-      if(prev.includes(step)) return prev;
-      return [...prev, step];
-    });
+    setCompletedSteps(prev => 
+       prev.includes(step) ? prev : [...prev, step]
+    );
 
-    setStep((s) => s + 1);
+    if (step < CANDIDATE_STEPS.length - 1) {
+    setStep(step + 1);
+  }
   }
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
+      <form onSubmit={handleFinalSubmit}>
         {/* Stepper */}
         <Stepper currentStep={step} steps={CANDIDATE_STEPS}  completedSteps={completedSteps}/>
 
@@ -81,11 +88,11 @@ export const CandidateForm = ({
             onClick={() => setStep((s) => s - 1)}
           >
             Previous
-          </Button>
+          </Button> 
 
           {step === CANDIDATE_STEPS.length - 1 ? (
-            <Button type="submit" isLoading={isSubmitting}>
-              {mode === "edit" ? "Update Candidate" : "Add Candidate"}
+            <Button type="button" isLoading={isSubmitting} onClick={handleFinalSubmit}>
+              {mode === "edit" ? "Update Candidate" : "Create Candidate"}
             </Button>
           ) : (
             <Button type="button" onClick={handleStepsValidation}>

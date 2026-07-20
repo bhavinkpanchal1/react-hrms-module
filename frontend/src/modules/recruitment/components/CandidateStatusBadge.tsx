@@ -1,12 +1,13 @@
 import { Badge } from '@/shared/ui/badge/Badge';
 import type { BadgeVariant } from '@/shared/ui/badge/Badge';
-import type { CandidateStatus } from '../types';
+import type { CandidateStatus } from '../constant/candidate';
 
 const variantMap: Record<CandidateStatus, BadgeVariant> = {
   applied: 'default',
   screening: 'info',
   interview: 'warning',
   offer: 'primary',
+  onboarding: 'info',
   hired: 'success',
   rejected: 'error',
 };
