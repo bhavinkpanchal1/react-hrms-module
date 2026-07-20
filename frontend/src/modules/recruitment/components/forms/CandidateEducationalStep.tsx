@@ -46,9 +46,10 @@ export const CandidateEducationalStep = () => {
           />
 
           <Input
-            type="number"
+            type="text"
             label="Graduation Year"
             placeholder="2023"
+
             error={errors.graduation_year?.message}
             {...register("graduation_year", {
               valueAsNumber: true,

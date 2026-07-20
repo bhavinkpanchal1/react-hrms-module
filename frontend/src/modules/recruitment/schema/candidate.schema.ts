@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { GENDER_VALUES, MARITAL_STATUS_VALUES } from "../constant/candidate";
+import { isAgeBetween } from "@/shared/utils/validation";
 
 export const candidateBasicSchema = z.object({
   first_name: z
@@ -11,14 +12,26 @@ export const candidateBasicSchema = z.object({
     .trim()
     .min(2, "Last name must be at least 2 characters"),
   email: z.string().trim().email("Enter a valid email address"),
-  phone: z.string().trim().min(10, "Enter a valid phone number").max(15),
+  phone: z.string().trim().min(10, "Enter a valid phone number").max(10),
   jobId: z.number().min(1, "Please select a job"),
   source: z.string().trim().min(1, "Please select source"),
   notes: z.string().trim().optional(),
 });
 
 export const candidatePersonalSchema = z.object({
-  dob: z.string().optional(),
+  dob: z
+    .string()
+    .min(1, 'Date of Birth is required"')
+    .refine(
+      (value) =>
+        isAgeBetween(value, {
+          minAge: 18,
+          maxAge: 100,
+        }),
+      {
+        message: "Candidate must be 18 years old",
+      },
+    ),
   gender: z.preprocess(
     (value) => (value === "" ? undefined : value),
     z.enum(GENDER_VALUES).optional(),
@@ -33,7 +46,7 @@ export const candidatePersonalSchema = z.object({
   country_id: z.coerce.number(),
   state_id: z.coerce.number(),
   city_id: z.coerce.number(),
-  pincode: z.string(),
+  pincode: z.string().regex(/^\d{6}$/, "PIN Code must be exactly 6 digits"),
 });
 
 export const candidateProfessionalSchema = z.object({

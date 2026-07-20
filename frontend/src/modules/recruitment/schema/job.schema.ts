@@ -21,5 +21,5 @@ export const jobSchema = z.object({
 
   closing_date: z.string().optional().nullable(),
 });
-
+  
 export type JobFormData = z.infer<typeof jobSchema>;

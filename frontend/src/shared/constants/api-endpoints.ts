@@ -6,4 +6,5 @@ export const API_ENDPOINTS = {
     offers: '/recruitment/offers/',
     pipeline: '/recruitment/pipeline/',
   },
+  employees: '/employees/',
 } as const;

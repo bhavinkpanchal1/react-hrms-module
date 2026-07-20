@@ -9,4 +9,9 @@ export const queryKeys = {
     interviews: () => [...queryKeys.recruitment.all, 'interviews'] as const,
     offers: () => [...queryKeys.recruitment.all, 'offers'] as const,
   },
+  employee: {
+    all: ['employee'] as const,
+    list: () => [...queryKeys.employee.all, 'list'] as const,
+    details: (id: number) => [...queryKeys.employee.all, id] as const,
+  }
 } as const;

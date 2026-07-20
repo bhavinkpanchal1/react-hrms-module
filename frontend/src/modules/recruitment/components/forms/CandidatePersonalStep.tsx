@@ -8,6 +8,7 @@ import {
   MARITAL_STATUS_OPTIONS,
   STATE_OPTIONS,
 } from "../../constant/candidate";
+import { getDateYearsAgo } from "@/shared/utils/date";
 
 export const CandidatePersonalStep = () => {
   const {
@@ -29,11 +30,12 @@ export const CandidatePersonalStep = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-
         {/* DOB */}
         <Input
           type="date"
           label="Date of Birth"
+          min={getDateYearsAgo(100)}
+          max={getDateYearsAgo(18)}
           error={errors.dob?.message}
           {...register("dob")}
         />
@@ -86,6 +88,10 @@ export const CandidatePersonalStep = () => {
         {/* Pincode */}
         <Input
           label="Pincode"
+          type="text"
+          inputMode="numeric"
+          min={6}
+          maxLength={6}
           placeholder="380015"
           error={errors.pincode?.message}
           {...register("pincode")}

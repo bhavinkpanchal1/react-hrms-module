@@ -56,6 +56,7 @@ export const CandidateProfessionalStep = () => {
           <Input
             type="number"
             label="Current Salary"
+            min={0}
             placeholder="500000"
             prefix="₹"
             error={errors.current_salary?.message}
@@ -67,6 +68,7 @@ export const CandidateProfessionalStep = () => {
           <Input
             type="number"
             label="Expected Salary"
+            min={0}
             placeholder="700000"
             prefix="₹"
             error={errors.expected_salary?.message}
@@ -93,6 +95,8 @@ export const CandidateProfessionalStep = () => {
           <Input
             type="number"
             label="Notice Period (Days)"
+            min={0}
+            max={90}
             placeholder="30"
             error={errors.notice_period?.message}
             {...register("notice_period", {
@@ -103,6 +107,8 @@ export const CandidateProfessionalStep = () => {
           <Input
             type="number"
             label="Total Experience (Years)"
+            min={0}
+            max={50}
             placeholder="5"
             error={errors.total_experience?.message}
             {...register("total_experience", {

@@ -1,0 +1,23 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/constants/query-keys';
+import { employeeApi } from '../api/employee.api';
+import type { Employee } from '../types/employee.type';
+
+export const useEmployees = () =>
+  useQuery({ queryKey: queryKeys.employee.list(), queryFn: employeeApi.getEmployees });
+
+export const useEmployee = (id: number) =>
+  useQuery({
+    queryKey: queryKeys.employee.detail(id),
+    queryFn: () => employeeApi.getEmployeeById(id),
+    enabled: !!id,
+  });
+
+export const useCreateEmployee = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Omit<Employee, 'id' | 'employee_code' | 'created_at'>) =>
+      employeeApi.createEmployee(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employee.all }),
+  });
+};

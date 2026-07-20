@@ -85,7 +85,7 @@ export const ALL_MODULES: NavModule[] = [
     items: [
       { kind: "link", label: "Dashboard",    to: "/hr/dashboard" },
       { kind: "link", label: "Company",      to: "/hr/companies" },
-      { kind: "link", label: "Employee",     to: "/hr/employees" },
+      { kind: "link", label: "Employee",     to: "/employees" },
       { kind: "link", label: "Annual Leave", to: "/hr/annual-leave" },
       {
         kind: "group",
