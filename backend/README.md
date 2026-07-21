@@ -16,8 +16,9 @@ env/bin/python manage.py createsuperuser
 env/bin/python manage.py runserver
 ```
 
-The API runs at `http://localhost:8000/api/`. The local default is SQLite, so no
-database service is required.
+The API runs at `http://localhost:8000/api/`. No `.env` file is required: local
+development defaults to debug mode, anonymous API access, SQLite, and CORS for
+the standard Vite development origins.
 
 To load demo recruitment records:
 

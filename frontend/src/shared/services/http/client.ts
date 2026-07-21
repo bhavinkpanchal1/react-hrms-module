@@ -18,7 +18,7 @@ const getApiErrorMessage = (data: unknown): string | undefined => {
 };
 
 export const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
   timeout: 15_000,
   headers: { 'Content-Type': 'application/json' },
 });

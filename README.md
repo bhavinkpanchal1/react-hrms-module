@@ -26,5 +26,7 @@ npm install
 npm run dev
 ```
 
-The React app uses `http://localhost:8000/api` by default. Swagger API docs are
-available at `http://localhost:8000/api/docs/`.
+No environment files are required for local development. React defaults to
+`http://localhost:5173`, Django defaults to `http://localhost:8000`, and the
+frontend consumes `http://localhost:8000/api`. Swagger API docs are available at
+`http://localhost:8000/api/docs/`.
