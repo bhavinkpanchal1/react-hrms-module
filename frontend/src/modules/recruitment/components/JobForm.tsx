@@ -15,7 +15,7 @@ const STATUS_OPTIONS = [
   { value: "closed", label: "Closed" },
   { value: "on_hold", label: "On Hold" },
 ];
-export const DEPARTMENT_OPTIONS = [
+const DEPARTMENT_OPTIONS = [
   { value: "Engineering", label: "Engineering" },
   { value: "Human Resources", label: "Human Resources" },
   { value: "Product", label: "Product" },
@@ -69,7 +69,17 @@ export const JobForm = ({
       status: (defaultValues?.status as JobFormData["status"]) ?? "draft",
       closing_date: defaultValues?.closing_date ?? "",
     });
-  }, [defaultValues?.id, reset]);
+  }, [
+    defaultValues?.closing_date,
+    defaultValues?.department,
+    defaultValues?.description,
+    defaultValues?.experience,
+    defaultValues?.location,
+    defaultValues?.openings,
+    defaultValues?.status,
+    defaultValues?.title,
+    reset,
+  ]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>

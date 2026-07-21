@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
@@ -79,27 +79,28 @@ export const DatePicker = ({
     mode === "range" ? ((value as DateRangeValue | null)?.to ?? null) : null,
   );
 
-  useEffect(() => {
-    if (!open) return;
-    const seed =
-      mode === "range"
-        ? parseISODate((value as DateRangeValue | null)?.from)
-        : parseISODate(value as string);
-    if (seed) {
-      setViewYear(seed.getFullYear());
-      setViewMonth(seed.getMonth());
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      const seed =
+        mode === "range"
+          ? parseISODate((value as DateRangeValue | null)?.from)
+          : parseISODate(value as string);
+      if (seed) {
+        setViewYear(seed.getFullYear());
+        setViewMonth(seed.getMonth());
+      }
+      if (mode === "range") {
+        setRangeStart((value as DateRangeValue | null)?.from ?? null);
+        setRangeEnd((value as DateRangeValue | null)?.to ?? null);
+      }
     }
-    if (mode === "range") {
-      setRangeStart((value as DateRangeValue | null)?.from ?? null);
-      setRangeEnd((value as DateRangeValue | null)?.to ?? null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+    setOpen(nextOpen);
+  };
 
   const min = parseISODate(minDate);
   const max = parseISODate(maxDate);
   const isDisabledDate = (d: Date) =>
-    (min && isBefore(d, min)) || (max && isAfter(d, max));
+    Boolean((min && isBefore(d, min)) || (max && isAfter(d, max)));
 
   const displayValue = (() => {
     if (!value) return "";
@@ -335,7 +336,7 @@ export const DatePicker = ({
         </label>
       )}
 
-      <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Root open={open} onOpenChange={handleOpenChange}>
         <Popover.Trigger
           disabled={disabled}
           className={cn(

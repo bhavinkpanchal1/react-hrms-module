@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
+import {
+  useForm,
+  useWatch,
+  Controller,
+  type Resolver,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, UserCheck } from "lucide-react";
 import { Button, Input, Select, DatePicker } from "@/shared/ui";
@@ -85,13 +90,13 @@ const EmployeeCreatePage = () => {
     register,
     handleSubmit,
     reset,
-    watch,
     control,
     formState: { errors },
   } = useForm<EmployeeFormData>({
-    resolver: zodResolver(employeeSchema),
+    resolver: zodResolver(employeeSchema) as Resolver<EmployeeFormData>,
     defaultValues: emptyDefaults,
   });
+  const values = useWatch({ control });
 
   // Populate once candidate/job/offer data has actually arrived — these
   // load asynchronously, so defaultValues at mount time would be empty.
@@ -169,7 +174,6 @@ const EmployeeCreatePage = () => {
     );
   }
 
-  const values = watch();
   const isSubmitting = createEmployee.isPending || updateCandidate.isPending;
 
   return (

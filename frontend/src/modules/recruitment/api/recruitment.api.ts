@@ -1,12 +1,12 @@
 // recruitment.api.ts
-// SET USE_MOCK = false when Django backend is ready
+// Opt into the in-memory data only when explicitly requested.
 import { httpClient } from "@/shared/services/http/client";
 import { API_ENDPOINTS } from "@/shared/constants/api-endpoints";
 import type { Job, Candidate, Interview, Offer } from "../types";
 import type { JobFormData } from "../schema/job.schema";
 import type { CreateCandidateInput } from "../types/candidate.types";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_MOCK_API === "true";
 const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
 
 // ── Mock DB (lives in module scope — resets on page refresh) ─────────
@@ -387,6 +387,7 @@ let mockInterviews: Interview[] = [
   {
     id: 1,
     candidateId: 1,
+    round: "technical_round",
     candidate_name: "Ravi Sharma",
     job_title: "Frontend Developer",
     interviewer: "Bhavin Panchal",
@@ -394,11 +395,13 @@ let mockInterviews: Interview[] = [
     duration_minutes: 60,
     mode: "online",
     status: "scheduled",
+    result: "pending",
     feedback: "",
   },
   {
     id: 2,
     candidateId: 3,
+    round: "hr_round",
     candidate_name: "Amit Shah",
     job_title: "HR Executive",
     interviewer: "HR Manager",
@@ -406,11 +409,13 @@ let mockInterviews: Interview[] = [
     duration_minutes: 45,
     mode: "in_person",
     status: "scheduled",
+    result: "pending",
     feedback: "",
   },
   {
     id: 3,
     candidateId: 6,
+    round: "hr_round",
     candidate_name: "Nisha Verma",
     job_title: "HR Executive",
     interviewer: "HR Manager",
@@ -418,6 +423,7 @@ let mockInterviews: Interview[] = [
     duration_minutes: 45,
     mode: "online",
     status: "completed",
+    result: "pass",
     feedback:
       "Excellent communication. Strong HR knowledge. Recommended for hire.",
   },

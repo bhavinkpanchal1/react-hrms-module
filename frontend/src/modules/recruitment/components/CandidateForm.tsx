@@ -1,4 +1,9 @@
-import { FormProvider, useForm, type SubmitHandler } from "react-hook-form";
+import {
+  FormProvider,
+  useForm,
+  type Resolver,
+  type SubmitHandler,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   candidateSchema,
@@ -31,7 +36,7 @@ export const CandidateForm = ({
   mode = "create",
 }: CandidateFormProps) => {
   const methods = useForm<CandidateFormData>({
-    resolver: zodResolver(candidateSchema),
+    resolver: zodResolver(candidateSchema) as Resolver<CandidateFormData>,
     defaultValues: {
       notes: "",
       ...defaultValues,

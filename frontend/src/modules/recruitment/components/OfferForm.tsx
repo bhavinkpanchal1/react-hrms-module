@@ -1,4 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Textarea, DatePicker } from "@/shared/ui";
 import { offerSchema, type OfferFormData } from "../schema/offer.schema";
@@ -11,7 +11,7 @@ interface OfferFormProps {
 
 export const OfferForm = ({ onSubmit, onCancel, isSubmitting }: OfferFormProps) => {
   const { register, handleSubmit, control, formState: { errors } } = useForm<OfferFormData>({
-    resolver: zodResolver(offerSchema),
+    resolver: zodResolver(offerSchema) as Resolver<OfferFormData>,
   });
 
   return (

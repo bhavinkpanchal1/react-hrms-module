@@ -43,12 +43,12 @@ export const GENDERS_OPTIONS = [
   { value: "male", label: 'Male' },
   { value: "female", label: 'Female' },
   { value: "other", label: 'Other' },
-];
+] as const;
 
 export const MARITAL_STATUS_OPTIONS = [
   { value: "single", label: 'Single' },
   { value: "married", label: 'Married' },
-];
+] as const;
 
 export const CANDIDATE_STATUS_VALUES = [
   "applied",

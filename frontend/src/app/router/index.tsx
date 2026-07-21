@@ -50,6 +50,8 @@ const lazy_ = (el: React.ReactNode) => (
 );
 
 // ── Router ────────────────────────────────────────────────────────
+// The router is intentionally colocated with its small loading component.
+// eslint-disable-next-line react-refresh/only-export-components
 export const router = createBrowserRouter([
   // Public
   {

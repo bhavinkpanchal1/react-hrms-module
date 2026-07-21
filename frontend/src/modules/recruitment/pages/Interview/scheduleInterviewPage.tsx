@@ -53,7 +53,7 @@ const ScheduleInterviewPage = ({
           data: {
             round: data.round as Interview["round"],
             interviewer: data.interviewer,
-            scheduled_at: `${data.date}T${data.time}:00`,
+            scheduled_at: data.scheduled_at,
             mode: data.mode,
             status: "scheduled",
             result: "pending",
@@ -71,7 +71,7 @@ const ScheduleInterviewPage = ({
         candidate_name: `${candidate.first_name} ${candidate.last_name}`,
         job_title: candidate.job_title,
         interviewer: data.interviewer,
-        scheduled_at: `${data.date}T${data.time}:00`,
+        scheduled_at: data.scheduled_at,
         duration_minutes: 60,
         mode: data.mode,
         status: "scheduled",
@@ -97,8 +97,7 @@ const ScheduleInterviewPage = ({
 
   const defaultValues: Partial<InterviewFormData> | undefined = editingInterview
     ? {
-        date: editingInterview.scheduled_at.slice(0, 10),
-        time: editingInterview.scheduled_at.slice(11, 16),
+        scheduled_at: editingInterview.scheduled_at.slice(0, 16),
         round: editingInterview.round,
         mode: editingInterview.mode,
         interviewer: editingInterview.interviewer,

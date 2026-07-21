@@ -8,7 +8,7 @@ export const useEmployees = () =>
 
 export const useEmployee = (id: number) =>
   useQuery({
-    queryKey: queryKeys.employee.detail(id),
+    queryKey: queryKeys.employee.details(id),
     queryFn: () => employeeApi.getEmployeeById(id),
     enabled: !!id,
   });

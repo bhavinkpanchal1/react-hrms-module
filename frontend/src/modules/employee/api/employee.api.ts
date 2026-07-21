@@ -2,7 +2,7 @@ import { httpClient } from "@/shared/services/http/client";
 import { API_ENDPOINTS } from "@/shared/constants/api-endpoints";
 import type { Employee } from "../types/employee.type";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_MOCK_API === "true";
 const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
 
 let mockEmployees: Employee[] = [];

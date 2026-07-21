@@ -40,7 +40,13 @@ const CandidateEditPage = () => {
       <CandidateForm
         jobs={jobs}
         mode="edit"
-        defaultValues={candidate}
+        defaultValues={{
+          ...candidate,
+          resume_url: candidate.resume_url ?? undefined,
+          linkedin_url: candidate.linkedin_url ?? undefined,
+          github_url: candidate.github_url ?? undefined,
+          portfolio_url: candidate.portfolio_url ?? undefined,
+        }}
         onSubmit={handleSubmitUpdateCandiddate}
         isSubmitting={isPending}
       />
