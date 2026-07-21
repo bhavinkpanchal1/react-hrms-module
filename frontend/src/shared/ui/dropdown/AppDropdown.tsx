@@ -5,7 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 interface DropdownItem {
   label: string;
@@ -13,14 +13,14 @@ interface DropdownItem {
 }
 
 interface AppDropdownProps {
-  trigger: ReactNode;
+  trigger: ReactElement;
   items: DropdownItem[];
 }
 
 export const AppDropdown = ({ trigger, items }: AppDropdownProps) => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger >{trigger}</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={trigger} />
 
       <DropdownMenuContent align="end">
         {items.map((item, index) => (
