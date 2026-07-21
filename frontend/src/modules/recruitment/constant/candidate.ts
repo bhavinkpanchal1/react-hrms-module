@@ -29,13 +29,13 @@ export const STATE_OPTIONS = [
 ];
 
 export const CITY_OPTIONS = [
-  {value: "1001", label:'Vadodra'},
-  {value: "1002", label:'Anand'},
-  {value: "1003", label:'Rajkot'},
-  {value: "1004", label:'Surat'},
-  {value: "1005", label:'Mumbai'},
-  {value: "1006", label:'Palghar'},
-  {value: "1007", label:'Nanded'},
+  {value: 1001, label:'Vadodra'},
+  {value: 1002, label:'Anand'},
+  {value: 1003, label:'Rajkot'},
+  {value: 1004, label:'Surat'},
+  {value: 1005, label:'Mumbai'},
+  {value: 1006, label:'Palghar'},
+  {value: 1007, label:'Nanded'},
 ];
 
 

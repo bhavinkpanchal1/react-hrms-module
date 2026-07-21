@@ -13,24 +13,36 @@ import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCandidate } from "../../hooks/useCandidates";
 import { InterviewRoundsCard } from "../../components/InterviewRoundsCard";
+import {
+  CITY_OPTIONS,
+  COUNTRY_OPTIONS,
+  STATE_OPTIONS,
+} from "../../constant/candidate";
 
 const InfoItem = ({
   label,
   value,
+  lookupOptions,
 }: {
   label: string;
   value?: string | number | null;
-}) => (
-  <div>
-    <p className="text-xs uppercase tracking-wide text-slate-400">
-      {label}
-    </p>
+  lookupOptions?: readonly { value: string | number; label: string }[];
+}) => {
+  const displayValue = lookupOptions
+    ? lookupOptions.find((option) => String(option.value) === String(value))
+        ?.label || "-"
+    : value || "-";
 
-    <p className="mt-1 font-medium text-slate-700 dark:text-navy-50">
-      {value || "-"}
-    </p>
-  </div>
-);
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
+
+      <p className="mt-1 font-medium text-slate-700 dark:text-navy-50">
+        {displayValue}
+      </p>
+    </div>
+  );
+};
 
 const CandidateDetailsPage = () => {
   const navigate = useNavigate();
@@ -38,11 +50,7 @@ const CandidateDetailsPage = () => {
   const { id } = useParams();
   const candidateId = Number(id);
 
-  const {
-    data: candidate,
-    isLoading,
-    error,
-  } = useCandidate(candidateId);
+  const { data: candidate, isLoading, error } = useCandidate(candidateId);
 
   if (isLoading) {
     return (
@@ -62,7 +70,6 @@ const CandidateDetailsPage = () => {
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -89,7 +96,6 @@ const CandidateDetailsPage = () => {
       <Card className="overflow-hidden">
         <div className="bg-linear-to-r from-primary/10 to-primary/5 p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
             <div className="flex items-center gap-5">
               <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary text-3xl font-bold text-white">
                 {candidate.first_name[0]}
@@ -122,17 +128,11 @@ const CandidateDetailsPage = () => {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-
-              <InfoItem
-                label="Candidate ID"
-                value={candidate.id}
-              />
+              <InfoItem label="Candidate ID" value={candidate.id} />
 
               <InfoItem
                 label="Applied On"
-                value={new Date(
-                  candidate.applied_at
-                ).toLocaleDateString()}
+                value={new Date(candidate.applied_at).toLocaleDateString()}
               />
 
               <InfoItem
@@ -154,9 +154,7 @@ const CandidateDetailsPage = () => {
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <User className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">
-              Personal Information
-            </h3>
+            <h3 className="text-lg font-semibold">Personal Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -164,10 +162,7 @@ const CandidateDetailsPage = () => {
             <InfoItem label="Phone" value={candidate.phone} />
             <InfoItem label="Date of Birth" value={candidate.dob} />
             <InfoItem label="Gender" value={candidate.gender} />
-            <InfoItem
-              label="Marital Status"
-              value={candidate.marital_status}
-            />
+            <InfoItem label="Marital Status" value={candidate.marital_status} />
           </div>
         </CardContent>
       </Card>
@@ -177,40 +172,32 @@ const CandidateDetailsPage = () => {
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <MapPin className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">
-              Address Information
-            </h3>
+            <h3 className="text-lg font-semibold">Address Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            <InfoItem
-              label="Address Line 1"
-              value={candidate.address_line1}
-            />
+            <InfoItem label="Address Line 1" value={candidate.address_line1} />
 
-            <InfoItem
-              label="Address Line 2"
-              value={candidate.address_line2}
-            />
+            <InfoItem label="Address Line 2" value={candidate.address_line2} />
 
-            <InfoItem
-              label="Pincode"
-              value={candidate.pincode}
-            />
+            <InfoItem label="Pincode" value={candidate.pincode} />
 
             <InfoItem
               label="Country"
               value={candidate.country_id}
+              lookupOptions={COUNTRY_OPTIONS}
             />
 
             <InfoItem
               label="State"
               value={candidate.state_id}
+              lookupOptions={STATE_OPTIONS}
             />
 
             <InfoItem
               label="City"
               value={candidate.city_id}
+              lookupOptions={CITY_OPTIONS}
             />
           </div>
         </CardContent>
@@ -221,9 +208,7 @@ const CandidateDetailsPage = () => {
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <Briefcase className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">
-              Professional Information
-            </h3>
+            <h3 className="text-lg font-semibold">Professional Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -237,10 +222,7 @@ const CandidateDetailsPage = () => {
               value={candidate.current_company}
             />
 
-            <InfoItem
-              label="Current Salary"
-              value={candidate.current_salary}
-            />
+            <InfoItem label="Current Salary" value={candidate.current_salary} />
 
             <InfoItem
               label="Expected Salary"
@@ -268,9 +250,7 @@ const CandidateDetailsPage = () => {
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <GraduationCap className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">
-              Education Information
-            </h3>
+            <h3 className="text-lg font-semibold">Education Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
@@ -279,10 +259,7 @@ const CandidateDetailsPage = () => {
               value={candidate.highest_education}
             />
 
-            <InfoItem
-              label="Institution"
-              value={candidate.institution}
-            />
+            <InfoItem label="Institution" value={candidate.institution} />
 
             <InfoItem
               label="Graduation Year"
@@ -295,9 +272,7 @@ const CandidateDetailsPage = () => {
       {/* Links */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="mb-6 text-lg font-semibold">
-            Links & Profiles
-          </h3>
+          <h3 className="mb-6 text-lg font-semibold">Links & Profiles</h3>
 
           <div className="flex flex-wrap gap-3">
             {candidate.linkedin_url && (
@@ -344,24 +319,38 @@ const CandidateDetailsPage = () => {
         <CardContent className="p-6">
           <h3 className="mb-4 text-lg font-semibold">Skills</h3>
           <div className="flex flex-wrap gap-2">
-            {candidate.skills && candidate.skills.length > 0
-              ? candidate.skills.map((skill) => (
-                  <span key={skill} className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
-                    {skill}
-                  </span>
-                ))
-              : <p className="text-sm text-slate-400 dark:text-navy-400">No skills listed</p>}
+            {candidate.skills && candidate.skills.length > 0 ? (
+              candidate.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                >
+                  {skill}
+                </span>
+              ))
+            ) : (
+              <p className="text-sm text-slate-400 dark:text-navy-400">
+                No skills listed
+              </p>
+            )}
           </div>
 
           <h3 className="mt-6 mb-4 text-lg font-semibold">Certifications</h3>
           <div className="flex flex-wrap gap-2">
-            {candidate.certifications && candidate.certifications.length > 0
-              ? candidate.certifications.map((cert) => (
-                  <span key={cert} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600 dark:bg-navy-700 dark:text-navy-100">
-                    {cert}
-                  </span>
-                ))
-              : <p className="text-sm text-slate-400 dark:text-navy-400">No certifications listed</p>}
+            {candidate.certifications && candidate.certifications.length > 0 ? (
+              candidate.certifications.map((cert) => (
+                <span
+                  key={cert}
+                  className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600 dark:bg-navy-700 dark:text-navy-100"
+                >
+                  {cert}
+                </span>
+              ))
+            ) : (
+              <p className="text-sm text-slate-400 dark:text-navy-400">
+                No certifications listed
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -369,9 +358,7 @@ const CandidateDetailsPage = () => {
       {/* Notes */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="mb-4 text-lg font-semibold">
-            Recruiter Notes
-          </h3>
+          <h3 className="mb-4 text-lg font-semibold">Recruiter Notes</h3>
 
           <p className="leading-7 text-slate-600 dark:text-navy-200">
             {candidate.notes || "No notes available"}
