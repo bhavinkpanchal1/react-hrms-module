@@ -1,19 +1,52 @@
 import { getModulesForRole, type NavModule, type Role } from "@/app/config/nav-config";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { resolveModuleIdForPath } from "./resolveModuleIdForPath";
 
 interface SidebarState {
   role: Role;
+
+  // The module that owns the CURRENT PAGE — driven entirely by the URL via
+  // syncActiveModuleFromPath. This is the "primary" highlighted icon and
+  // never changes just from clicking a different icon to browse it.
   activeModuleId: string;
+  activeModule: NavModule | undefined;
+
+  // The module whose panel is currently DISPLAYED — changes the moment you
+  // click any icon, independent of whether you've actually navigated into
+  // it yet. This is what ASideNavPanel renders, and gets the "grey" style
+  // in MainSideBarIcon whenever it differs from activeModuleId (you're
+  // previewing a section without having navigated into it).
+  openModuleId: string;
+  openModule: NavModule | undefined;
+
   isPanelOpen: boolean;
   visibleModules: NavModule[];
-  activeModule: NavModule | undefined;
+
   setRole: (role: Role) => void;
-  setActiveModule: (id: string) => void;
+
+  // Called when the user clicks a sidebar icon — opens/previews that
+  // module's panel. Deliberately does NOT touch activeModuleId; only
+  // actually navigating to a page in that module does that (see
+  // syncActiveModuleFromPath).
+  setOpenModule: (id: string) => void;
+
+  // Called on every route change (see useSidebarRouteSync). Updates
+  // activeModuleId to whatever module owns the new URL, and — since a real
+  // navigation happened — also collapses openModuleId back to match, so
+  // the "grey preview" state resolves into the single "primary active"
+  // state once you've actually navigated somewhere.
+  syncActiveModuleFromPath: (pathname: string) => void;
+
   togglePanel: () => void;
   openPanel: () => void;
   closePanel: () => void;
 }
+
+const resolveActiveModule = (modules: NavModule[], pathname: string) => {
+  const matchedId = resolveModuleIdForPath(pathname, modules);
+  return modules.find((m) => m.id === matchedId) ?? modules[0];
+};
 
 export const useSidebarStore = create<SidebarState>()(
   persist(
@@ -22,57 +55,71 @@ export const useSidebarStore = create<SidebarState>()(
       // Later: replace this with: const role = getAuthRole() or from API
       const defaultRole: Role = "hr";
       const defaultModules = getModulesForRole(defaultRole);
-      
-      // 1. Check the current path immediately on boot
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
-      
-      // 2. Find if the URL matches a module right away
-      const initialMatchingModule = defaultModules.find((mod) =>
-        currentPath.includes(`/${mod.id}`) || currentPath === mod.id
-      );
 
-      // Fallback to the first module if no URL match
-      const activeMod = initialMatchingModule || defaultModules[0];
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+      const activeMod = resolveActiveModule(defaultModules, currentPath);
       const defaultModuleId = activeMod?.id ?? "";
-      
-      // 3. Determine if the matching module has sub-items to display
-      const hasSubItems = activeMod && activeMod.items && activeMod.items.length > 0;
+      const hasSubItems = !!activeMod?.items?.length;
 
       return {
         role: defaultRole,
-        activeModuleId: defaultModuleId,
-        isPanelOpen: !!hasSubItems, // Default to collapsed on first load
-        
-        // Computed: re-derived whenever role changes
-        visibleModules: defaultModules,
-        activeModule: defaultModules.find((m) => m.id === defaultModuleId),
 
-        setRole: (role) =>   {
+        activeModuleId: defaultModuleId,
+        activeModule: activeMod,
+
+        // On first load, the open panel matches the active module — you
+        // haven't clicked anything to "preview" a different section yet.
+        openModuleId: defaultModuleId,
+        openModule: activeMod,
+
+        isPanelOpen: !!hasSubItems, // Default to collapsed on first load
+        visibleModules: defaultModules,
+
+        setRole: (role) => {
           const modules = getModulesForRole(role);
-          const firstId = modules[0]?.id ?? "";
+          const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+          const mod = resolveActiveModule(modules, currentPath);
           set({
             role,
             visibleModules: modules,
-            activeModuleId: firstId,
-            activeModule: modules.find((m) => m.id === firstId),
+            activeModuleId: mod?.id ?? "",
+            activeModule: mod,
+            openModuleId: mod?.id ?? "",
+            openModule: mod,
           });
         },
 
-        setActiveModule: (id) => {
+        setOpenModule: (id) => {
           const { visibleModules } = get();
           const module = visibleModules.find((m) => m.id === id);
-          const hasItems = module && module.items && module.items.length > 0;
-          
-          set({ 
-            activeModuleId: id, 
-            activeModule: module,
-            // Auto-open if the module has items (as requested, except home/logo)
-            ...(hasItems ? { isPanelOpen: true } : {})
+          const hasItems = !!module?.items?.length;
+
+          set({
+            openModuleId: id,
+            openModule: module,
+            // Auto-open the panel if the module has items (as before,
+            // except home/logo-style entries with no sub-items).
+            ...(hasItems ? { isPanelOpen: true } : {}),
+          });
+        },
+
+        syncActiveModuleFromPath: (pathname) => {
+          const { visibleModules, activeModuleId } = get();
+          const matchedId = resolveModuleIdForPath(pathname, visibleModules);
+          if (!matchedId || matchedId === activeModuleId) return;
+          const mod = visibleModules.find((m) => m.id === matchedId);
+          set({
+            activeModuleId: matchedId,
+            activeModule: mod,
+            // A real navigation happened — collapse the "browsing preview"
+            // state back to match, so only one icon stays highlighted.
+            openModuleId: matchedId,
+            openModule: mod,
           });
         },
 
         togglePanel: () => set((s) => ({ isPanelOpen: !s.isPanelOpen })),
-        openPanel: ()  => set({ isPanelOpen: true }),
+        openPanel: () => set({ isPanelOpen: true }),
         closePanel: () => set({ isPanelOpen: false }),
       };
     },
@@ -80,28 +127,10 @@ export const useSidebarStore = create<SidebarState>()(
       name: "sidebar-preferences",
       partialize: (state) => ({ isPanelOpen: state.isPanelOpen }), // Only persist the toggle state
 
-      // ADD THIS CONFIGURATION BLOCK BELOW PARTIALIZE:
-      onRehydrateStorage: () => {
-        return (hydratedState, error) => {
-          if (error || !hydratedState) return;
-
-          const currentPath = window.location.pathname; 
-          const matchingModule = hydratedState.visibleModules.find((mod) =>
-            currentPath.includes(`/${mod.id}`) || currentPath === mod.id
-          );
-
-          // 3. Force update the active states directly in the store on boot
-          if (matchingModule) {
-            hydratedState.activeModuleId = matchingModule.id;
-            hydratedState.activeModule = matchingModule;
-            
-            // Auto open panel if it contains nested items
-            if (matchingModule.items && matchingModule.items.length > 0) {
-              hydratedState.isPanelOpen = true;
-            }
-          }
-        };
-      },
-    }
-  )
+      // No onRehydrateStorage needed. useSidebarRouteSync recomputes
+      // activeModuleId/openModuleId from the current URL on mount, which
+      // correctly handles reload without relying on mutating the hydrated
+      // state object directly (that never reached Zustand's subscribers).
+    },
+  ),
 );

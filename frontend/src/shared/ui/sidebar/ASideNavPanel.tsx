@@ -89,11 +89,11 @@ const NavItemRenderer = ({ item }: { item: NavItems }) => {
 
 // ── The panel itself ──────────────────────────────
 export const ASideNavPanel = () => {
-  const activeModule = useSidebarStore((s) => s.activeModule);
-  const closePanel   = useSidebarStore((s) => s.closePanel);
-  const isPanelOpen  = useSidebarStore((s) => s.isPanelOpen);
+  const openModule  = useSidebarStore((s) => s.openModule);
+  const closePanel  = useSidebarStore((s) => s.closePanel);
+  const isPanelOpen = useSidebarStore((s) => s.isPanelOpen);
 
-  if (!activeModule) return null;
+  if (!openModule) return null;
 
   return (
     <aside className={cn(
@@ -104,7 +104,7 @@ export const ASideNavPanel = () => {
       {/* Panel header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-navy-700">
         <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-navy-300">
-          {activeModule.sectionLabel}
+          {openModule.sectionLabel}
         </span>
 
         {/* Close button — only visible on mobile (xl:hidden). Changed from arrow to X to prevent duplication with top header. */}
@@ -121,7 +121,7 @@ export const ASideNavPanel = () => {
       {/* Nav items */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="flex flex-col gap-0.5">
-          {activeModule.items.map((item, idx) => (
+          {openModule.items.map((item, idx) => (
             <li key={idx}>
               <NavItemRenderer item={item} />
             </li>

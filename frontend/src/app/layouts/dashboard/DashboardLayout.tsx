@@ -5,14 +5,16 @@ import { TopHeader } from "../partials/TopHeader";
 import { useSidebarStore } from "@/shared/stores/sidebar.store";
 import { MainSideBarIcon } from "@/shared/ui/sidebar/MainSideBarIcon";
 import { ASideNavPanel } from "@/shared/ui/sidebar/ASideNavPanel";
+import { useSidebarRouteSync } from "@/shared/hooks/useSidebarRouteSync";
 
 function DashboardLayout() {
   const { isDark, toggleTheme } = useTheme();
   const isPanelOpen = useSidebarStore((s) => s.isPanelOpen);
   const togglePanel = useSidebarStore((s) => s.togglePanel);
-  
-  // Disable old route sync since it points to the old navigation.config.ts
-  // useRouteSync();
+
+  // Keeps the highlighted sidebar module in sync with the current route —
+  // handles reload and browsing to pages not reached via a sidebar click.
+  useSidebarRouteSync();
 
   return (
     <>
