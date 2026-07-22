@@ -2,7 +2,7 @@ import { useForm, Controller } from "react-hook-form"
 import { Button, DatePicker, Select,  } from "@/shared/ui";
 import { interviewSchema, type InterviewFormData } from "../schema/interview.schema";
 import { INTERVIEW_MODES, INTERVIEW_ROUND } from "../types/interview.type";
-import { EMPLOYEE_LIST } from "../constant/employee";
+import { EMPLOYEE_LIST } from "../../employee/constants/employee";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface InterviewFormProps {

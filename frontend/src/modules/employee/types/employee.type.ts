@@ -1,45 +1,129 @@
-export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'intern';
+import type {
+  Gender,
+  MaritalStatus,
+} from "@/modules/recruitment/constant/candidate";
+
+/* ==========================================================================
+   Employment Types
+   ========================================================================== */
 
 export const EMPLOYMENT_TYPE_OPTIONS = [
-  { value: 'full_time', label: 'Full-Time' },
-  { value: 'part_time', label: 'Part-Time' },
-  { value: 'contract',  label: 'Contract'  },
-  { value: 'intern',    label: 'Intern'    },
+  { value: "full_time", label: "Full-Time" },
+  { value: "part_time", label: "Part-Time" },
+  { value: "contract", label: "Contract" },
+  { value: "intern", label: "Intern" },
 ] as const;
 
-export interface Employee {
-  id: number;
-  employee_code: string; // auto-generated, e.g. EMP-0001
+export type EmploymentType =
+  (typeof EMPLOYMENT_TYPE_OPTIONS)[number]["value"];
 
-  // Personal — mirrors Candidate where applicable so the onboarding page
-  // can carry data straight across without renaming fields.
+/* ==========================================================================
+   Employee
+   ========================================================================== */
+
+export interface Employee {
+  /** Primary Key */
+  id: number;
+
+  /** Auto Generated (EMP000001) */
+  employee_id: string;
+
+  /* -----------------------------------------------------------------------
+     Personal Information
+     ----------------------------------------------------------------------- */
+
   first_name: string;
+  middle_name?: string;
   last_name: string;
+  name_as_per_aadhar: string;
+
   email: string;
   phone: string;
-  dob?: string;
-  gender?: string;
-  marital_status?: string;
-  address_line1?: string;
-  address_line2?: string;
-  country_id?: number;
-  state_id?: number;
-  city_id?: number;
-  pincode?: string;
 
-  // Employment — not present on Candidate at all; always collected fresh.
+  dob: string;
+  gender: Gender;
+  marital_status: MaritalStatus;
+
+  aadhar_card_number: string;
+  pan_card_number: string;
+
+  /* -----------------------------------------------------------------------
+     Correspondence Address
+     ----------------------------------------------------------------------- */
+
+  corresponding_address_line1: string;
+  corresponding_address_line2?: string;
+  corresponding_country: string;
+  corresponding_state: string;
+  corresponding_city: string;
+  corresponding_pincode: string;
+
+  /* -----------------------------------------------------------------------
+     Permanent Address
+     ----------------------------------------------------------------------- */
+
+  permanent_address_line1: string;
+  permanent_address_line2?: string;
+  permanent_country: string;
+  permanent_state: string;
+  permanent_city: string;
+  permanent_pincode: string;
+
+  /* -----------------------------------------------------------------------
+     Employment Information
+     ----------------------------------------------------------------------- */
+
+  company: string;
+  work_location: string;
   department: string;
   designation: string;
   reporting_manager?: string;
-  work_location: string;
   employment_type: EmploymentType;
   date_of_joining: string;
   annual_salary: number;
 
-  // Traceability back to the recruitment flow — undefined for employees
-  // added directly, not through Job → Candidate → Offer.
+  /* -----------------------------------------------------------------------
+     Bank Details
+     ----------------------------------------------------------------------- */
+
+  account_holder_name: string;
+  account_number: string;
+  bank_name: string;
+  branch_name: string;
+  ifsc_code: string;
+
+  /* -----------------------------------------------------------------------
+     PF / ESIC
+     ----------------------------------------------------------------------- */
+
+  uan_number?: string;
+  pf_number?: string;
+  pf_joining_date?: string;
+  esic_number?: string;
+  esic_joining_date?: string;
+
+  /* -----------------------------------------------------------------------
+     Emergency Contact
+     ----------------------------------------------------------------------- */
+
+  emergency_contact_name: string;
+  emergency_contact_number: string;
+  emergency_contact_relation: string;
+
+  /* -----------------------------------------------------------------------
+     Recruitment Mapping
+     ----------------------------------------------------------------------- */
+
   source_candidate_id?: number;
   source_offer_id?: number;
 
+  /* -----------------------------------------------------------------------
+     Audit
+     ----------------------------------------------------------------------- */
+
   created_at: string;
+  updated_at?: string;
+  created_by?: number;
+  updated_by?: number;
+  is_active: boolean;
 }

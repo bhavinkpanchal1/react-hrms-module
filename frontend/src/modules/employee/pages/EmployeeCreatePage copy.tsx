@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useForm, useWatch, type Resolver } from "react-hook-form";
+import {
+  useForm,
+  useWatch,
+  Controller,
+  type Resolver,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, UserCheck } from "lucide-react";
-import { Button, StepNavigation } from "@/shared/ui";
+import { Button, Input, Select, DatePicker } from "@/shared/ui";
 import { PageSpinner } from "@/shared/ui/spinner/Spinner";
 import {
   useCandidate,
@@ -11,23 +16,19 @@ import {
 } from "@/modules/recruitment/hooks/useCandidates";
 import { useJobs } from "@/modules/recruitment/hooks/useJobs";
 import { useOffers } from "@/modules/recruitment/hooks/useOffers";
-import {} from "@/modules/recruitment/constant/candidate";
+import {
+  GENDERS_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
+} from "@/modules/recruitment/constant/candidate";
 import { useCreateEmployee } from "../hooks/useEmployees";
 import {
   employeeSchema,
   type EmployeeFormData,
 } from "../schema/employee.schema";
-import { useStepWizard } from "@/shared/hooks/useStepWizard";
-import { EmployeePersonalStep } from "../forms/EmployeePersonalStep";
-import { EmployeeAddressStep } from "../forms/EmployeeAddressStep";
-import { EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
-import { EmployeeAccountDetailsStep } from "../forms/EmployeeAccountDetailsStep";
-import { EmployeeEmergencyStep } from "../forms/EmployeeEmergencyStep";
-import type { EmployeeStepProps } from "../types/employeeStep.type";
-import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
-import { EmployeeEmploymentStep } from "../forms/EmployeeEmploymentStep";
+import { EMPLOYMENT_TYPE_OPTIONS } from "../types/employee.type";
+import { getDateYearsAgo } from "@/shared/utils/date";
 
-export const ReviewField = ({
+const ReviewField = ({
   label,
   value,
 }: {
@@ -62,14 +63,6 @@ const emptyDefaults: EmployeeFormData = {
   annual_salary: 0,
 };
 
-const STEP_COMPONENTS = {
-  personal: EmployeePersonalStep,
-  address: EmployeeAddressStep,
-  employment: EmployeeEmploymentStep,
-  account_details: EmployeeAccountDetailsStep,
-  emergency: EmployeeEmergencyStep,
-} satisfies Record<string, React.ComponentType<EmployeeStepProps>>;
-
 const EmployeeCreatePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -92,61 +85,43 @@ const EmployeeCreatePage = () => {
   const offer = offers.find((o) =>
     offerId ? o.id === offerId : o.candidateId === candidateId,
   );
-  const form = useForm<EmployeeFormData>({
-    resolver: zodResolver(employeeSchema) as Resolver<EmployeeFormData>,
-    defaultValues: emptyDefaults,
-  });
 
   const {
     register,
     handleSubmit,
-    //reset,
-    getValues,
+    reset,
     control,
     formState: { errors },
-  } = form;
-
-  const mode = isFromRecruitment ? "create" : "edit";
-
-  const wizard = useStepWizard({
-    steps: EMPLOYEE_FORM_STEPS,
-    mode,
-    form,
-    initialCompletedSteps:
-      mode === "edit" ? EMPLOYEE_FORM_STEPS.map((s) => s.key) : [],
+  } = useForm<EmployeeFormData>({
+    resolver: zodResolver(employeeSchema) as Resolver<EmployeeFormData>,
+    defaultValues: emptyDefaults,
   });
-
-  const stepProps = {
-    register,
-    control,
-    errors,
-  };
-  //const values = useWatch({ control });
+  const values = useWatch({ control });
 
   // Populate once candidate/job/offer data has actually arrived — these
   // load asynchronously, so defaultValues at mount time would be empty.
   useEffect(() => {
-    // if (!isFromRecruitment) return;
-    // if (!candidate) return;
-    // reset({
-    //   first_name: candidate.first_name,
-    //   last_name: candidate.last_name,
-    //   email: candidate.email,
-    //   phone: candidate.phone,
-    //   dob: candidate.dob ?? "",
-    //   gender: candidate.gender ?? "",
-    //   marital_status: candidate.marital_status ?? "",
-    //   address_line1: candidate.address_line1 ?? "",
-    //   address_line2: candidate.address_line2 ?? "",
-    //   pincode: candidate.pincode ?? "",
-    //   department: job?.department ?? "",
-    //   designation: job?.title ?? "",
-    //   reporting_manager: "",
-    //   work_location: job?.location ?? "",
-    //   employment_type: "full_time",
-    //   date_of_joining: offer?.joining_date ?? "",
-    //   annual_salary: offer?.offered_salary ?? 0,
-    // });
+    if (!isFromRecruitment) return;
+    if (!candidate) return;
+    reset({
+      first_name: candidate.first_name,
+      last_name: candidate.last_name,
+      email: candidate.email,
+      phone: candidate.phone,
+      dob: candidate.dob ?? "",
+      gender: candidate.gender ?? "",
+      marital_status: candidate.marital_status ?? "",
+      address_line1: candidate.address_line1 ?? "",
+      address_line2: candidate.address_line2 ?? "",
+      pincode: candidate.pincode ?? "",
+      department: job?.department ?? "",
+      designation: job?.title ?? "",
+      reporting_manager: "",
+      work_location: job?.location ?? "",
+      employment_type: "full_time",
+      date_of_joining: offer?.joining_date ?? "",
+      annual_salary: offer?.offered_salary ?? 0,
+    });
     // Only re-run when the underlying records change, not on every render —
     // job/offer resolve slightly after candidate since they come from
     // separate list queries.
@@ -201,16 +176,6 @@ const EmployeeCreatePage = () => {
 
   const isSubmitting = createEmployee.isPending || updateCandidate.isPending;
 
-  const renderStep = () => {
-    if (wizard.currentStepKey === "review") {
-      return <EmployeeReviewStep values={getValues()} />;
-    }
-
-    const StepComponent = STEP_COMPONENTS[wizard.currentStepKey];
-
-    return StepComponent ? <StepComponent {...stepProps} /> : null;
-  };
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -241,22 +206,12 @@ const EmployeeCreatePage = () => {
         </div>
       )}
 
-      <StepNavigation
-        steps={EMPLOYEE_FORM_STEPS}
-        mode={mode}
-        currentStepKey={wizard.currentStepKey}
-        completedSteps={wizard.completedSteps}
-        errorSteps={wizard.errorSteps}
-        onStepClick={wizard.goToStep}
-      />
-
       <form
         onSubmit={handleSubmit(onSubmit, onInvalid)}
         noValidate
         className="space-y-5"
       >
-        {renderStep()}
-        {/* {isEditing ? (
+        {isEditing ? (
           <>
             <section className="card p-6">
               <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
@@ -297,7 +252,7 @@ const EmployeeCreatePage = () => {
                       mode="date"
                       minDate={getDateYearsAgo(100)}
                       maxDate={getDateYearsAgo(18)}
-                      label="Date of Birth"
+                      label="Date of Birth" 
                       value={field.value}
                       onChange={field.onChange}
                       error={fieldState.error?.message}
@@ -337,7 +292,59 @@ const EmployeeCreatePage = () => {
               <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
                 Employment Details
               </h3>
-             
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                <Input
+                  label="Department"
+                  required
+                  error={errors.department?.message}
+                  {...register("department")}
+                />
+                <Input
+                  label="Designation"
+                  required
+                  error={errors.designation?.message}
+                  {...register("designation")}
+                />
+                <Input
+                  label="Reporting Manager"
+                  error={errors.reporting_manager?.message}
+                  {...register("reporting_manager")}
+                />
+                <Input
+                  label="Work Location"
+                  required
+                  error={errors.work_location?.message}
+                  {...register("work_location")}
+                />
+                <Select
+                  label="Employment Type"
+                  required
+                  options={EMPLOYMENT_TYPE_OPTIONS}
+                  error={errors.employment_type?.message}
+                  {...register("employment_type")}
+                />
+                <Controller
+                  control={control}
+                  name="date_of_joining"
+                  render={({ field, fieldState }) => (
+                    <DatePicker
+                      mode="date"
+                      label="Date of Joining"
+                      required
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={fieldState.error?.message}
+                    />
+                  )}
+                />
+                <Input
+                  type="number"
+                  label="Annual Salary"
+                  required
+                  error={errors.annual_salary?.message}
+                  {...register("annual_salary", { valueAsNumber: true })}
+                />
+              </div>
             </section>
           </>
         ) : (
@@ -346,16 +353,63 @@ const EmployeeCreatePage = () => {
               <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
                 Personal Information
               </h3>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+                <ReviewField
+                  label="Name"
+                  value={`${values.first_name} ${values.last_name}`}
+                />
+                <ReviewField label="Email" value={values.email} />
+                <ReviewField label="Phone" value={values.phone} />
+                <ReviewField label="Date of Birth" value={values.dob} />
+                <ReviewField label="Gender" value={values.gender} />
+                <ReviewField
+                  label="Marital Status"
+                  value={values.marital_status}
+                />
+                <ReviewField label="Address" value={values.address_line1} />
+                <ReviewField label="Pincode" value={values.pincode} />
+              </div>
             </section>
 
             <section className="card p-6">
               <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
                 Employment Details
               </h3>
-              
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+                <ReviewField label="Department" value={values.department} />
+                <ReviewField label="Designation" value={values.designation} />
+                <ReviewField
+                  label="Reporting Manager"
+                  value={values.reporting_manager}
+                />
+                <ReviewField
+                  label="Work Location"
+                  value={values.work_location}
+                />
+                <ReviewField
+                  label="Employment Type"
+                  value={
+                    EMPLOYMENT_TYPE_OPTIONS.find(
+                      (o) => o.value === values.employment_type,
+                    )?.label
+                  }
+                />
+                <ReviewField
+                  label="Date of Joining"
+                  value={values.date_of_joining}
+                />
+                <ReviewField
+                  label="Annual Salary"
+                  value={
+                    values.annual_salary
+                      ? `₹${Number(values.annual_salary).toLocaleString("en-IN")}`
+                      : undefined
+                  }
+                />
+              </div>
             </section>
           </>
-        )} */}
+        )}
 
         <div className="flex justify-end gap-3">
           {isEditing && isFromRecruitment && (
@@ -374,24 +428,6 @@ const EmployeeCreatePage = () => {
           >
             Confirm & Create Employee
           </Button>
-        </div>
-
-        <div className="flex justify-between">
-          <Button
-            type="button"
-            onClick={wizard.goBack}
-            disabled={wizard.isFirstStep}
-          >
-            Back
-          </Button>
-
-          {!wizard.isLastStep ? (
-            <Button type="button" onClick={wizard.goNext}>
-              Next
-            </Button>
-          ) : (
-            <Button type="submit">Create Employee</Button>
-          )}
         </div>
       </form>
     </div>

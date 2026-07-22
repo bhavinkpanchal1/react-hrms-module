@@ -6,3 +6,6 @@ export const getDateYearsAgo = (years: number): string => {
   return date.toISOString().split("T")[0];
 };
 
+export const getToday = (): string => {
+  return new Date().toISOString().split("T")[0];
+};
