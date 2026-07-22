@@ -1,5 +1,6 @@
 import { cn } from "@/shared/lib/cn";
 import { useSidebarStore } from "@/shared/stores/sidebar.store";
+import { Link } from "react-router-dom";
 
 
 // Simple SVG icon map — replace with Lucide if you prefer
@@ -45,7 +46,8 @@ const ICONS: Record<string, React.ReactNode> = {
 export const MainSideBarIcon = () => {
   const visibleModules  = useSidebarStore((s) => s.visibleModules);
   const activeModuleId  = useSidebarStore((s) => s.activeModuleId);
-  const setActiveModule = useSidebarStore((s) => s.setActiveModule);
+  const openModuleId    = useSidebarStore((s) => s.openModuleId);
+  const setOpenModule   = useSidebarStore((s) => s.setOpenModule);
   const isPanelOpen     = useSidebarStore((s) => s.isPanelOpen);
 
   return (
@@ -56,26 +58,35 @@ export const MainSideBarIcon = () => {
 
       {/* Logo */}
       <div className="flex pt-4 pb-6">
-        <a href="/">
+        <Link to="/">
           <img className="size-11" src="/src/assets/images/logo.png" alt="logo" />
-        </a>
+        </Link>
       </div>
 
       {/* Module icons */}
       <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto">
         {visibleModules.map((mod) => {
+          // Primary highlight: this module owns the page you're actually
+          // on right now (URL-driven, survives reload, only changes when
+          // you actually navigate).
           const isActive = mod.id === activeModuleId;
+          // Secondary "previewing" highlight: you clicked this icon to
+          // look at its panel, but haven't navigated into it — only shown
+          // when it's a *different* module than the active one, so you
+          // never see both styles on the same icon at once.
+          const isOpenOnly = !isActive && mod.id === openModuleId;
+
           return (
             <button
               key={mod.id}
-              onClick={() => setActiveModule(mod.id)}
+              onClick={() => setOpenModule(mod.id)}
               title={mod.label}
-              className={[
+              className={cn(
                 "flex size-11 items-center justify-center rounded-lg transition-colors duration-200",
-                isActive
-                  ? "bg-primary text-white"
-                  : "text-slate-500 hover:bg-primary/10 hover:text-primary dark:text-navy-300",
-              ].join(" ")}
+                isActive && "bg-primary/15 text-primary dark:bg-primary20",
+                isOpenOnly && "bg-slate-150 text-slate-600 dark:bg-navy-600 dark:text-navy-200",
+                !isActive && !isOpenOnly && "text-slate-500 hover:bg-primary/10 hover:text-primary dark:text-navy-300",
+              )}
             >
               {ICONS[mod.icon]}
             </button>

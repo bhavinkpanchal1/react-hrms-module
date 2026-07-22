@@ -85,12 +85,20 @@ export const CandidatePersonalStep = () => {
         />
 
         {/* City */}
-        <Select
-          options={CITY_OPTIONS}
-          label="City"
-          placeholder="Select City"
-          error={errors.city_id?.message}
-          {...register("city_id")}
+        <Controller
+          control={control}
+          name="city_id"
+          render={({ field, fieldState }) => (
+            <Select
+              mode="searchable"
+              label="City"
+              options={CITY_OPTIONS}
+              value={field.value}
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )
+        }
         />
 
         {/* Pincode */}
