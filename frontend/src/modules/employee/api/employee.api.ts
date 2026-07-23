@@ -47,4 +47,16 @@ export const employeeApi = {
     const r = await httpClient.post<Employee>(API_ENDPOINTS.employees, data);
     return r.data;
   },
+
+  updateEmployee: async (id: number, data: Partial<Employee>): Promise<Employee> => {
+    if (USE_MOCK) {
+      await delay(400);
+      mockEmployees = mockEmployees.map((e) => (e.id === id ? { ...e, ...data } : e));
+      const updated = mockEmployees.find((e) => e.id === id);
+      if (!updated) throw new Error("Employee not found");
+      return updated;
+    }
+    const r = await httpClient.patch<Employee>(`${API_ENDPOINTS.employees}${id}/`, data);
+    return r.data;
+  },
 };

@@ -15,9 +15,9 @@ import { useCandidate } from "../../hooks/useCandidates";
 import { InterviewRoundsCard } from "../../components/InterviewRoundsCard";
 import {
   CITY_OPTIONS,
-  COUNTRY_OPTIONS,
   STATE_OPTIONS,
 } from "../../constant/candidate";
+import { useLocation } from "@/shared/hooks/useLocation";
 
 const InfoItem = ({
   label,
@@ -30,7 +30,7 @@ const InfoItem = ({
 }) => {
   const displayValue = lookupOptions
     ? lookupOptions.find((option) => String(option.value) === String(value))
-        ?.label || "-"
+      ?.label || "-"
     : value || "-";
 
   return (
@@ -46,6 +46,7 @@ const InfoItem = ({
 
 const CandidateDetailsPage = () => {
   const navigate = useNavigate();
+  const { countries } = useLocation();
 
   const { id } = useParams();
   const candidateId = Number(id);
@@ -185,7 +186,7 @@ const CandidateDetailsPage = () => {
             <InfoItem
               label="Country"
               value={candidate.country_id}
-              lookupOptions={COUNTRY_OPTIONS}
+              lookupOptions={ countries }
             />
 
             <InfoItem

@@ -3,11 +3,11 @@ import type { CandidateFormData } from "../../schema/candidate.schema";
 import { Input, Select, DatePicker } from "@/shared/ui";
 import {
   CITY_OPTIONS,
-  COUNTRY_OPTIONS,
   GENDERS_OPTIONS,
   MARITAL_STATUS_OPTIONS,
   STATE_OPTIONS,
 } from "../../constant/candidate";
+
 import { getDateYearsAgo } from "@/shared/utils/date";
 
 export const CandidatePersonalStep = () => {

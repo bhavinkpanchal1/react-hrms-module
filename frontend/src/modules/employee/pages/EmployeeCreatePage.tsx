@@ -1,65 +1,30 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useForm, useWatch, type Resolver } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, UserCheck } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { Button, StepNavigation } from "@/shared/ui";
 import { PageSpinner } from "@/shared/ui/spinner/Spinner";
-import {
-  useCandidate,
-  useUpdateCandidate,
-} from "@/modules/recruitment/hooks/useCandidates";
+import { useCandidate, useUpdateCandidate } from "@/modules/recruitment/hooks/useCandidates";
 import { useJobs } from "@/modules/recruitment/hooks/useJobs";
 import { useOffers } from "@/modules/recruitment/hooks/useOffers";
-import {} from "@/modules/recruitment/constant/candidate";
 import { useCreateEmployee } from "../hooks/useEmployees";
-import {
-  employeeSchema,
-  type EmployeeFormData,
-} from "../schema/employee.schema";
+import { employeeSchema, type EmployeeFormData } from "../schema/employee.schema";
 import { useStepWizard } from "@/shared/hooks/useStepWizard";
 import { EmployeePersonalStep } from "../forms/EmployeePersonalStep";
 import { EmployeeAddressStep } from "../forms/EmployeeAddressStep";
-import { EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
 import { EmployeeAccountDetailsStep } from "../forms/EmployeeAccountDetailsStep";
 import { EmployeeEmergencyStep } from "../forms/EmployeeEmergencyStep";
-import type { EmployeeStepProps } from "../types/employeeStep.type";
-import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
 import { EmployeeEmploymentStep } from "../forms/EmployeeEmploymentStep";
+import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
+import { EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
+import type { EmployeeStepProps } from "../types/employeeStep.type";
 
-export const ReviewField = ({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string | number | null;
-}) => (
-  <div>
-    <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-    <p className="mt-1 font-medium text-slate-700 dark:text-navy-50">
-      {value || "—"}
-    </p>
-  </div>
-);
-
-const emptyDefaults: EmployeeFormData = {
-  first_name: "",
-  last_name: "",
-  email: "",
-  phone: "",
-  dob: "",
-  gender: "",
-  marital_status: "",
-  address_line1: "",
-  address_line2: "",
-  pincode: "",
-  department: "",
-  designation: "",
-  reporting_manager: "",
-  work_location: "",
+const emptyDefaults: Partial<EmployeeFormData> = {
+  first_name: "", last_name: "", email: "", phone: "",
   employment_type: "full_time",
-  date_of_joining: "",
-  annual_salary: 0,
+  same_as_above: false,
+  clockin_remotely: false,
 };
 
 const STEP_COMPONENTS = {
@@ -70,83 +35,67 @@ const STEP_COMPONENTS = {
   emergency: EmployeeEmergencyStep,
 } satisfies Record<string, React.ComponentType<EmployeeStepProps>>;
 
+// This page always CREATES a new employee record — whether launched
+// standalone ("Add Employee" button, blank form) or from the recruitment
+// flow (?candidateId=&offerId=, pre-filled from the candidate + offer).
+// Both are still "create a brand-new employee", so the wizard always runs
+// in "create" mode: linear, validation-gated, single final submit.
+// Editing an EXISTING employee is a separate page/mode — see
+// EmployeeEditPage, which uses mode="edit" (free nav + per-tab Update).
 const EmployeeCreatePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const candidateId = Number(searchParams.get("candidateId")) || 0;
   const offerId = Number(searchParams.get("offerId")) || 0;
-
   const isFromRecruitment = candidateId > 0;
 
-  const { data: candidate, isLoading: candidateLoading } =
-    useCandidate(candidateId);
+  const { data: candidate, isLoading: candidateLoading } = useCandidate(candidateId);
   const { data: jobs = [] } = useJobs();
   const { data: offers = [] } = useOffers();
   const updateCandidate = useUpdateCandidate();
   const createEmployee = useCreateEmployee();
 
-  const [isEditing, setIsEditing] = useState(!isFromRecruitment);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const job = jobs.find((j) => j.id === candidate?.jobId);
-  const offer = offers.find((o) =>
-    offerId ? o.id === offerId : o.candidateId === candidateId,
-  );
+  const offer = offers.find((o) => (offerId ? o.id === offerId : o.candidateId === candidateId));
+
   const form = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema) as Resolver<EmployeeFormData>,
     defaultValues: emptyDefaults,
   });
-
-  const {
-    register,
-    handleSubmit,
-    //reset,
-    getValues,
-    control,
-    formState: { errors },
-  } = form;
-
-  const mode = isFromRecruitment ? "create" : "edit";
+  const { register, handleSubmit, reset, getValues, control, formState: { errors } } = form;
 
   const wizard = useStepWizard({
     steps: EMPLOYEE_FORM_STEPS,
-    mode,
+    mode: "create",
     form,
-    initialCompletedSteps:
-      mode === "edit" ? EMPLOYEE_FORM_STEPS.map((s) => s.key) : [],
   });
 
-  const stepProps = {
-    register,
-    control,
-    errors,
-  };
-  //const values = useWatch({ control });
+  const stepProps: EmployeeStepProps = { register, control, errors };
 
   // Populate once candidate/job/offer data has actually arrived — these
   // load asynchronously, so defaultValues at mount time would be empty.
   useEffect(() => {
-    // if (!isFromRecruitment) return;
-    // if (!candidate) return;
-    // reset({
-    //   first_name: candidate.first_name,
-    //   last_name: candidate.last_name,
-    //   email: candidate.email,
-    //   phone: candidate.phone,
-    //   dob: candidate.dob ?? "",
-    //   gender: candidate.gender ?? "",
-    //   marital_status: candidate.marital_status ?? "",
-    //   address_line1: candidate.address_line1 ?? "",
-    //   address_line2: candidate.address_line2 ?? "",
-    //   pincode: candidate.pincode ?? "",
-    //   department: job?.department ?? "",
-    //   designation: job?.title ?? "",
-    //   reporting_manager: "",
-    //   work_location: job?.location ?? "",
-    //   employment_type: "full_time",
-    //   date_of_joining: offer?.joining_date ?? "",
-    //   annual_salary: offer?.offered_salary ?? 0,
-    // });
+    if (!isFromRecruitment || !candidate) return;
+    reset({
+      ...emptyDefaults,
+      first_name: candidate.first_name,
+      last_name: candidate.last_name,
+      email: candidate.email,
+      phone: candidate.phone,
+      dob: candidate.dob ?? "",
+      gender: candidate.gender ?? "",
+      marital_status: candidate.marital_status ?? "",
+      corresponding_address_line1: candidate.address_line1 ?? "",
+      corresponding_address_line2: candidate.address_line2 ?? "",
+      corresponding_pincode: candidate.pincode ?? "",
+      department: job?.department ?? "",
+      designation: job?.title ?? "",
+      work_location: job?.location ?? "",
+      date_of_joining: offer?.joining_date ?? "",
+      annual_salary: offer?.offered_salary ?? 0,
+    });
     // Only re-run when the underlying records change, not on every render —
     // job/offer resolve slightly after candidate since they come from
     // separate list queries.
@@ -172,25 +121,15 @@ const EmployeeCreatePage = () => {
           navigate(`/employees?created=${employee.id}`);
         },
         onError: (error) => {
-          setMutationError(
-            error instanceof Error
-              ? error.message
-              : "Unable to create employee.",
-          );
+          setMutationError(error instanceof Error ? error.message : "Unable to create employee.");
         },
       },
     );
   };
 
-  // If required fields are missing (e.g. job/offer data was incomplete),
-  // force edit mode so the errors are actually visible on real inputs
-  // instead of being invisible on the read-only review.
-  const onInvalid = () => setIsEditing(true);
-
   if (isFromRecruitment && candidateLoading) {
     return <PageSpinner />;
   }
-
   if (isFromRecruitment && !candidate) {
     return (
       <div className="flex h-64 items-center justify-center text-slate-500 dark:text-navy-300">
@@ -203,36 +142,29 @@ const EmployeeCreatePage = () => {
 
   const renderStep = () => {
     if (wizard.currentStepKey === "review") {
-      return <EmployeeReviewStep values={getValues()} />;
+      return (
+        <EmployeeReviewStep
+          values={getValues()}
+          onEditSection={wizard.goToStep}
+          errorSectionKeys={wizard.errorSteps}
+        />
+      );
     }
-
-    const StepComponent = STEP_COMPONENTS[wizard.currentStepKey];
-
+    const StepComponent = STEP_COMPONENTS[wizard.currentStepKey as keyof typeof STEP_COMPONENTS];
     return StepComponent ? <StepComponent {...stepProps} /> : null;
   };
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">
-            {isFromRecruitment ? "Onboard Employee" : "Add Employee"}
-          </h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
-            {isFromRecruitment
-              ? "Verify the details below, then confirm to create the employee record."
-              : "Enter the new employee's details."}
-          </p>
-        </div>
-        {isFromRecruitment && !isEditing && (
-          <Button
-            variant="outline"
-            leftIcon={<Pencil className="size-4" />}
-            onClick={() => setIsEditing(true)}
-          >
-            Edit Details
-          </Button>
-        )}
+      <div>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">
+          {isFromRecruitment ? "Onboard Employee" : "Add Employee"}
+        </h2>
+        <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
+          {isFromRecruitment
+            ? "Verify the details below, then complete each step to create the employee record."
+            : "Enter the new employee's details step by step."}
+        </p>
       </div>
 
       {mutationError && (
@@ -243,145 +175,18 @@ const EmployeeCreatePage = () => {
 
       <StepNavigation
         steps={EMPLOYEE_FORM_STEPS}
-        mode={mode}
+        mode="create"
         currentStepKey={wizard.currentStepKey}
         completedSteps={wizard.completedSteps}
         errorSteps={wizard.errorSteps}
         onStepClick={wizard.goToStep}
       />
 
-      <form
-        onSubmit={handleSubmit(onSubmit, onInvalid)}
-        noValidate
-        className="space-y-5"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         {renderStep()}
-        {/* {isEditing ? (
-          <>
-            <section className="card p-6">
-              <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
-                Personal Information
-              </h3>
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                <Input
-                  label="First Name"
-                  required
-                  error={errors.first_name?.message}
-                  {...register("first_name")}
-                />
-                <Input
-                  label="Last Name"
-                  required
-                  error={errors.last_name?.message}
-                  {...register("last_name")}
-                />
-                <Input
-                  type="email"
-                  label="Email"
-                  required
-                  error={errors.email?.message}
-                  {...register("email")}
-                />
-                <Input
-                  type="tel"
-                  label="Phone"
-                  required
-                  error={errors.phone?.message}
-                  {...register("phone")}
-                />
-                <Controller
-                  control={control}
-                  name="dob"
-                  render={({ field, fieldState }) => (
-                    <DatePicker
-                      mode="date"
-                      minDate={getDateYearsAgo(100)}
-                      maxDate={getDateYearsAgo(18)}
-                      label="Date of Birth"
-                      value={field.value}
-                      onChange={field.onChange}
-                      error={fieldState.error?.message}
-                    />
-                  )}
-                />
-                <Select
-                  label="Gender"
-                  options={GENDERS_OPTIONS}
-                  placeholder="Select Gender"
-                  error={errors.gender?.message}
-                  {...register("gender")}
-                />
-                <Select
-                  label="Marital Status"
-                  options={MARITAL_STATUS_OPTIONS}
-                  placeholder="Select Status"
-                  error={errors.marital_status?.message}
-                  {...register("marital_status")}
-                />
-                <Input
-                  label="Pincode"
-                  error={errors.pincode?.message}
-                  {...register("pincode")}
-                />
-                <div className="md:col-span-2">
-                  <Input
-                    label="Address Line 1"
-                    error={errors.address_line1?.message}
-                    {...register("address_line1")}
-                  />
-                </div>
-              </div>
-            </section>
 
-            <section className="card p-6">
-              <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
-                Employment Details
-              </h3>
-             
-            </section>
-          </>
-        ) : (
-          <>
-            <section className="card p-6">
-              <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
-                Personal Information
-              </h3>
-            </section>
-
-            <section className="card p-6">
-              <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
-                Employment Details
-              </h3>
-              
-            </section>
-          </>
-        )} */}
-
-        <div className="flex justify-end gap-3">
-          {isEditing && isFromRecruitment && (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setIsEditing(false)}
-            >
-              Back to Review
-            </Button>
-          )}
-          <Button
-            type="submit"
-            isLoading={isSubmitting}
-            leftIcon={<UserCheck className="size-4" />}
-          >
-            Confirm & Create Employee
-          </Button>
-        </div>
-
-        <div className="flex justify-between">
-          <Button
-            type="button"
-            onClick={wizard.goBack}
-            disabled={wizard.isFirstStep}
-          >
+        <div className="flex justify-between border-t border-slate-100 pt-5 dark:border-navy-700">
+          <Button type="button" variant="outline" onClick={wizard.goBack} disabled={wizard.isFirstStep}>
             Back
           </Button>
 
@@ -390,7 +195,9 @@ const EmployeeCreatePage = () => {
               Next
             </Button>
           ) : (
-            <Button type="submit">Create Employee</Button>
+            <Button type="submit" isLoading={isSubmitting} leftIcon={<UserCheck className="size-4" />}>
+              Create Employee
+            </Button>
           )}
         </div>
       </form>

@@ -19,9 +19,6 @@ export const MARITAL_STATUS_VALUES = [
   "married",
 ] as const
 
-export const COUNTRY_OPTIONS = [
-  {value: 1, label: 'India'},
-] as const;
 
 export const STATE_OPTIONS = [
   {value: 101, label: "Gujarat"},

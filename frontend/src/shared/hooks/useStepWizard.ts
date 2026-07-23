@@ -13,25 +13,35 @@ export interface UseStepWizardOptions<TFieldValues extends FieldValues> {
   initialCompletedSteps?: string[];
 }
 
-export interface UseStepWizardReturn {
+export interface UseStepWizardReturn<TFieldValues extends FieldValues = FieldValues> {
   currentStepKey: string;
   currentStepIndex: number;
-  currentStep: StepDefinition | undefined;
+  currentStep: StepDefinition<TFieldValues> | undefined;
   completedSteps: string[];
   errorSteps: string[];
   isFirstStep: boolean;
   isLastStep: boolean;
-  // Validates the current step's fields, then advances. In create mode,
-  // an invalid step blocks advancing and marks it as errored. In edit
-  // mode, validation still runs (to update the error indicator) but never
-  // blocks the move — edit mode's whole premise is free navigation.
+  // Validates the current step's fields, then advances. In BOTH modes, an
+  // invalid current step blocks the move — you can't Next past a broken
+  // section either way (edit mode's "freedom" is about jumping via the
+  // nav, not about skipping validation on the step you're actively
+  // leaving via Next).
   goNext: () => Promise<boolean>;
   goBack: () => void;
-  // Direct jump from clicking a step in the nav. In create mode, only
-  // completed/current/errored steps are reachable (StepNavigation already
-  // disables the rest, this is a defensive re-check). Edit mode allows any
-  // step unconditionally.
-  goToStep: (key: string) => Promise<void>;
+  // Direct jump from clicking a step in the nav.
+  // - Moving BACKWARD (or in edit mode, anywhere): always allowed — you
+  //   can always go back to review/fix something without being blocked.
+  // - Moving FORWARD in create mode: the step you're leaving must pass
+  //   validation first, and you can only reach a step you've already
+  //   completed or the very next pending one — never skip further ahead.
+  goToStep: (key: string) => Promise<boolean>;
+  // Validates the current step and, if valid, hands its field values to
+  // the caller (e.g. to PATCH just that section) — WITHOUT navigating
+  // anywhere. This is the per-tab "Update" action for edit mode: save this
+  // section, stay right where you are.
+  saveStep: (
+    onSave: (stepKey: string, values: Partial<TFieldValues>) => Promise<void> | void,
+  ) => Promise<boolean>;
 }
 
 export function useStepWizard<TFieldValues extends FieldValues>({
@@ -40,7 +50,7 @@ export function useStepWizard<TFieldValues extends FieldValues>({
   form,
   initialStepKey,
   initialCompletedSteps = [],
-}: UseStepWizardOptions<TFieldValues>): UseStepWizardReturn {
+}: UseStepWizardOptions<TFieldValues>): UseStepWizardReturn<TFieldValues> {
   const [currentStepKey, setCurrentStepKey] = useState<string>(initialStepKey ?? steps[0]?.key);
   const [completedSteps, setCompletedSteps] = useState<string[]>(initialCompletedSteps);
   const [errorSteps, setErrorSteps] = useState<string[]>([]);
@@ -69,18 +79,17 @@ export function useStepWizard<TFieldValues extends FieldValues>({
 
   const goNext = useCallback(async () => {
     const valid = await validateStep(currentStepKey);
-    // Create mode: a failing step blocks the move so users can't skip
-    // required sections. Edit mode: never blocks — the point of edit mode
-    // is that you can move around freely and fix errors whenever you like,
-    // right up to the final Review/Update step.
-    if (mode === "create" && !valid) return false;
+    // A failing step blocks Next in both modes — edit mode's free
+    // navigation is about the step nav (goToStep/clicking tabs), not about
+    // letting Next silently skip past a broken section.
+    if (!valid) return false;
 
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < steps.length) {
       setCurrentStepKey(steps[nextIndex].key);
     }
     return true;
-  }, [validateStep, currentStepKey, mode, currentStepIndex, steps]);
+  }, [validateStep, currentStepKey, currentStepIndex, steps]);
 
   const goBack = useCallback(() => {
     const prevIndex = currentStepIndex - 1;
@@ -89,22 +98,47 @@ export function useStepWizard<TFieldValues extends FieldValues>({
 
   const goToStep = useCallback(
     async (key: string) => {
-      if (key === currentStepKey) return;
+      if (key === currentStepKey) return true;
+      const targetIndex = steps.findIndex((s) => s.key === key);
+      const movingForward = targetIndex > currentStepIndex;
 
-      if (mode === "create") {
-        const targetIndex = steps.findIndex((s) => s.key === key);
-        const canJump =
-          completedSteps.includes(key) || errorSteps.includes(key) || targetIndex <= currentStepIndex;
-        if (!canJump) return;
+      if (mode === "create" && movingForward) {
+        // Leaving the current step to go further ahead — it must be valid,
+        // and you can't skip past a step you haven't reached yet.
+        const valid = await validateStep(currentStepKey);
+        if (!valid) return false;
+        const canReach = completedSteps.includes(key) || targetIndex === currentStepIndex + 1;
+        if (!canReach) return false;
+      } else {
+        // Backward navigation (either mode), or any jump in edit mode:
+        // always allowed. Still validate so the nav indicator you're
+        // leaving reflects reality.
+        await validateStep(currentStepKey);
       }
 
-      // Validate whatever step we're leaving so its nav indicator reflects
-      // reality, but never block the jump itself — StepNavigation's own
-      // clickability rules already decided whether this jump is allowed.
-      await validateStep(currentStepKey);
       setCurrentStepKey(key);
+      return true;
     },
-    [currentStepKey, mode, steps, completedSteps, errorSteps, currentStepIndex, validateStep],
+    [currentStepKey, mode, steps, completedSteps, currentStepIndex, validateStep],
+  );
+
+  const saveStep = useCallback(
+    async (onSave: (stepKey: string, values: Partial<TFieldValues>) => Promise<void> | void) => {
+      const valid = await validateStep(currentStepKey);
+      if (!valid) return false;
+
+      const step = steps.find((s) => s.key === currentStepKey);
+      const allValues = form.getValues();
+      const values: Partial<TFieldValues> = step?.fields
+        ? (Object.fromEntries(step.fields.map((f) => [f, allValues[f as keyof TFieldValues]])) as Partial<TFieldValues>)
+        : allValues;
+
+      await onSave(currentStepKey, values);
+      // Does NOT change currentStepKey — the whole point is "save this
+      // section without being forced to the last tab."
+      return true;
+    },
+    [currentStepKey, steps, form, validateStep],
   );
 
   return useMemo(
@@ -119,7 +153,8 @@ export function useStepWizard<TFieldValues extends FieldValues>({
       goNext,
       goBack,
       goToStep,
+      saveStep,
     }),
-    [currentStepKey, currentStepIndex, currentStep, completedSteps, errorSteps, steps.length, goNext, goBack, goToStep],
+    [currentStepKey, currentStepIndex, currentStep, completedSteps, errorSteps, steps.length, goNext, goBack, goToStep, saveStep],
   );
 }

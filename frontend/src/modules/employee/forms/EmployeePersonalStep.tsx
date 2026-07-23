@@ -64,6 +64,8 @@ export const EmployeePersonalStep = ({
             label="Mobile Number"
             placeholder="10-digit mobile number"
             required
+            allowPattern={/[0-9]/}
+            maxLength={10}
             error={errors.phone?.message}
             {...register("phone")}
           />
@@ -120,6 +122,8 @@ export const EmployeePersonalStep = ({
             label="Aadhaar Number"
             placeholder="12-digit Aadhaar number"
             required
+            allowPattern={/[0-9]/}
+            maxLength={12}
             error={errors.aadhar_card_number?.message}
             {...register("aadhar_card_number")}
           />
@@ -128,6 +132,9 @@ export const EmployeePersonalStep = ({
             label="PAN Number"
             placeholder="e.g. ABCDE1234F"
             required
+            textTransform="uppercase"
+            allowPattern={/[A-Z0-9]/}
+            maxLength={10}
             error={errors.pan_card_number?.message}
             {...register("pan_card_number")}
           />

@@ -21,3 +21,15 @@ export const useCreateEmployee = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employee.all }),
   });
 };
+
+export const useUpdateEmployee = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Employee> }) =>
+      employeeApi.updateEmployee(id, data),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: queryKeys.employee.list() });
+      qc.invalidateQueries({ queryKey: queryKeys.employee.details(variables.id) });
+    },
+  });
+};

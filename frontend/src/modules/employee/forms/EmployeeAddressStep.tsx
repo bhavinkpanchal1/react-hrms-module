@@ -1,4 +1,5 @@
 import { Input, Select } from "@/shared/ui";
+import { useLocation } from "@/shared/hooks/useLocation";
 import {
   Controller,
   type Control,
@@ -6,7 +7,7 @@ import {
   type UseFormRegister,
 } from "react-hook-form";
 import type { EmployeeFormData } from "../schema/employee.schema";
-import { COUNTRY_OPTIONS } from "@/modules/recruitment/constant/candidate";
+
 
 type EmployeeAddressStepprops = {
   register: UseFormRegister<EmployeeFormData>;
@@ -19,6 +20,7 @@ export const EmployeeAddressStep = ({
   control,
   errors,
 }: EmployeeAddressStepprops) => {
+  const {countries} = useLocation();
   return (
     <section className="card p-6">
       <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
@@ -39,19 +41,19 @@ export const EmployeeAddressStep = ({
         <Select
           label="Country"
           required
-          options={COUNTRY_OPTIONS}
+          options={countries}
           error={errors.corresponding_country?.message}
         />
         <Select
           label="State"
           required
-          options={COUNTRY_OPTIONS}
+          options={countries}
           error={errors.corresponding_state?.message}
         />
         <Select
           label="city"
           required
-          options={COUNTRY_OPTIONS}
+          options={countries}
           error={errors.corresponding_city?.message}
         />
       </div>
@@ -77,13 +79,13 @@ export const EmployeeAddressStep = ({
         <Select
           label="Country"
           required
-          options={COUNTRY_OPTIONS}
+          options={countries}
           error={errors.permanent_country?.message}
         />
         <Select
           label="State"
           required
-          options={COUNTRY_OPTIONS}
+          options={countries}
           error={errors.permanent_state?.message}
         />
         <Controller
@@ -93,7 +95,7 @@ export const EmployeeAddressStep = ({
             <Select
               label="city"
               required
-              options={COUNTRY_OPTIONS}
+              options={countries}
               error={errors.permanent_city?.message}
             />
           )}
