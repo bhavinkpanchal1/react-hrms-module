@@ -8,8 +8,7 @@ import { DEPARTMENT_OPTIONS } from "@/shared/constants/department";
 import { DESIGNATION_OPTIONS } from "@/shared/constants/designation";
 import { WORK_LOCATIONS_OPTIONS } from "../constants/work-locations";
 import { EMPLOYMENT_TYPE_OPTIONS } from "../types/employee.type";
-import { getDateYearsAgo, getToday } from "@/shared/utils/date";
-import { date } from "zod";
+import {  getToday } from "@/shared/utils/date";
 
 export const EmployeeEmploymentStep = ({
   register,

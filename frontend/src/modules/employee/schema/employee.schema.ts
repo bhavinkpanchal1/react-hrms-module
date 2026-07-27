@@ -70,7 +70,7 @@ export const employeeSchema = z.object({
   // ===========================
   // Permanent Address
   // ===========================
-  same_as_above: z.boolean().default(false),
+  same_as_above: z.boolean().optional().default(false),
   permanent_address_line1: z.string(),
   permanent_address_line2: z.string().optional(),
   permanent_country: z.coerce.number().min(1, "Select Country"),
@@ -110,21 +110,35 @@ export const employeeSchema = z.object({
   ifsc_code: z
     .string()
     .trim()
-    .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Enter valid IFSC"),
-  branch_name: z.string(),
-  bank_name: z.string(),
-  account_number: z.string().trim().min(8).max(20),
-  account_holder_name: z.string(),
+    .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Enter a valid IFSC Code"),
+
+  bank_name: z.string().trim().min(2, "Bank Name is required"),
+
+  branch_name: z.string().trim().min(2, "Branch Name is required"),
+
+  account_number: z
+    .string()
+    .trim()
+    .min(8, "Account Number must be at least 8 digits")
+    .max(20, "Account Number cannot exceed 20 digits")
+    .regex(/^\d+$/, "Account Number must contain only digits"),
+
+  account_holder_name: z
+    .string()
+    .trim()
+    .min(2, "Account Holder Name is required"),
 
   // ===========================
   // Emergency Contact
   // ===========================
-  emergency_contact_name: z.string().optional(),
+  emergency_contact_name: z.string().trim().optional(),
   emergency_contact_number: z
     .string()
+    .trim()
+    .max(10, "Mobile number should be of 10 digit")
     .regex(/^[6-9]\d{9}$/, "Enter valid mobile number")
     .optional(),
-  emergency_contact_relation: z.string().optional(),
+  emergency_contact_relation: z.string().trim().optional(),
 });
 
 export type EmployeeFormData = z.infer<typeof employeeSchema>;

@@ -1,4 +1,4 @@
-import { Input, Select } from "@/shared/ui";
+import { Checkbox, Input, Select } from "@/shared/ui";
 import { useLocation } from "@/shared/hooks/useLocation";
 import {
   Controller,
@@ -20,7 +20,7 @@ export const EmployeeAddressStep = ({
   control,
   errors,
 }: EmployeeAddressStepprops) => {
-  const {countries, states, cities} = useLocation();
+  const { countries, states, cities } = useLocation();
   return (
     <section className="card p-6">
       <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
@@ -38,31 +38,56 @@ export const EmployeeAddressStep = ({
           error={errors.corresponding_address_line2?.message}
           {...register("corresponding_address_line2")}
         />
-        <Select
-          label="Country"
-          required
-          options={countries}
-          placeholder="Select Country"
-          error={errors.corresponding_country?.message}
+        <Controller control={control} name="corresponding_country" key="corresponding_country"
+          render={({ field, fieldState }) => (
+            <Select
+              label="Country"
+              required
+              options={countries}
+              placeholder="Select Country"
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}>
+
+        </Controller>
+
+        <Controller control={control} name="corresponding_state" key="corresponding_state"
+          render={({ field, fieldState }) => (
+            <Select
+              label="State"
+              required
+              options={states}
+              placeholder="Select State"
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}>
+
+        </Controller>
+
+        <Controller control={control} name="corresponding_city" key="corresponding_city"
+          render={({ field, fieldState }) => (
+            <Select
+              label="city"
+              required
+              options={cities}
+              placeholder="Select City"
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}
+        >
+
+        </Controller>
+        <Input label="Pincode"
+          error={errors.corresponding_pincode?.message}
+          {...register("corresponding_pincode")}
         />
-        <Select
-          label="State"
-          required
-          options={states}
-          placeholder="Select State"
-          error={errors.corresponding_state?.message}
-        />
-        <Select
-          label="city"
-          required
-          options={cities}
-          placeholder="Select City"
-          error={errors.corresponding_city?.message}
-        />
+
       </div>
-      <div>
-        <Input
-          type="checkbox"
+      <div className="my-4">
+        <Checkbox className="flex "
           label="Same As Above"
           {...register("same_as_above")}
         />
@@ -79,33 +104,53 @@ export const EmployeeAddressStep = ({
           error={errors.permanent_address_line2?.message}
           {...register("permanent_address_line2")}
         />
-        <Select
-          label="Country"
-          required
-          options={countries}
-          placeholder="Select City"
-          error={errors.permanent_country?.message}
-        />
-        <Select
-          label="State"
-          required
-          options={states}
-          placeholder="Select State"
-          error={errors.permanent_state?.message}
-        />
         <Controller
           control={control}
-          name="permanent_city"
-          render={() => (
+          name="permanent_country"
+          render={({ field, fieldState }) => (
             <Select
-              label="city"
+              label="Country"
               required
-              options={cities}
-              placeholder="Select City"
-              error={errors.permanent_city?.message}
+              options={countries}
+              placeholder="Select Country"
+              onChange={field.onChange}
+              error={fieldState.error?.message}
             />
           )}
         ></Controller>
+
+        <Controller
+          control={control}
+          name="permanent_state"
+          render={({ field, fieldState }) => (
+            <Select
+              label="State"
+              required
+              options={states}
+              placeholder="Select State"
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}
+        ></Controller>
+        <Controller
+          control={control}
+          name="permanent_city"
+          render={({ field, fieldState }) => (
+            <Select
+              mode="searchable"
+              label="City"
+              options={cities}
+              value={field.value}
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}
+        ></Controller>
+        <Input label="Pincode" required
+          error={errors.permanent_pincode?.message}
+          {...register("permanent_pincode")}
+        />
       </div>
     </section>
   );

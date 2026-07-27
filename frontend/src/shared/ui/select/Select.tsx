@@ -136,10 +136,6 @@ function ComboboxSelect<T extends ComboboxValue = ComboboxValue>({
     ? groups.flatMap((g) => g.options)
     : options;
 
-  console.log("Current value:", value);
-  console.log("Current value type:", typeof value);
-
-  flatOptions.forEach((o) => console.log(o.value, typeof o.value));
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       {label && (

@@ -1,108 +1,194 @@
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Plus, Users, CheckCircle2, Pencil } from "lucide-react";
-import { useEmployees } from "../hooks/useEmployees";
-import { Button }            from "@/shared/ui/button/Button";
-import { Badge }             from "@/shared/ui/badge/Badge";
-import { TableRowSkeleton }  from "@/shared/ui/skeleton/Skeleton";
-import EmptyState            from "@/shared/ui/empty-state/EmptyState";
-import { EMPLOYMENT_TYPE_OPTIONS } from "../types/employee.type";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useForm, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Save, UserCheck } from "lucide-react";
+import { Button, StepNavigation } from "@/shared/ui";
+import { PageSpinner } from "@/shared/ui/spinner/Spinner";
+import { useEmployee, useUpdateEmployee } from "../hooks/useEmployees";
+import { employeeSchema, type EmployeeFormData } from "../schema/employee.schema";
+import { useStepWizard } from "@/shared/hooks/useStepWizard";
+import { EmployeePersonalStep } from "../forms/EmployeePersonalStep";
+import { EmployeeAddressStep } from "../forms/EmployeeAddressStep";
+import { EmployeeAccountDetailsStep } from "../forms/EmployeeAccountDetailsStep";
+import { EmployeeEmergencyStep } from "../forms/EmployeeEmergencyStep";
+import { EmployeeEmploymentStep } from "../forms/EmployeeEmploymentStep";
+import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
+import { EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
+import type { EmployeeStepProps } from "../types/employeeStep.type";
 
-const EmployeeListPage = () => {
-  const { data: employees = [], isLoading } = useEmployees();
-  const [searchParams] = useSearchParams();
-  const justCreatedId = Number(searchParams.get("created")) || 0;
-  const justUpdatedId = Number(searchParams.get("updated")) || 0;
+const STEP_COMPONENTS = {
+  personal: EmployeePersonalStep,
+  address: EmployeeAddressStep,
+  employment: EmployeeEmploymentStep,
+  account_details: EmployeeAccountDetailsStep,
+  emergency: EmployeeEmergencyStep,
+} satisfies Record<string, React.ComponentType<EmployeeStepProps>>;
+
+// Editing an EXISTING employee — free navigation between sections via the
+// step nav, each section has its own "Update Section" button that saves
+// just that section's fields and stays put (never forces you to the
+// Review tab), plus a single combined "Update All" action on Review for
+// convenience once everything's been checked.
+const EmployeeEditPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const employeeId = Number(id);
+
+  const { data: employee, isLoading, error } = useEmployee(employeeId);
+  const updateEmployee = useUpdateEmployee();
+  const [savedStepKey, setSavedStepKey] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+
+  const form = useForm<EmployeeFormData>({
+    resolver: zodResolver(employeeSchema) as Resolver<EmployeeFormData>,
+  });
+  const { register, handleSubmit, reset, getValues, control, formState: { errors } } = form;
+
+  // Existing, presumably-valid record — every section starts "Completed"
+  // rather than "Pending", since there's nothing left to finish; errors
+  // only show up once the user actually changes something invalid.
+  const wizard = useStepWizard({
+    steps: EMPLOYEE_FORM_STEPS,
+    mode: "edit",
+    form,
+    initialCompletedSteps: EMPLOYEE_FORM_STEPS.map((s) => s.key),
+  });
+
+  const stepProps: EmployeeStepProps = { register, control, errors };
+
+  useEffect(() => {
+    if (!employee) return;
+    reset(employee);
+  }, [employee, reset]);
+
+  const handleSaveStep = () => {
+    setMutationError(null);
+    setSavedStepKey(null);
+    wizard.saveStep(async (stepKey, values) => {
+      await updateEmployee.mutateAsync(
+        { id: employeeId, data: values },
+        {
+          onError: (error) => {
+            setMutationError(error instanceof Error ? error.message : "Unable to save this section.");
+          },
+        },
+      );
+      setSavedStepKey(stepKey);
+    });
+  };
+
+  const handleUpdateAll = handleSubmit((data) => {
+    setMutationError(null);
+    updateEmployee.mutate(
+      { id: employeeId, data },
+      {
+        onSuccess: () => navigate(`/employees?updated=${employeeId}`),
+        onError: (error) => {
+          setMutationError(error instanceof Error ? error.message : "Unable to update employee.");
+        },
+      },
+    );
+  });
+
+  if (isLoading) return <PageSpinner />;
+  if (error || !employee) {
+    return (
+      <div className="flex h-64 items-center justify-center text-slate-500 dark:text-navy-300">
+        Employee not found.
+      </div>
+    );
+  }
+
+  const renderStep = () => {
+    if (wizard.currentStepKey === "review") {
+      return (
+        <EmployeeReviewStep
+          values={getValues()}
+          onEditSection={wizard.goToStep}
+          errorSectionKeys={wizard.errorSteps}
+        />
+      );
+    }
+    const StepComponent = STEP_COMPONENTS[wizard.currentStepKey as keyof typeof STEP_COMPONENTS];
+    return StepComponent ? <StepComponent {...stepProps} /> : null;
+  };
+
+  const isReview = wizard.currentStepKey === "review";
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">Employees</h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
-            {employees.length} employee{employees.length !== 1 ? "s" : ""} onboarded
-          </p>
-        </div>
-        <Button onClick={() => navigate("/employees/new")} leftIcon={<Plus className="size-4" />}>
-          Add Employee
-        </Button>
+      <div>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">
+          Edit Employee — {employee.first_name} {employee.last_name}
+        </h2>
+        <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
+          Jump to any section directly. Save a section on its own, or review everything and update all at once.
+        </p>
       </div>
 
-      {justCreatedId > 0 && (
-        <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-          <CheckCircle2 className="size-4 shrink-0" />
-          Employee created successfully.
-        </div>
-      )}
-      {justUpdatedId > 0 && (
-        <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-          <CheckCircle2 className="size-4 shrink-0" />
-          Employee updated successfully.
+      {mutationError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
+          {mutationError}
         </div>
       )}
 
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="is-hoverable w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-150 dark:border-navy-600">
-                {["Employee", "Department", "Designation", "Type", "Joining Date", "Source", ""].map((h) => (
-                  <th key={h} className={`whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-navy-300 ${h === "" ? "text-right" : "text-left"}`}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-navy-600">
-              {isLoading
-                ? Array.from({ length: 3 }).map((_, i) => <TableRowSkeleton key={i} cols={7} />)
-                : employees.length === 0
-                ? (
-                  <tr><td colSpan={7}>
-                    <EmptyState icon={Users} title="No employees yet"
-                      description="Employees onboarded from the recruitment flow, or added directly, will appear here." />
-                  </td></tr>
-                )
-                : employees.map((e) => (
-                  <tr
-                    key={e.id}
-                    className={e.id === justCreatedId || e.id === justUpdatedId ? "bg-success/5" : undefined}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-slate-800 dark:text-navy-100">{e.first_name} {e.last_name}</div>
-                      <div className="text-xs text-slate-400 dark:text-navy-400">{e.employee_code} · {e.email}</div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{e.department}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{e.designation}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {EMPLOYMENT_TYPE_OPTIONS.find((o) => o.value === e.employment_type)?.label ?? e.employment_type}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-navy-400">
-                      {new Date(e.date_of_joining).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                    </td>
-                    <td className="px-4 py-3">
-                      {e.source_candidate_id
-                        ? <Badge label="Recruitment" variant="primary" />
-                        : <Badge label="Direct" variant="default" />}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/employees/${e.id}/edit`)}
-                        leftIcon={<Pencil className="size-3.5" />}
-                      >
-                        Edit
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+      <StepNavigation
+        steps={EMPLOYEE_FORM_STEPS}
+        mode="edit"
+        currentStepKey={wizard.currentStepKey}
+        completedSteps={wizard.completedSteps}
+        errorSteps={wizard.errorSteps}
+        onStepClick={(key) => {
+          setSavedStepKey(null);
+          wizard.goToStep(key);
+        }}
+      />
+
+      <form onSubmit={(e) => e.preventDefault()} noValidate className="space-y-5">
+        {renderStep()}
+
+        {savedStepKey === wizard.currentStepKey && !isReview && (
+          <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
+            Section saved.
+          </div>
+        )}
+
+        <div className="flex flex-wrap justify-between gap-3 border-t border-slate-100 pt-5 dark:border-navy-700">
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={wizard.goBack} disabled={wizard.isFirstStep}>
+              Back
+            </Button>
+            {!wizard.isLastStep && (
+              <Button type="button" variant="primary" onClick={wizard.goNext}>
+                Next
+              </Button>
+            )}
+          </div>
+
+          {isReview ? (
+            <Button
+              type="button"
+              onClick={handleUpdateAll}
+              isLoading={updateEmployee.isPending}
+              leftIcon={<UserCheck className="size-4" />}
+            >
+              Update All
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handleSaveStep}
+              isLoading={updateEmployee.isPending}
+              leftIcon={<Save className="size-4" />}
+            >
+              Update Section
+            </Button>
+          )}
         </div>
-      </div>
+      </form>
     </div>
   );
 };
 
-export default EmployeeListPage;
+export default EmployeeEditPage;

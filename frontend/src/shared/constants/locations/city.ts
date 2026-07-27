@@ -19,17 +19,17 @@ export const CITY_OPTIONS: readonly (SelectOption<number> & {
     stateValue: 1,
   },
   {
-    value: 1,
+    value: 4,
     label: "Mumbai",
     stateValue: 2,
   },
   {
-    value: 2,
+    value: 5,
     label: "Navi Mumbai",
     stateValue: 2,
   },
   {
-    value: 3,
+    value: 6,
     label: "Palghar",
     stateValue: 2,
   },

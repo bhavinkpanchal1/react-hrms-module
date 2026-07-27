@@ -22,6 +22,13 @@ import type { EmployeeStepProps } from "../types/employeeStep.type";
 
 const emptyDefaults: Partial<EmployeeFormData> = {
   first_name: "", last_name: "", email: "", phone: "",
+  corresponding_country: 0,
+  corresponding_state: 0,
+  corresponding_city: 0,
+
+  permanent_country: 0,
+  permanent_state: 0,
+  permanent_city: 0,
   employment_type: "full_time",
   same_as_above: false,
   clockin_remotely: false,
@@ -154,6 +161,8 @@ const EmployeeCreatePage = () => {
     return StepComponent ? <StepComponent {...stepProps} /> : null;
   };
 
+  
+
   return (
     <div className="space-y-5">
       <div>
@@ -189,9 +198,12 @@ const EmployeeCreatePage = () => {
           <Button type="button" variant="outline" onClick={wizard.goBack} disabled={wizard.isFirstStep}>
             Back
           </Button>
+          
+
+          
 
           {!wizard.isLastStep ? (
-            <Button type="button" onClick={wizard.goNext}>
+            <Button type="button" className="" onClick={wizard.goNext}>
               Next
             </Button>
           ) : (
