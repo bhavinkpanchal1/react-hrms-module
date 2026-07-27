@@ -1,6 +1,9 @@
 import { cn } from "@/shared/lib/cn";
 import { Button } from "@/shared/ui";
 import { Moon, Sun } from "lucide-react";
+import { useClockIn } from "@/modules/attendance/hooks/useAttendance";
+import { useCurrentPosition } from "@/modules/attendance/hooks/useCurrentPosition";
+import toast from "react-hot-toast";
 
 interface TopHeaderProps {
   isSidebarOpen: boolean;
@@ -15,6 +18,32 @@ export const TopHeader = ({
   isDark,
   onToggleTheme,
 }: TopHeaderProps) => {
+  const clockIn = useClockIn();
+
+  const {
+    position,
+    refreshLocation,
+    loading: locationLoading,
+  } = useCurrentPosition();
+
+  const handleClockIn = async () => {
+    try {
+      if (!position) {
+        await refreshLocation();
+        return;
+      }
+
+      await clockIn.mutateAsync({
+        latitude: position.lat,
+        longitude: position.lng,
+      });
+
+      toast.success("Clock In Successful");
+    } catch (error) {
+      console.error(error);
+      toast.error("Clock In Failed");
+    }
+  };
   return (
     <header
       className={cn(
@@ -26,7 +55,7 @@ export const TopHeader = ({
         "transition-all duration-[250ms]",
         // On xl, shrink further when panel is open
         isSidebarOpen &&
-          "xl:w-[calc(100%-(var(--main-sidebar-width)+var(--sidebar-panel-width)))]",
+        "xl:w-[calc(100%-(var(--main-sidebar-width)+var(--sidebar-panel-width)))]",
       )}
     >
       <div className="flex h-full items-center justify-between px-[var(--margin-x)]">
@@ -36,31 +65,35 @@ export const TopHeader = ({
           className="flex flex-col justify-center space-y-1.5 text-primary dark:text-accent-light/80 size-7 cursor-pointer"
           aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"}
         >
-         {/* Animated hamburger — 3 bars → X when open */}
-        <span
-          className={cn(
-            'block h-0.5 bg-current transition-all duration-[250ms]',
-            isSidebarOpen ? 'w-[11px] translate-x-2 -rotate-45' : 'w-5'
-          )}
-        />
-        <span
-          className={cn(
-            'block h-0.5 w-3 bg-current transition-all duration-[250ms]',
-            isSidebarOpen && 'hidden'
-          )}
-        />
-        <span
-          className={cn(
-            'block h-0.5 bg-current transition-all duration-[250ms]',
-            isSidebarOpen ? 'w-[11px] translate-x-2 rotate-45' : 'w-5'
-          )}
-        />
+          {/* Animated hamburger — 3 bars → X when open */}
+          <span
+            className={cn(
+              'block h-0.5 bg-current transition-all duration-[250ms]',
+              isSidebarOpen ? 'w-[11px] translate-x-2 -rotate-45' : 'w-5'
+            )}
+          />
+          <span
+            className={cn(
+              'block h-0.5 w-3 bg-current transition-all duration-[250ms]',
+              isSidebarOpen && 'hidden'
+            )}
+          />
+          <span
+            className={cn(
+              'block h-0.5 bg-current transition-all duration-[250ms]',
+              isSidebarOpen ? 'w-[11px] translate-x-2 rotate-45' : 'w-5'
+            )}
+          />
         </button>
 
         {/* RIGHT — actions */}
         <div className="flex items-center gap-1">
-          <Button className="px-2">
-            Clock In
+          <Button
+            className="px-2"
+            onClick={handleClockIn}
+            disabled={clockIn.isPending || locationLoading}
+          >
+            {clockIn.isPending ? "Clocking..." : "Clock In"}
           </Button>
           <button
             onClick={onToggleTheme}
@@ -69,16 +102,16 @@ export const TopHeader = ({
           >
             {isDark ? (
               <Moon className="h-6 text-amber-400 fill-amber-400" />
-              
+
             ) : (
               <Sun className="size-6 text-amber-400 fill-amber-400" />
             )}
           </button>
         </div>
 
-         
 
-        
+
+
       </div>
     </header>
   );

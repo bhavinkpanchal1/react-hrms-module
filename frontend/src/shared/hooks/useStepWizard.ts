@@ -77,6 +77,7 @@ export function useStepWizard<TFieldValues extends FieldValues>({
     [steps, form, markStep],
   );
 
+
   const goNext = useCallback(async () => {
     const valid = await validateStep(currentStepKey);
     // A failing step blocks Next in both modes — edit mode's free
