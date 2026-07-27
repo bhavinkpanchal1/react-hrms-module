@@ -86,21 +86,6 @@ export const EmployeePersonalStep = ({
               />
             )}
           />
-          <Controller
-            control={control}
-            name="dob"
-            render={({ field, fieldState }) => (
-              <DatePicker
-                mode="date"
-                minDate={getDateYearsAgo(100)}
-                maxDate={getDateYearsAgo(18)}
-                label="Date of Birth"
-                value={field.value}
-                onChange={field.onChange}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
 
           <Select
             label="Gender"

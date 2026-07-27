@@ -12,6 +12,9 @@ const EmployeeListPage = lazy(
 const EmployeeCreatePage = lazy(
   () => import("@/modules/employee/pages/EmployeeCreatePage"),
 );
+const EmployeeEditPage = lazy(
+  () => import("@/modules/employee/pages/EmployeeEditPage"),
+);
 
 // Recruitment — ALL routes lazy-loaded correctly
 const JobsPage = lazy(() => import("@/modules/recruitment/pages/JobsPage"));
@@ -50,8 +53,6 @@ const lazy_ = (el: React.ReactNode) => (
 );
 
 // ── Router ────────────────────────────────────────────────────────
-// The router is intentionally colocated with its small loading component.
-// eslint-disable-next-line react-refresh/only-export-components
 export const router = createBrowserRouter([
   // Public
   {
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
       // Employee
       { path: "/employees", element: lazy_(<EmployeeListPage />) },
       { path: "/employees/new", element: lazy_(<EmployeeCreatePage />) },
+      { path: "/employees/:id/edit", element: lazy_(<EmployeeEditPage />) },
 
       // Recruitment — 5 routes, all correctly lazy-loaded
       { path: "/recruitment/jobs", element: lazy_(<JobsPage />) },

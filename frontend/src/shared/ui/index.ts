@@ -21,5 +21,5 @@ export type { DatePickerProps, DatePickerMode, DateRangeValue } from './date-pic
 export { StepNavigation } from './step-navigation/StepNavigation';
 export type { StepNavigationProps } from './step-navigation/StepNavigation';
 export type { StepDefinition, StepStatus, StepNavigationMode } from './step-navigation/types';
-export {ReviewSummary} from './review-summary/Reviewsummary';
-export type { ReviewSummaryProps, ReviewSectionData, ReviewFieldItem } from './review-summary/Reviewsummary';
+export {ReviewSummary} from './review-summary/ReviewSummary';
+export type { ReviewSummaryProps, ReviewSectionData, ReviewFieldItem } from './review-summary/ReviewSummary';

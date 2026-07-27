@@ -65,7 +65,7 @@ export const CandidateBasicStep = ({ jobs }: CandidateBasicStepProps) => {
           type="tel"
           label="Phone Number"
           required
-          placeholder="+91 9876543210"
+          placeholder="9876543210"
           error={errors.phone?.message}
           {...register("phone")}
         />

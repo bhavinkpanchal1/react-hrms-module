@@ -20,7 +20,7 @@ export const EmployeeAddressStep = ({
   control,
   errors,
 }: EmployeeAddressStepprops) => {
-  const {countries} = useLocation();
+  const {countries, states, cities} = useLocation();
   return (
     <section className="card p-6">
       <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">
@@ -42,18 +42,21 @@ export const EmployeeAddressStep = ({
           label="Country"
           required
           options={countries}
+          placeholder="Select Country"
           error={errors.corresponding_country?.message}
         />
         <Select
           label="State"
           required
-          options={countries}
+          options={states}
+          placeholder="Select State"
           error={errors.corresponding_state?.message}
         />
         <Select
           label="city"
           required
-          options={countries}
+          options={cities}
+          placeholder="Select City"
           error={errors.corresponding_city?.message}
         />
       </div>
@@ -80,12 +83,14 @@ export const EmployeeAddressStep = ({
           label="Country"
           required
           options={countries}
+          placeholder="Select City"
           error={errors.permanent_country?.message}
         />
         <Select
           label="State"
           required
-          options={countries}
+          options={states}
+          placeholder="Select State"
           error={errors.permanent_state?.message}
         />
         <Controller
@@ -95,7 +100,8 @@ export const EmployeeAddressStep = ({
             <Select
               label="city"
               required
-              options={countries}
+              options={cities}
+              placeholder="Select City"
               error={errors.permanent_city?.message}
             />
           )}

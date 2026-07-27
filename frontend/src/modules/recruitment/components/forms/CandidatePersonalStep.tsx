@@ -2,13 +2,12 @@ import { useFormContext, Controller } from "react-hook-form";
 import type { CandidateFormData } from "../../schema/candidate.schema";
 import { Input, Select, DatePicker } from "@/shared/ui";
 import {
-  CITY_OPTIONS,
   GENDERS_OPTIONS,
   MARITAL_STATUS_OPTIONS,
-  STATE_OPTIONS,
 } from "../../constant/candidate";
 
 import { getDateYearsAgo } from "@/shared/utils/date";
+import { useLocation } from "@/shared/hooks/useLocation";
 
 export const CandidatePersonalStep = () => {
   const {
@@ -16,6 +15,8 @@ export const CandidatePersonalStep = () => {
     control,
     formState: { errors },
   } = useFormContext<CandidateFormData>();
+
+  const {countries,states, cities } = useLocation();
 
   return (
     <div className="space-y-6">
@@ -67,22 +68,36 @@ export const CandidatePersonalStep = () => {
         />
 
         {/* Country */}
-        <Select
-          options={COUNTRY_OPTIONS}
-          label="Country"
-          placeholder="Select Country"
-          error={errors.country_id?.message}
-          {...register("country_id")}
-        />
+        <Controller
+  control={control}
+  name="country_id"
+  render={({ field, fieldState }) => (
+    <Select
+      label="Country"
+      options={countries}
+      value={field.value}
+      onChange={field.onChange}
+      error={fieldState.error?.message}
+    />
+  )}
+/>
+        
 
         {/* State */}
-        <Select
-          options={STATE_OPTIONS}
-          label="State"
-          placeholder="Select State"
-          error={errors.state_id?.message}
-          {...register("state_id")}
-        />
+        <Controller
+  control={control}
+  name="country_id"
+  render={({ field, fieldState }) => (
+    <Select
+      label="State"
+      options={states}
+      value={field.value}
+      onChange={field.onChange}
+      error={fieldState.error?.message}
+    />
+  )}
+/>
+        
 
         {/* City */}
         <Controller
@@ -92,13 +107,13 @@ export const CandidatePersonalStep = () => {
             <Select
               mode="searchable"
               label="City"
-              options={CITY_OPTIONS}
+              options={cities}
               value={field.value}
               onChange={field.onChange}
               error={fieldState.error?.message}
             />
           )
-        }
+          }
         />
 
         {/* Pincode */}

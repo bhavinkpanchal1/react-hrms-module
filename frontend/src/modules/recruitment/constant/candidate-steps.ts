@@ -1,18 +1,7 @@
+import type { StepDefinition } from "@/shared/ui";
 import type { CandidateFormData } from "../schema/candidate.schema";
 
-export type StepState =
-  | "completed"
-  | "active"
-  | "pending";
-
-  export interface StepItem {
-  key: string;
-  title: string;
-  fields: (keyof CandidateFormData)[];
-}
-
-
-export const CANDIDATE_STEPS: StepItem[]= [
+export const CANDIDATE_STEPS: StepDefinition<CandidateFormData>[] = [
   {
     key: "basic",
     title: "Basic Information",
@@ -74,4 +63,4 @@ export const CANDIDATE_STEPS: StepItem[]= [
       "notes",
     ],
   },
-] as const;
+];

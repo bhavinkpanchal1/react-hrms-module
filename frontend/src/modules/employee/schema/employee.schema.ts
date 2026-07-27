@@ -62,9 +62,9 @@ export const employeeSchema = z.object({
   // ===========================
   corresponding_address_line1: z.string().trim().min(1, "Address is required"),
   corresponding_address_line2: z.string().optional(),
-  corresponding_country: z.string().min(1, "Select Country"),
-  corresponding_state: z.string().min(1, "Select State"),
-  corresponding_city: z.string().min(1, "Select City"),
+  corresponding_country: z.coerce.number().min(1, "Select Country"),
+  corresponding_state: z.coerce.number().min(1, "Select State"),
+  corresponding_city: z.coerce.number().min(1, "Select City"),
   corresponding_pincode: z.string().regex(/^\d{6}$/, "Enter valid pincode"),
 
   // ===========================
@@ -73,9 +73,9 @@ export const employeeSchema = z.object({
   same_as_above: z.boolean().default(false),
   permanent_address_line1: z.string(),
   permanent_address_line2: z.string().optional(),
-  permanent_country: z.string().min(1, "Select Country"),
-  permanent_state: z.string().min(1, "Select State"),
-  permanent_city: z.string().min(1, "Select City"),
+  permanent_country: z.coerce.number().min(1, "Select Country"),
+  permanent_state: z.coerce.number().min(1, "Select State"),
+  permanent_city: z.coerce.number().min(1, "Select City"),
   permanent_pincode: z.string().regex(/^\d{6}$/, "Enter valid pincode"),
 
   // ===========================

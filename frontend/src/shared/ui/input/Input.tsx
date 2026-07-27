@@ -17,8 +17,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, hint, leftIcon, rightIcon, required, textTransform, allowPattern, onChange, className, ...props }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let value = e.target.value;
+      if(textTransform){
 
-      value = (textTransform === 'uppercase') ? value.toUpperCase() : value.toLowerCase();
+        value = (textTransform === 'uppercase') ? value.toUpperCase() : value.toLowerCase();
+      }
 
       //Remove invalid characters
       if (allowPattern) {

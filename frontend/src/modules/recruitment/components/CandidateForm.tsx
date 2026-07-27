@@ -1,21 +1,15 @@
-import {
-  FormProvider,
-  useForm,
-  type Resolver,
-  type SubmitHandler,
-} from "react-hook-form";
+import { FormProvider, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   candidateSchema,
   type CandidateFormData,
 } from "../schema/candidate.schema";
-import { Button } from "@/shared/ui/button/Button";
+import { Button, StepNavigation } from "@/shared/ui";
+import { useStepWizard } from "@/shared/hooks/useStepWizard";
 import type { Job } from "../types";
-import { useState } from "react";
 import { CANDIDATE_STEPS } from "../constant/candidate-steps";
 import { CandidateBasicStep } from "./forms/CandidateBasicStep";
 import { CandidatePersonalStep } from "./forms/CandidatePersonalStep";
-import { Stepper } from "@/shared/ui/stepper/Stepper";
 import { CandidateProfessionalStep } from "./forms/CandidateProfessionalStep";
 import { CandidateEducationalStep } from "./forms/CandidateEducationalStep";
 import { CandidateAdditionalStep } from "./forms/CandidateAdditionalStep";
@@ -25,9 +19,12 @@ interface CandidateFormProps {
   onSubmit: SubmitHandler<CandidateFormData>;
   isSubmitting?: boolean;
   defaultValues?: Partial<CandidateFormData>;
-  mode?: "create" | "edit"; 
+  mode?: "create" | "edit";
 }
 
+// Uses the same generic StepNavigation + useStepWizard as the Employee
+// wizard — one stepper implementation shared across the app instead of
+// each multi-step form rolling its own.
 export const CandidateForm = ({
   jobs,
   onSubmit,
@@ -35,72 +32,57 @@ export const CandidateForm = ({
   defaultValues,
   mode = "create",
 }: CandidateFormProps) => {
-  const methods = useForm<CandidateFormData>({
-    resolver: zodResolver(candidateSchema) as Resolver<CandidateFormData>,
+  const form = useForm<CandidateFormData>({
+    resolver: zodResolver(candidateSchema),
     defaultValues: {
       notes: "",
       ...defaultValues,
     },
   });
 
-  const [step, setStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const handleFinalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if(step !== CANDIDATE_STEPS.length -1) return;
-    methods.handleSubmit(onSubmit)(e);
-  }
-
-
-  const handleStepsValidation = async () => {
-    const fields = CANDIDATE_STEPS[step].fields;
-
-    const isValid = await methods.trigger(
-      fields as (keyof CandidateFormData)[]
-    );
-    
-    if(!isValid) return;
-
-    setCompletedSteps(prev => 
-       prev.includes(step) ? prev : [...prev, step]
-    );
-
-    if (step < CANDIDATE_STEPS.length - 1) {
-    setStep(step + 1);
-  }
-  }
+  const wizard = useStepWizard({
+    steps: CANDIDATE_STEPS,
+    mode,
+    form,
+    initialCompletedSteps: mode === "edit" ? CANDIDATE_STEPS.map((s) => s.key) : [],
+  });
 
   return (
-    <FormProvider {...methods}>
-      <form onSubmit={handleFinalSubmit}>
-        {/* Stepper */}
-        <Stepper currentStep={step} steps={CANDIDATE_STEPS}  completedSteps={completedSteps}/>
+    <FormProvider {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <StepNavigation
+          steps={CANDIDATE_STEPS}
+          mode={mode}
+          currentStepKey={wizard.currentStepKey}
+          completedSteps={wizard.completedSteps}
+          errorSteps={wizard.errorSteps}
+          onStepClick={wizard.goToStep}
+        />
 
         {/* Step Content */}
-        {step === 0 && <CandidateBasicStep jobs={jobs} />}
-
-        {/* future */}
-        {step === 1 && <CandidatePersonalStep />}
-        {step === 2 && <CandidateProfessionalStep />}
-        {step === 3 && <CandidateEducationalStep />}
-        {step === 4 && <CandidateAdditionalStep/>}
+        {wizard.currentStepKey === "basic" && <CandidateBasicStep jobs={jobs} />}
+        {wizard.currentStepKey === "personal" && <CandidatePersonalStep />}
+        {wizard.currentStepKey === "professional" && <CandidateProfessionalStep />}
+        {wizard.currentStepKey === "education" && <CandidateEducationalStep />}
+        {wizard.currentStepKey === "additional" && <CandidateAdditionalStep />}
 
         {/* Navigation */}
-        <div className="mt-6 flex justify-between">
+        <div className="flex justify-between border-t border-slate-100 pt-5 dark:border-navy-700">
           <Button
             type="button"
-            disabled={step === 0}
-            onClick={() => setStep((s) => s - 1)}
+            variant="outline"
+            disabled={wizard.isFirstStep}
+            onClick={wizard.goBack}
           >
             Previous
-          </Button> 
+          </Button>
 
-          {step === CANDIDATE_STEPS.length - 1 ? (
-            <Button type="button" isLoading={isSubmitting} onClick={handleFinalSubmit}>
-              {mode === "edit" ? "Update Candidate" : "Create Candidate"}
+          {wizard.isLastStep ? (
+            <Button type="submit" isLoading={isSubmitting}>
+              {mode === "edit" ? "Update Candidate" : "Add Candidate"}
             </Button>
           ) : (
-            <Button type="button" onClick={handleStepsValidation}>
+            <Button type="button" onClick={wizard.goNext}>
               Next
             </Button>
           )}
