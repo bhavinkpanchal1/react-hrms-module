@@ -1,9 +1,15 @@
 import { cn } from "@/shared/lib/cn";
 import { Button } from "@/shared/ui";
 import { Moon, Sun } from "lucide-react";
-import { useClockIn } from "@/modules/attendance/hooks/useAttendance";
+import {
+  useClockIn,
+  useClockOut,
+  useTodayAttendance,
+} from "@/modules/attendance/hooks/useAttendance";
 import { useCurrentPosition } from "@/modules/attendance/hooks/useCurrentPosition";
 import toast from "react-hot-toast";
+import { useAttendanceTimer } from "@/modules/attendance/hooks/useAttendanceTimer";
+
 
 interface TopHeaderProps {
   isSidebarOpen: boolean;
@@ -19,6 +25,8 @@ export const TopHeader = ({
   onToggleTheme,
 }: TopHeaderProps) => {
   const clockIn = useClockIn();
+  const clockOut = useClockOut();
+  const { data: todayAttendance } = useTodayAttendance();
 
   const {
     position,
@@ -26,24 +34,46 @@ export const TopHeader = ({
     loading: locationLoading,
   } = useCurrentPosition();
 
-  const handleClockIn = async () => {
+  const isClockedIn = !!todayAttendance?.clock_in_at && !todayAttendance?.clock_out_at;
+  const { formattedTime} = useAttendanceTimer({
+    clockInAt: todayAttendance?.clock_in_at ?? null,
+    clockOutAt: todayAttendance?.clock_out_at ?? null,
+  });
+
+  const handleAttendance = async () => {
+    if (!position) {
+      await refreshLocation();
+      return;
+    }
+
     try {
-      if (!position) {
-        await refreshLocation();
-        return;
+      if (isClockedIn) {
+        await clockOut.mutateAsync({
+          latitude: position.lat,
+          longitude: position.lng,
+        });
+        toast.success("Clock Out Successful");
+      } else {
+        await clockIn.mutateAsync({
+          latitude: position.lat,
+          longitude: position.lng,
+        });
+
+        toast.success("Clock In Successful");
       }
-
-      await clockIn.mutateAsync({
-        latitude: position.lat,
-        longitude: position.lng,
-      });
-
-      toast.success("Clock In Successful");
     } catch (error) {
       console.error(error);
-      toast.error("Clock In Failed");
+      toast.error(
+        isClockedIn ? "Clock Out Failed" : "Clock In Failed",
+      );
     }
   };
+  console.log({
+    clockInAt: todayAttendance?.clock_in_at,
+    clockOutAt: todayAttendance?.clock_out_at,
+    isClockedIn,
+  });
+
   return (
     <header
       className={cn(
@@ -68,32 +98,44 @@ export const TopHeader = ({
           {/* Animated hamburger — 3 bars → X when open */}
           <span
             className={cn(
-              'block h-0.5 bg-current transition-all duration-[250ms]',
-              isSidebarOpen ? 'w-[11px] translate-x-2 -rotate-45' : 'w-5'
+              "block h-0.5 bg-current transition-all duration-[250ms]",
+              isSidebarOpen ? "w-[11px] translate-x-2 -rotate-45" : "w-5",
             )}
           />
           <span
             className={cn(
-              'block h-0.5 w-3 bg-current transition-all duration-[250ms]',
-              isSidebarOpen && 'hidden'
+              "block h-0.5 w-3 bg-current transition-all duration-[250ms]",
+              isSidebarOpen && "hidden",
             )}
           />
           <span
             className={cn(
-              'block h-0.5 bg-current transition-all duration-[250ms]',
-              isSidebarOpen ? 'w-[11px] translate-x-2 rotate-45' : 'w-5'
+              "block h-0.5 bg-current transition-all duration-[250ms]",
+              isSidebarOpen ? "w-[11px] translate-x-2 rotate-45" : "w-5",
             )}
           />
         </button>
 
         {/* RIGHT — actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {isClockedIn && (
+            <span className="text-sm font-medium ">{formattedTime}</span>
+          )}
           <Button
-            className="px-2"
-            onClick={handleClockIn}
-            disabled={clockIn.isPending || locationLoading}
+            onClick={handleAttendance}
+            disabled={
+              locationLoading ||
+              clockIn.isPending ||
+              clockOut.isPending
+            }
           >
-            {clockIn.isPending ? "Clocking..." : "Clock In"}
+            {clockIn.isPending
+              ? "Clocking In..."
+              : clockOut.isPending
+                ? "Clocking Out..."
+                : isClockedIn
+                  ? "Clock Out"
+                  : "Clock In"}
           </Button>
           <button
             onClick={onToggleTheme}
@@ -102,16 +144,11 @@ export const TopHeader = ({
           >
             {isDark ? (
               <Moon className="h-6 text-amber-400 fill-amber-400" />
-
             ) : (
               <Sun className="size-6 text-amber-400 fill-amber-400" />
             )}
           </button>
         </div>
-
-
-
-
       </div>
     </header>
   );

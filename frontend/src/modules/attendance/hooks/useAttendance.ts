@@ -1,37 +1,31 @@
 import { queryKeys } from "@/shared/constants/query-keys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  clockIn,
-  clockOut,
-  createRegularization,
-  getAttendanceCalendar,
-  getAttendanceHistory,
-  getTodayAttendance,
-} from "../api/attendance.api";
+import { attendanceApi } from "../api/attendance.api";
 
 export const useTodayAttendance = () =>
   useQuery({
     queryKey: queryKeys.attendance.today(),
-    queryFn: getTodayAttendance,
+    queryFn: attendanceApi.getTodayAttendance,
   });
 
 export const useAttendanceHistory = (month: number, year: number) =>
   useQuery({
     queryKey: queryKeys.attendance.history(month, year),
-    queryFn: () => getAttendanceHistory(month, year),
+    queryFn: () => attendanceApi.getAttendanceHistory(month, year),
   });
 
 export const useAttendanceCalendar = (month: number, year: number) =>
   useQuery({
     queryKey: queryKeys.attendance.calendar(month, year),
-    queryFn: () => getAttendanceCalendar(month, year),
+    queryFn: () => attendanceApi.getAttendanceCalendar(month, year),
   });
 
 export const useClockIn = () => {
   const queryClient = useQueryClient();
+  
 
   return useMutation({
-    mutationFn: clockIn,
+    mutationFn: attendanceApi.clockIn,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.attendance.today(),
@@ -47,7 +41,7 @@ export const useClockOut = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: clockOut,
+    mutationFn: attendanceApi.clockOut,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.attendance.today(),
@@ -63,7 +57,7 @@ export const useCreateRegularization = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createRegularization,
+    mutationFn: attendanceApi.createRegularization,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.attendance.regularizations(),
@@ -74,5 +68,3 @@ export const useCreateRegularization = () => {
     },
   });
 };
-
-

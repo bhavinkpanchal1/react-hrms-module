@@ -18,16 +18,16 @@ export interface GeoPoint {
 export interface AttendanceRecord {
   id: number;
   employee_id: number;
-  attendance_date: string; // YYYY-MM-DD
-  clock_in_at?: string;
-  clock_out_at?: string;
-  clock_in_location?: GeoPoint;
-  clock_out_location?: GeoPoint;
-  clock_method?: ClockMethod;
+  attendance_date: string;
+  clock_in_at: string | null;
+  clock_out_at: string | null;
+  clock_in_location: GeoPoint | null;
+  clock_out_location: GeoPoint | null;
+  clock_method: ClockMethod | null;
   status: AttendanceStatus;
-  work_hours?: number;
-  regularization_reason?: string;
-  regularization_requested_at?: string;
+  work_hours: number | null;
+  regularization_reason: string | null;
+  regularization_requested_at: string | null;
 }
 
 export interface ClockInPayload {
