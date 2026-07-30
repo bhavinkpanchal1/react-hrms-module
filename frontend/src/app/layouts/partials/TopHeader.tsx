@@ -35,7 +35,7 @@ export const TopHeader = ({
   } = useCurrentPosition();
 
   const isClockedIn = !!todayAttendance?.clock_in_at && !todayAttendance?.clock_out_at;
-  const { formattedTime} = useAttendanceTimer({
+  const { formattedTimer} = useAttendanceTimer({
     clockInAt: todayAttendance?.clock_in_at ?? null,
     clockOutAt: todayAttendance?.clock_out_at ?? null,
   });
@@ -119,7 +119,7 @@ export const TopHeader = ({
         {/* RIGHT — actions */}
         <div className="flex items-center gap-2">
           {isClockedIn && (
-            <span className="text-sm font-medium ">{formattedTime}</span>
+            <span className="text-sm font-medium ">{formattedTimer}</span>
           )}
           <Button
             onClick={handleAttendance}

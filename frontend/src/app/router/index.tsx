@@ -40,6 +40,7 @@ const InterviewsPage = lazy(
   () => import("@/modules/recruitment/pages/InterviewsPage"),
 );
 const OffersPage = lazy(() => import("@/modules/recruitment/pages/OffersPage"));
+const AttendancePage = lazy(() => import("@/modules/attendance/pages/AttendancePage"));
 
 // ── Suspense wrapper ──────────────────────────────────────────────
 export const PageLoader = () => (
@@ -106,7 +107,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/attendance",
-        element: <div className="card p-6">Attendance — coming soon</div>,
+        element: lazy_(<AttendancePage />),
       },
       {
         path: "/leave",

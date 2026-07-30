@@ -142,7 +142,7 @@
     }
   }
   @media (min-width: 1280px) {
-    :root { --margin-x: 4rem; }
+    :root { --margin-x: 2rem; }
   }
 
   /* Borders default to slate-200 (matches Lineone *,::before,::after rule) */

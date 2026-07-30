@@ -22,7 +22,7 @@ function DashboardLayout() {
 
       {/* ── Nav Panel (open on desktop, toggle on mobile) ── */}
       <ASideNavPanel />
-      
+
       {/* ── Mobile overlay ── */}
       {isPanelOpen && (
         <div
@@ -31,27 +31,26 @@ function DashboardLayout() {
         />
       )}
 
-      
       <div
         className={cn(
           "flex flex-1 flex-col transition-all duration-[250ms]",
           "md:ml-[var(--main-sidebar-width)]",
-          isPanelOpen && "xl:ml-[calc(var(--main-sidebar-width)+var(--sidebar-panel-width))]"
+          isPanelOpen &&
+            "xl:ml-[calc(var(--main-sidebar-width)+var(--sidebar-panel-width))]",
         )}
       >
-   
         {/* Top header */}
         <TopHeader
-            isSidebarOpen={isPanelOpen}
-            onToggleSidebar={togglePanel}
-            isDark={isDark}
-            onToggleTheme={toggleTheme}
-          />
+          isSidebarOpen={isPanelOpen}
+          onToggleSidebar={togglePanel}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+        />
 
         <main
           className={cn(
             "mt-[var(--header-height)] flex-1 p-[var(--margin-x)]",
-            "transition-[padding] duration-[250ms]"
+            "transition-[padding] duration-[250ms]",
           )}
         >
           <Outlet />
