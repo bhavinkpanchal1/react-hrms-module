@@ -1,6 +1,6 @@
 export const COMPANY_OPTIONS = [
   {
-    value: "odysseus_solutions",
-    label: "Odysseus Solutions Pvt. Ltd.",
+    value: "techom_technology",
+    label: "Techoma Technology Pvt. Ltd.",
   },
 ] as const;

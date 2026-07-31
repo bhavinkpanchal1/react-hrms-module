@@ -14,7 +14,7 @@ import { EmployeeAccountDetailsStep } from "../forms/EmployeeAccountDetailsStep"
 import { EmployeeEmergencyStep } from "../forms/EmployeeEmergencyStep";
 import { EmployeeEmploymentStep } from "../forms/EmployeeEmploymentStep";
 import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
-import { EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
+import { EMPLOYEE_EDIT_FORM_STEPS, EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
 import type { EmployeeStepProps } from "../types/employeeStep.type";
 
 const STEP_COMPONENTS = {
@@ -49,7 +49,7 @@ const EmployeeEditPage = () => {
   // rather than "Pending", since there's nothing left to finish; errors
   // only show up once the user actually changes something invalid.
   const wizard = useStepWizard({
-    steps: EMPLOYEE_FORM_STEPS,
+    steps: EMPLOYEE_EDIT_FORM_STEPS,
     mode: "edit",
     form,
     initialCompletedSteps: EMPLOYEE_FORM_STEPS.map((s) => s.key),
@@ -134,7 +134,7 @@ const EmployeeEditPage = () => {
       )}
 
       <StepNavigation
-        steps={EMPLOYEE_FORM_STEPS}
+        steps={EMPLOYEE_EDIT_FORM_STEPS}
         mode="edit"
         currentStepKey={wizard.currentStepKey}
         completedSteps={wizard.completedSteps}

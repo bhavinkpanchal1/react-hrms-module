@@ -4,6 +4,10 @@ import {
 } from "@/modules/recruitment/constant/candidate";
 import { isAgeBetween } from "@/shared/utils/validation";
 import { z } from "zod";
+import {
+  DOCUMENT_CATEGORY_VALUES,
+  DOCUMENT_TYPE_VALUES,
+} from "../types/document.type";
 
 export const employeeSchema = z.object({
   // ===========================
@@ -139,6 +143,21 @@ export const employeeSchema = z.object({
     .regex(/^[6-9]\d{9}$/, "Enter valid mobile number")
     .optional(),
   emergency_contact_relation: z.string().trim().optional(),
+
+  // ===========================
+  // Documents
+  // ===========================
+
+  document_category: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.enum(DOCUMENT_CATEGORY_VALUES).optional(),
+  ),
+  document_name: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.enum(DOCUMENT_TYPE_VALUES).optional(),
+  ),
+  document_description: z.string().trim().optional(),
+  file_url: z.url().optional(),
 });
 
 export type EmployeeFormData = z.infer<typeof employeeSchema>;
