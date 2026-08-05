@@ -145,7 +145,7 @@ export const employeeApi = {
       await delay();
       return [...mockEmployees];
     }
-    const r = await httpClient.get<{ results: Employee[] }>(API_ENDPOINTS.employees);
+    const r = await httpClient.get<{ results: Employee[] }>(API_ENDPOINTS.employees.list);
     return r.data.results;
   },
 

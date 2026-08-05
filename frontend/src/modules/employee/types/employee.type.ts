@@ -126,4 +126,4 @@ export interface Employee {
   created_by?: number;
   updated_by?: number;
   is_active: boolean;
-}
+}  

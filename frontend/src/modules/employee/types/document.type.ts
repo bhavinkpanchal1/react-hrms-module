@@ -161,3 +161,22 @@ export const DOCUMENT_CATEGORY_VALUES = DOCUMENT_CATEGORY_OPTIONS.map(
 export const DOCUMENT_TYPE_VALUES = DOCUMENT_TYPE_OPTIONS.map(
   (item) => item.value
 ) as [DocumentType, ...DocumentType[]];
+
+
+export interface EmployeeDocument {
+  id: number;
+  employee_id: number;
+
+  document_category: DocumentCategoryType;
+  document_name: DocumentType;
+
+  document_description?: string;
+
+  file_name: string;
+  file_url: string;
+  file_size: string;
+  file_type: string;
+
+  uploaded_at: string;
+  uploaded_by: string;
+}

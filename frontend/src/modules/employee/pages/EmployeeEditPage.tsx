@@ -16,6 +16,7 @@ import { EmployeeEmploymentStep } from "../forms/EmployeeEmploymentStep";
 import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
 import { EMPLOYEE_EDIT_FORM_STEPS, EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
 import type { EmployeeStepProps } from "../types/employeeStep.type";
+import EmployeeDocumentStep from "../forms/EmployeeDocumentStep";
 
 const STEP_COMPONENTS = {
   personal: EmployeePersonalStep,
@@ -23,6 +24,7 @@ const STEP_COMPONENTS = {
   employment: EmployeeEmploymentStep,
   account_details: EmployeeAccountDetailsStep,
   emergency: EmployeeEmergencyStep,
+  documents: EmployeeDocumentStep,
 } satisfies Record<string, React.ComponentType<EmployeeStepProps>>;
 
 // Editing an EXISTING employee — free navigation between sections via the

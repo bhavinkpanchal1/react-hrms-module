@@ -6,7 +6,9 @@ export const API_ENDPOINTS = {
     offers: "/recruitment/offers/",
     pipeline: "/recruitment/pipeline/",
   },
-  employees: "/employees/",
+  employees: {
+    list: "/employees/list",
+  },
   attendance: {
     today: "/attendance/today/",
     clockIn: "/attendance/clock-in/",

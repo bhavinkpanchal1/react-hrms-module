@@ -6,7 +6,7 @@ const NAV_GROUPS = [
   {
     label: "Core HR",
     items: [
-      { to: "/employees", label: "Employees" },
+      { to: "/employees/list/", label: "Employees" },
       { to: "/attendance", label: "Attendance" },
       { to: "/leave", label: "Leave" },
       { to: "/payroll", label: "Payroll" },

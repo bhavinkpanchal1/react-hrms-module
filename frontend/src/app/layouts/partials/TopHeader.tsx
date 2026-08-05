@@ -68,11 +68,6 @@ export const TopHeader = ({
       );
     }
   };
-  console.log({
-    clockInAt: todayAttendance?.clock_in_at,
-    clockOutAt: todayAttendance?.clock_out_at,
-    isClockedIn,
-  });
 
   return (
     <header

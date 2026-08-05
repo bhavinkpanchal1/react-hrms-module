@@ -83,7 +83,7 @@ export const STEP_MAP: Record<string, StepDefinition<EmployeeFormData>> = {
     ],
   },
 
-  document: {
+  documents: {
     key: "documents",
     title: "Documents",
     fields: ["document_category", "document_name", "document_description"],

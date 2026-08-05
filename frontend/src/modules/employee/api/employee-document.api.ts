@@ -1,0 +1,130 @@
+import { httpClient } from "@/shared/services/http/client";
+import type { EmployeeDocument } from "../types/document.type";
+import { API_ENDPOINTS } from "@/shared/constants/api-endpoints";
+
+const USE_MOCK = import.meta.env.VITE_USE_MOCK_API === "true";
+const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
+
+export const mockDocument: EmployeeDocument[] = [
+  {
+    id: 1,
+    employee_id: 1,
+    document_category: "resume",
+    document_name: "resume",
+    document_description: "Latest Resume",
+    file_name: "Bhavin_Panchal_Resume.pdf",
+    file_url: "/mock/documents/resume.pdf",
+    file_size: "1.8 MB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:00:00",
+    uploaded_by: "Employee",
+  },
+
+  {
+    id: 2,
+    employee_id: 1,
+    document_category: "kyc",
+    document_name: "aadhaar_card",
+    document_description: "Front & Back Copy",
+    file_name: "Aadhaar_Card.pdf",
+    file_url: "/mock/documents/aadhaar.pdf",
+    file_size: "650 KB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:05:00",
+    uploaded_by: "Employee",
+  },
+
+  {
+    id: 3,
+    employee_id: 1,
+    document_category: "kyc",
+    document_name: "pan_card",
+    document_description: "PAN Card",
+    file_name: "PAN_Card.pdf",
+    file_url: "/mock/documents/pan.pdf",
+    file_size: "420 KB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:06:00",
+    uploaded_by: "Employee",
+  },
+
+  {
+    id: 4,
+    employee_id: 1,
+    document_category: "educational",
+    document_name: "degree_certificate",
+    document_description: "Bachelor of Engineering",
+    file_name: "Degree_Certificate.pdf",
+    file_url: "/mock/documents/degree.pdf",
+    file_size: "1.2 MB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:10:00",
+    uploaded_by: "Employee",
+  },
+
+  {
+    id: 5,
+    employee_id: 1,
+    document_category: "educational",
+    document_name: "12th_marksheet",
+    document_description: "Higher Secondary Certificate",
+    file_name: "12th_Marksheet.pdf",
+    file_url: "/mock/documents/12th.pdf",
+    file_size: "900 KB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:12:00",
+    uploaded_by: "Employee",
+  },
+
+  {
+    id: 6,
+    employee_id: 1,
+    document_category: "employment",
+    document_name: "offer_letter",
+    document_description: "Current Company Offer Letter",
+    file_name: "Offer_Letter.pdf",
+    file_url: "/mock/documents/offer-letter.pdf",
+    file_size: "850 KB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:15:00",
+    uploaded_by: "HR",
+  },
+
+  {
+    id: 7,
+    employee_id: 1,
+    document_category: "employment",
+    document_name: "experience_letter",
+    document_description: "Previous Employer",
+    file_name: "Experience_Letter.pdf",
+    file_url: "/mock/documents/experience.pdf",
+    file_size: "700 KB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:18:00",
+    uploaded_by: "Employee",
+  },
+
+  {
+    id: 8,
+    employee_id: 1,
+    document_category: "other",
+    document_name: "medical_certificate",
+    document_description: "Medical Fitness Certificate",
+    file_name: "Medical_Certificate.pdf",
+    file_url: "/mock/documents/medical.pdf",
+    file_size: "500 KB",
+    file_type: "pdf",
+    uploaded_at: "2026-08-03T10:20:00",
+    uploaded_by: "Employee",
+  },
+];
+
+export const empDocumentApi = {
+  getDocuments: async () => {
+    if (USE_MOCK) {
+      await delay();
+      return [...mockDocument];
+    }
+    const r = await httpClient.get(API_ENDPOINTS.employees.)
+  },
+};

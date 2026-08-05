@@ -26,7 +26,7 @@ const EmployeeAttandenceStep = ({register, control, errors}: EmployeeStepProps) 
             />
           )}
         />
-        <DatePicker mode={"month"} label="Select Month" onChange={}/>
+        {/* <DatePicker mode={"month"} label="Select Month" onChange={}/> */}
       </div>
     </section>
   )

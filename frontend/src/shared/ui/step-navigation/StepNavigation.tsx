@@ -70,52 +70,53 @@ export const StepNavigation = ({
       {/* ── Desktop: full horizontal stepper ─────────────────────────── */}
       <div className="hidden md:block">
         <div className="flex items-start overflow-x-auto pb-1">
-          {steps.map((step, idx) => {
-            const status = getStatus(step.key, currentStepKey, completedSteps, errorSteps);
-            const clickable = isClickable(status, mode);
-            const isLast = idx === steps.length - 1;
+          {
+            steps.filter(Boolean).map((step, idx) => {
+              const status = getStatus(step.key, currentStepKey, completedSteps, errorSteps);
+              const clickable = isClickable(status, mode);
+              const isLast = idx === steps.length - 1;
 
-            return (
-              <div key={step.key} className={cn("flex items-start", !isLast && "flex-1")}>
-                <button
-                  type="button"
-                  disabled={!clickable}
-                  onClick={() => clickable && onStepClick?.(step.key)}
-                  className={cn(
-                    "flex shrink-0 flex-col items-center gap-1.5 px-1 text-center",
-                    clickable ? "cursor-pointer" : "cursor-not-allowed",
-                  )}
-                >
-                  <span className={circleClasses(status)}>
-                    <StepIcon status={status} index={idx} icon={step.icon} />
-                  </span>
-                  <span
+              return (
+                <div key={step.key} className={cn("flex items-start", !isLast && "flex-1")}>
+                  <button
+                    type="button"
+                    disabled={!clickable}
+                    onClick={() => clickable && onStepClick?.(step.key)}
                     className={cn(
-                      "max-w-[6.5rem] text-xs font-medium leading-tight transition-colors",
-                      status === "current" && "font-semibold text-primary",
-                      status === "completed" && "text-slate-700 dark:text-navy-100",
-                      status === "error" && "text-error",
-                      status === "pending" && "text-slate-400 dark:text-navy-400",
+                      "flex shrink-0 flex-col items-center gap-1.5 px-1 text-center",
+                      clickable ? "cursor-pointer" : "cursor-not-allowed",
                     )}
                   >
-                    {step.title}
-                  </span>
-                </button>
+                    <span className={circleClasses(status)}>
+                      <StepIcon status={status} index={idx} icon={step.icon} />
+                    </span>
+                    <span
+                      className={cn(
+                        "max-w-[6.5rem] text-xs font-medium leading-tight transition-colors",
+                        status === "current" && "font-semibold text-primary",
+                        status === "completed" && "text-slate-700 dark:text-navy-100",
+                        status === "error" && "text-error",
+                        status === "pending" && "text-slate-400 dark:text-navy-400",
+                      )}
+                    >
+                      {step.title}
+                    </span>
+                  </button>
 
-                {/* Connecting line to the next step */}
-                {!isLast && (
-                  <div
-                    className={cn(
-                      "mt-[18px] h-0.5 min-w-6 flex-1",
-                      idx < currentIndex || completedSteps.includes(step.key)
-                        ? "bg-success"
-                        : "bg-slate-200 dark:bg-navy-600",
-                    )}
-                  />
-                )}
-              </div>
-            );
-          })}
+                  {/* Connecting line to the next step */}
+                  {!isLast && (
+                    <div
+                      className={cn(
+                        "mt-[18px] h-0.5 min-w-6 flex-1",
+                        idx < currentIndex || completedSteps.includes(step.key)
+                          ? "bg-success"
+                          : "bg-slate-200 dark:bg-navy-600",
+                      )}
+                    />
+                  )}
+                </div>
+              );
+            })}
         </div>
       </div>
 
