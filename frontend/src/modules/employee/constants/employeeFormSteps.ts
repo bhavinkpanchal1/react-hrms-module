@@ -86,13 +86,12 @@ export const STEP_MAP: Record<string, StepDefinition<EmployeeFormData>> = {
   documents: {
     key: "documents",
     title: "Documents",
-    fields: ["document_category", "document_name", "document_description"],
   },
 
   permissions: {
     key: "permissions",
     title: "Permissions",
-    fields: [],
+    fields: ["clockin_remotely"],
   },
 
   review: {
@@ -110,8 +109,8 @@ const CREATE_STEP_ORDER = [
   "review",
 ] as const;
 
+
 const EDIT_STEP_ORDER = [
-  "review",
   "personal",
   "address",
   "employment",
@@ -119,6 +118,7 @@ const EDIT_STEP_ORDER = [
   "emergency",
   "documents",
   "permissions",
+  "review",
 ] as const;
 
 export const EMPLOYEE_FORM_STEPS = CREATE_STEP_ORDER.map(

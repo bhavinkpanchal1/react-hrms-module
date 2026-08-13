@@ -115,7 +115,7 @@ const OffersPage = () => {
                       )}
                       {o.status === 'accepted' && !candidate?.converted_to_employee && (
                         <Button variant="ghost" size="sm"
-                          onClick={() => navigate(`/employees/new?candidateId=${o.candidateId}&offerId=${o.id}`)}
+                          onClick={() => navigate(`/employees/list/new?candidateId=${o.candidateId}&offerId=${o.id}`)}
                           leftIcon={<UserPlus className="size-4" />}
                           className="text-primary hover:bg-primary/10">
                           Onboard

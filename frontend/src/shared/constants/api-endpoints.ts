@@ -7,7 +7,12 @@ export const API_ENDPOINTS = {
     pipeline: "/recruitment/pipeline/",
   },
   employees: {
+    base: "/employees/",
     list: "/employees/list",
+    detail: (id: number) => `/employees/${id}/`,
+    documents: (employeeId: number) => `/employees/${employeeId}/documents/`,
+    document: (employeeId: number, documentId: number) =>
+      `/employees/${employeeId}/documents/${documentId}/`,
   },
   attendance: {
     today: "/attendance/today/",

@@ -125,7 +125,7 @@ const EmployeeCreatePage = () => {
               data: { status: "hired", converted_to_employee: true },
             });
           }
-          navigate(`/employees?created=${employee.id}`);
+          navigate(`/employees/list?created=${employee.id}`);
         },
         onError: (error) => {
           setMutationError(error instanceof Error ? error.message : "Unable to create employee.");

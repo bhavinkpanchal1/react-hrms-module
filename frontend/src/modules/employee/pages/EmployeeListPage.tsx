@@ -23,7 +23,7 @@ const EmployeeListPage = () => {
             {employees.length} employee{employees.length !== 1 ? "s" : ""} onboarded
           </p>
         </div>
-        <Button onClick={() => navigate("/employees/new")} leftIcon={<Plus className="size-4" />}>
+        <Button onClick={() => navigate("/employees/list/new")} leftIcon={<Plus className="size-4" />}>
           Add Employee
         </Button>
       </div>
@@ -89,7 +89,7 @@ const EmployeeListPage = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate(`/employees/${e.id}/edit`)}
+                        onClick={() => navigate(`/employees/list/${e.id}/edit`)}
                         leftIcon={<Pencil className="size-3.5" />}
                       >
                         Edit

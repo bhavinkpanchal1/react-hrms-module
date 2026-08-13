@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from "@/shared/constants/api-endpoints";
 const USE_MOCK = import.meta.env.VITE_USE_MOCK_API === "true";
 const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
 
-export const mockDocument: EmployeeDocument[] = [
+let mockDocuments: EmployeeDocument[] = [
   {
     id: 1,
     employee_id: 1,
@@ -19,7 +19,6 @@ export const mockDocument: EmployeeDocument[] = [
     uploaded_at: "2026-08-03T10:00:00",
     uploaded_by: "Employee",
   },
-
   {
     id: 2,
     employee_id: 1,
@@ -33,7 +32,6 @@ export const mockDocument: EmployeeDocument[] = [
     uploaded_at: "2026-08-03T10:05:00",
     uploaded_by: "Employee",
   },
-
   {
     id: 3,
     employee_id: 1,
@@ -47,84 +45,73 @@ export const mockDocument: EmployeeDocument[] = [
     uploaded_at: "2026-08-03T10:06:00",
     uploaded_by: "Employee",
   },
-
-  {
-    id: 4,
-    employee_id: 1,
-    document_category: "educational",
-    document_name: "degree_certificate",
-    document_description: "Bachelor of Engineering",
-    file_name: "Degree_Certificate.pdf",
-    file_url: "/mock/documents/degree.pdf",
-    file_size: "1.2 MB",
-    file_type: "pdf",
-    uploaded_at: "2026-08-03T10:10:00",
-    uploaded_by: "Employee",
-  },
-
-  {
-    id: 5,
-    employee_id: 1,
-    document_category: "educational",
-    document_name: "12th_marksheet",
-    document_description: "Higher Secondary Certificate",
-    file_name: "12th_Marksheet.pdf",
-    file_url: "/mock/documents/12th.pdf",
-    file_size: "900 KB",
-    file_type: "pdf",
-    uploaded_at: "2026-08-03T10:12:00",
-    uploaded_by: "Employee",
-  },
-
-  {
-    id: 6,
-    employee_id: 1,
-    document_category: "employment",
-    document_name: "offer_letter",
-    document_description: "Current Company Offer Letter",
-    file_name: "Offer_Letter.pdf",
-    file_url: "/mock/documents/offer-letter.pdf",
-    file_size: "850 KB",
-    file_type: "pdf",
-    uploaded_at: "2026-08-03T10:15:00",
-    uploaded_by: "HR",
-  },
-
-  {
-    id: 7,
-    employee_id: 1,
-    document_category: "employment",
-    document_name: "experience_letter",
-    document_description: "Previous Employer",
-    file_name: "Experience_Letter.pdf",
-    file_url: "/mock/documents/experience.pdf",
-    file_size: "700 KB",
-    file_type: "pdf",
-    uploaded_at: "2026-08-03T10:18:00",
-    uploaded_by: "Employee",
-  },
-
-  {
-    id: 8,
-    employee_id: 1,
-    document_category: "other",
-    document_name: "medical_certificate",
-    document_description: "Medical Fitness Certificate",
-    file_name: "Medical_Certificate.pdf",
-    file_url: "/mock/documents/medical.pdf",
-    file_size: "500 KB",
-    file_type: "pdf",
-    uploaded_at: "2026-08-03T10:20:00",
-    uploaded_by: "Employee",
-  },
 ];
 
+let nextDocId = mockDocuments.length + 1;
+
 export const empDocumentApi = {
-  getDocuments: async () => {
+  // Was previously fetching ALL documents with no employeeId at all — now
+  // properly scoped, so switching between employees actually shows
+  // different documents instead of the same hardcoded list every time.
+  getDocuments: async (employeeId: number): Promise<EmployeeDocument[]> => {
     if (USE_MOCK) {
       await delay();
-      return [...mockDocument];
+      return mockDocuments.filter((d) => d.employee_id === employeeId);
     }
-    const r = await httpClient.get(API_ENDPOINTS.employees.)
+    const r = await httpClient.get<EmployeeDocument[]>(
+      API_ENDPOINTS.employees.documents(employeeId),
+    );
+    return r.data;
+  },
+
+  uploadDocument: async (
+    employeeId: number,
+    data: {
+      document_category: string;
+      document_name: string;
+      document_description?: string;
+      file: File;
+    },
+  ): Promise<EmployeeDocument> => {
+    if (USE_MOCK) {
+      await delay(600);
+      const doc: EmployeeDocument = {
+        id: nextDocId++,
+        employee_id: employeeId,
+        document_category: data.document_category as EmployeeDocument["document_category"],
+        document_name: data.document_name as EmployeeDocument["document_name"],
+        document_description: data.document_description,
+        file_name: data.file.name,
+        file_url: URL.createObjectURL(data.file),
+        file_size: `${(data.file.size / 1024).toFixed(0)} KB`,
+        file_type: data.file.type || "unknown",
+        uploaded_at: new Date().toISOString(),
+        uploaded_by: "Employee",
+      };
+      mockDocuments = [...mockDocuments, doc];
+      return doc;
+    }
+
+    const formData = new FormData();
+    formData.append("document_category", data.document_category);
+    formData.append("document_name", data.document_name);
+    if (data.document_description) formData.append("document_description", data.document_description);
+    formData.append("file", data.file);
+
+    const r = await httpClient.post<EmployeeDocument>(
+      API_ENDPOINTS.employees.documents(employeeId),
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return r.data;
+  },
+
+  deleteDocument: async (employeeId: number, documentId: number): Promise<void> => {
+    if (USE_MOCK) {
+      await delay(400);
+      mockDocuments = mockDocuments.filter((d) => d.id !== documentId);
+      return;
+    }
+    await httpClient.delete(API_ENDPOINTS.employees.document(employeeId, documentId));
   },
 };

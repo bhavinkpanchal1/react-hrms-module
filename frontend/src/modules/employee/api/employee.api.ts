@@ -156,7 +156,7 @@ export const employeeApi = {
       if (!e) throw new Error("Employee not found");
       return e;
     }
-    const r = await httpClient.get<Employee>(`${API_ENDPOINTS.employees}${id}/`);
+    const r = await httpClient.get<Employee>(API_ENDPOINTS.employees.detail(id));
     return r.data;
   },
 
@@ -175,7 +175,7 @@ export const employeeApi = {
       mockEmployees = [...mockEmployees, e];
       return e;
     }
-    const r = await httpClient.post<Employee>(API_ENDPOINTS.employees, data);
+    const r = await httpClient.post<Employee>(API_ENDPOINTS.employees.base, data);
     return r.data;
   },
 
@@ -187,7 +187,7 @@ export const employeeApi = {
       if (!updated) throw new Error("Employee not found");
       return updated;
     }
-    const r = await httpClient.patch<Employee>(`${API_ENDPOINTS.employees}${id}/`, data);
+    const r = await httpClient.patch<Employee>(API_ENDPOINTS.employees.detail(id), data);
     return r.data;
   },
 };

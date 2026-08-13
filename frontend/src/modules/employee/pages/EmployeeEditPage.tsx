@@ -14,17 +14,22 @@ import { EmployeeAccountDetailsStep } from "../forms/EmployeeAccountDetailsStep"
 import { EmployeeEmergencyStep } from "../forms/EmployeeEmergencyStep";
 import { EmployeeEmploymentStep } from "../forms/EmployeeEmploymentStep";
 import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
-import { EMPLOYEE_EDIT_FORM_STEPS, EMPLOYEE_FORM_STEPS } from "../constants/employeeFormSteps";
+import { EmployeePermissionsStep } from "../forms/EmployeePermissionsStep";
+import { EmployeeDocumentStep } from "../forms/EmployeeDocumentStep";
+import { EMPLOYEE_EDIT_FORM_STEPS } from "../constants/employeeFormSteps";
 import type { EmployeeStepProps } from "../types/employeeStep.type";
-import EmployeeDocumentStep from "../forms/EmployeeDocumentStep";
 
+// Steps that render with the shared {register, control, errors} contract —
+// Documents is intentionally excluded: it needs employeeId, not form
+// field bindings, and is rendered as its own special case below (same
+// pattern as Review).
 const STEP_COMPONENTS = {
   personal: EmployeePersonalStep,
   address: EmployeeAddressStep,
   employment: EmployeeEmploymentStep,
   account_details: EmployeeAccountDetailsStep,
   emergency: EmployeeEmergencyStep,
-  documents: EmployeeDocumentStep,
+  permissions: EmployeePermissionsStep,
 } satisfies Record<string, React.ComponentType<EmployeeStepProps>>;
 
 // Editing an EXISTING employee — free navigation between sections via the
@@ -54,7 +59,7 @@ const EmployeeEditPage = () => {
     steps: EMPLOYEE_EDIT_FORM_STEPS,
     mode: "edit",
     form,
-    initialCompletedSteps: EMPLOYEE_FORM_STEPS.map((s) => s.key),
+    initialCompletedSteps: EMPLOYEE_EDIT_FORM_STEPS.map((s) => s.key),
   });
 
   const stepProps: EmployeeStepProps = { register, control, errors };
@@ -85,7 +90,7 @@ const EmployeeEditPage = () => {
     updateEmployee.mutate(
       { id: employeeId, data },
       {
-        onSuccess: () => navigate(`/employees?updated=${employeeId}`),
+        onSuccess: () => navigate(`/employees/list?updated=${employeeId}`),
         onError: (error) => {
           setMutationError(error instanceof Error ? error.message : "Unable to update employee.");
         },
@@ -102,8 +107,11 @@ const EmployeeEditPage = () => {
     );
   }
 
+  const isReview = wizard.currentStepKey === "review";
+  const isDocuments = wizard.currentStepKey === "documents";
+
   const renderStep = () => {
-    if (wizard.currentStepKey === "review") {
+    if (isReview) {
       return (
         <EmployeeReviewStep
           values={getValues()}
@@ -112,11 +120,17 @@ const EmployeeEditPage = () => {
         />
       );
     }
+    if (isDocuments) {
+      // Documents needs employeeId, not the shared form-field props —
+      // this was previously wired into STEP_COMPONENTS with the generic
+      // {register, control, errors} props, which gave it no way to know
+      // which employee's documents to fetch (it fell back to a hardcoded
+      // constant list instead of ever calling the real API).
+      return <EmployeeDocumentStep employeeId={employeeId} />;
+    }
     const StepComponent = STEP_COMPONENTS[wizard.currentStepKey as keyof typeof STEP_COMPONENTS];
     return StepComponent ? <StepComponent {...stepProps} /> : null;
   };
-
-  const isReview = wizard.currentStepKey === "review";
 
   return (
     <div className="space-y-5">
@@ -150,7 +164,7 @@ const EmployeeEditPage = () => {
       <form onSubmit={(e) => e.preventDefault()} noValidate className="space-y-5">
         {renderStep()}
 
-        {savedStepKey === wizard.currentStepKey && !isReview && (
+        {savedStepKey === wizard.currentStepKey && !isReview && !isDocuments && (
           <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
             Section saved.
           </div>
@@ -177,7 +191,7 @@ const EmployeeEditPage = () => {
             >
               Update All
             </Button>
-          ) : (
+          ) : isDocuments ? null : (            
             <Button
               type="button"
               onClick={handleSaveStep}

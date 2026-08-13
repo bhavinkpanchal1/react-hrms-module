@@ -70,7 +70,7 @@ export const router = createBrowserRouter([
       // Employee
       { path: "/employees/list/", element: lazy_(<EmployeeListPage />) },
       { path: "/employees/list/new", element: lazy_(<EmployeeCreatePage />) },
-      { path: "/employees//list/:id/edit", element: lazy_(<EmployeeEditPage />) },
+      { path: "/employees/list/:id/edit", element: lazy_(<EmployeeEditPage />) },
 
       // Recruitment — 5 routes, all correctly lazy-loaded
       { path: "/recruitment/jobs", element: lazy_(<JobsPage />) },
