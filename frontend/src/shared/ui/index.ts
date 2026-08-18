@@ -18,6 +18,8 @@ export { Modal } from './modal/Modal';
 export { Spinner, PageSpinner } from './spinner/Spinner';
 export { DatePicker } from './date-picker/DatePicker';
 export type { DatePickerProps, DatePickerMode, DateRangeValue } from './date-picker/DatePicker';
+export { Pagination } from './pagination/Pagination';
+export type { PaginationProps } from './pagination/Pagination';
 export { StepNavigation } from './step-navigation/StepNavigation';
 export type { StepNavigationProps } from './step-navigation/StepNavigation';
 export type { StepDefinition, StepStatus, StepNavigationMode } from './step-navigation/types';

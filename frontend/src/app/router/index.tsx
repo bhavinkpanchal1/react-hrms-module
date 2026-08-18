@@ -41,6 +41,12 @@ const InterviewsPage = lazy(
 );
 const OffersPage = lazy(() => import("@/modules/recruitment/pages/OffersPage"));
 const AttendancePage = lazy(() => import("@/modules/attendance/pages/AttendancePage"));
+const CompanyListPage = lazy(
+  () => import("@/modules/company/pages/CompanyListPage"),
+);
+const CompanyDetailPage = lazy(
+  () => import("@/modules/company/pages/CompanyDetailPage"),
+);
 
 // ── Suspense wrapper ──────────────────────────────────────────────
 export const PageLoader = () => (
@@ -99,6 +105,10 @@ export const router = createBrowserRouter([
       },
 
       { path: "/recruitment/offers", element: lazy_(<OffersPage />) },
+
+      // Company
+      { path: "/hr/companies", element: lazy_(<CompanyListPage />) },
+      { path: "/hr/companies/:id", element: lazy_(<CompanyDetailPage />) },
 
       // Module stubs — replace as you build them
       {

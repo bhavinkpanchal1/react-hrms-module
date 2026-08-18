@@ -151,11 +151,14 @@ function ComboboxSelect<T extends ComboboxValue = ComboboxValue>({
         onValueChange={(v) => onChange(v as T | T[] | null)}
         items={
           isGrouped
-            ? groups.map((g) => ({ label: g.label, items: g.options }))
-            : flatOptions
+            ? groups.map((g) => ({
+                label: g.label,
+                items: g.options.map((option) => option.value),
+              }))
+            : flatOptions.map((option) => option.value)
         }
-        itemToStringLabel={(item: SelectOption<T>) => item?.label ?? ""}
-        isItemEqualToValue={(item: SelectOption<T>, v: T) => item?.value === v}
+        itemToStringLabel={(item: T) => labelFor(flatOptions, item)}
+        isItemEqualToValue={(item: T, v: T) => item === v}
         filter={isAsync ? null : undefined}
         onInputValueChange={(v) => {
           setQuery(v);
@@ -224,44 +227,54 @@ function ComboboxSelect<T extends ComboboxValue = ComboboxValue>({
 
               {isGrouped ? (
                 <Combobox.Collection>
-                  {(group: { label: string; items: SelectOption<T>[] }) => (
+                  {(group: { label: string; items: T[] }) => (
                     <Combobox.Group key={group.label} items={group.items}>
                       <Combobox.GroupLabel className="px-2 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-navy-400">
                         {group.label}
                       </Combobox.GroupLabel>
                       <Combobox.Collection>
-                        {(item: SelectOption<T>) => (
+                        {(item: T) => {
+                          const option = flatOptions.find(
+                            (candidate) => candidate.value === item,
+                          );
+                          return (
                           <Combobox.Item
-                            key={String(item.value)}
-                            value={item.value}
-                            disabled={item.disabled}
+                            key={String(item)}
+                            value={item}
+                            disabled={option?.disabled}
                             className="flex cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-sm text-slate-700 data-[highlighted]:bg-primary/10 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 dark:text-navy-100"
                           >
-                            {item.label}
+                            {option?.label ?? String(item)}
                             <Combobox.ItemIndicator>
                               <Check className="size-3.5 text-primary" />
                             </Combobox.ItemIndicator>
                           </Combobox.Item>
-                        )}
+                          );
+                        }}
                       </Combobox.Collection>
                     </Combobox.Group>
                   )}
                 </Combobox.Collection>
               ) : (
                 <Combobox.List>
-                  {(item: SelectOption<T>) => (
+                  {(item: T) => {
+                    const option = flatOptions.find(
+                      (candidate) => candidate.value === item,
+                    );
+                    return (
                     <Combobox.Item
-                      key={String(item.value)}
-                      value={item.value}
-                      disabled={item.disabled}
+                      key={String(item)}
+                      value={item}
+                      disabled={option?.disabled}
                       className="flex cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-sm text-slate-700 data-[highlighted]:bg-primary/10 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 dark:text-navy-100"
                     >
-                      {item.label}
+                      {option?.label ?? String(item)}
                       <Combobox.ItemIndicator>
                         <Check className="size-3.5 text-primary" />
                       </Combobox.ItemIndicator>
                     </Combobox.Item>
-                  )}
+                    );
+                  }}
                 </Combobox.List>
               )}
             </Combobox.Popup>
@@ -295,10 +308,12 @@ function SelectImpl<T extends ComboboxValue = ComboboxValue>(
   ref: React.Ref<HTMLSelectElement>,
 ) {
   if (!props.mode || props.mode === "single") {
-    const { mode: _mode, ...rest } = props;
+    const { mode, ...rest } = props;
+    void mode;
     return <NativeSelect ref={ref} {...(rest as NativeSelectProps)} />;
   }
-  const { mode: _mode, ...rest } = props;
+  const { mode, ...rest } = props;
+  void mode;
   return <ComboboxSelect {...(rest as ComboboxSelectProps<T>)} />;
 }
 
