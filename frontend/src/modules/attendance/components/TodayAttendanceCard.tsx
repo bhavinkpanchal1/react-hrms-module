@@ -2,8 +2,14 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/shared/ui";
 import { formatTime } from "@/shared/utils/date";
 import { Clock } from "lucide-react";
+import type { AttendanceRecord } from "../types/attendance.types";
 
-const TodayAttendanceCard = ({todayAttendance, formattedTimer, isRunning}) => {
+interface TodayAttendanceCardProps {
+  todayAttendance?: AttendanceRecord;
+  formattedTimer: string;
+}
+
+const TodayAttendanceCard = ({ todayAttendance, formattedTimer }: TodayAttendanceCardProps) => {
   const clockInAt = todayAttendance?.clock_in_at;
   const clockOutAt = todayAttendance?.clock_out_at;
   return (

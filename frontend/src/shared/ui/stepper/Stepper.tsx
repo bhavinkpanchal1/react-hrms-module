@@ -1,6 +1,10 @@
-import type { StepItem } from "@/modules/recruitment/constant/candidate-steps";
 import { cn } from "@/shared/lib/cn";
 import { Check } from "lucide-react";
+
+export interface StepItem {
+  key: string;
+  title: string;
+}
 
 export type StepperProps = {
   steps: StepItem[];

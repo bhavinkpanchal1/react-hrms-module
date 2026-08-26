@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { employeeApi } from '../api/employee.api';
-import type { Employee } from '../types/employee.type';
+import type { CreateEmployeeInput, UpdateEmployeeInput } from '../types/employee.type';
 
 export const useEmployees = () =>
   useQuery({ queryKey: queryKeys.employee.list(), queryFn: employeeApi.getEmployees });
@@ -16,7 +16,7 @@ export const useEmployee = (id: number) =>
 export const useCreateEmployee = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<Employee, 'id' | 'employee_code' | 'created_at'>) =>
+    mutationFn: (data: CreateEmployeeInput) =>
       employeeApi.createEmployee(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employee.all }),
   });
@@ -25,7 +25,7 @@ export const useCreateEmployee = () => {
 export const useUpdateEmployee = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Employee> }) =>
+    mutationFn: ({ id, data }: { id: number; data: UpdateEmployeeInput }) =>
       employeeApi.updateEmployee(id, data),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: queryKeys.employee.list() });

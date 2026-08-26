@@ -11,7 +11,7 @@ const AttendancePage = () => {
   const clockInAt = todayAttendance?.clock_in_at;
   const clockOutAt = todayAttendance?.clock_out_at;
 
-  const { formattedTimer, isRunning } = useAttendanceTimer({
+  const { formattedTimer } = useAttendanceTimer({
     clockInAt: clockInAt ?? null,
     clockOutAt: clockOutAt ?? null,
   });
@@ -30,7 +30,7 @@ const AttendancePage = () => {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Today's Attendance */}
-        <TodayAttendanceCard todayAttendance={todayAttendance} formattedTimer={formattedTimer} isRunning={isRunning}/>
+        <TodayAttendanceCard todayAttendance={todayAttendance} formattedTimer={formattedTimer} />
         <Card className="p-6">
           
         </Card>

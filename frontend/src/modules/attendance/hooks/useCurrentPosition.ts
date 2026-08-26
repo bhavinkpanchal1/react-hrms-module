@@ -55,7 +55,8 @@ export const useCurrentPosition = () => {
   }, []);
 
   useEffect(() => {
-    getCurrentLocation();
+    const requestId = window.setTimeout(getCurrentLocation, 0);
+    return () => window.clearTimeout(requestId);
   }, [getCurrentLocation]);
 
   return{

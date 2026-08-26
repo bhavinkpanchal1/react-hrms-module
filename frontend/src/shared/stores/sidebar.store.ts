@@ -2,6 +2,7 @@ import { getModulesForRole, type NavModule, type Role } from "@/app/config/nav-c
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { resolveModuleIdForPath } from "./resolveModuleIdForPath";
+import type { Permission } from "@/shared/types/access.types";
 
 interface SidebarState {
   role: Role;
@@ -23,7 +24,7 @@ interface SidebarState {
   isPanelOpen: boolean;
   visibleModules: NavModule[];
 
-  setRole: (role: Role) => void;
+  setRole: (role: Role, permissions: readonly Permission[]) => void;
 
   // Called when the user clicks a sidebar icon — opens/previews that
   // module's panel. Deliberately does NOT touch activeModuleId; only
@@ -54,7 +55,7 @@ export const useSidebarStore = create<SidebarState>()(
       // Default role — change "hr" to "employee" or "manager" to test
       // Later: replace this with: const role = getAuthRole() or from API
       const defaultRole: Role = "hr";
-      const defaultModules = getModulesForRole(defaultRole);
+      const defaultModules = getModulesForRole(defaultRole, []);
 
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
       const activeMod = resolveActiveModule(defaultModules, currentPath);
@@ -75,8 +76,8 @@ export const useSidebarStore = create<SidebarState>()(
         isPanelOpen: !!hasSubItems, // Default to collapsed on first load
         visibleModules: defaultModules,
 
-        setRole: (role) => {
-          const modules = getModulesForRole(role);
+        setRole: (role, permissions) => {
+          const modules = getModulesForRole(role, permissions);
           const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
           const mod = resolveActiveModule(modules, currentPath);
           set({

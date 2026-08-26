@@ -1,10 +1,13 @@
-export type Role = "hr" | "manager" | "employee";
+import type { AppRole, Permission } from "@/shared/types/access.types";
+
+export type Role = AppRole;
 
 //For single link
 export interface NavPanelLink {
   kind: "link";
   label: string;
   to: string;
+  permission?: Permission;
 }
 
 //For Group Link
@@ -22,6 +25,7 @@ export interface NavModule {
   label: string;
   icon: string;
   roles: Role[];
+  permission?: Permission;
   sectionLabel: string;
   items: NavItems[];
 }
@@ -36,7 +40,7 @@ export const ALL_MODULES: NavModule[] = [
     roles: ["hr", "manager", "employee"],
     sectionLabel: "My Access",
     items: [
-      { kind: "link", label: "Attendance", to: "/attendance" },
+      { kind: "link", label: "Attendance", to: "/attendance", permission: "attendance.read" },
       { kind: "link", label: "Salary", to: "/employee/salary" },
       { kind: "link", label: "Notifications", to: "/notifications" },
       { kind: "link", label: "Company Policy", to: "/policy" },
@@ -64,6 +68,7 @@ export const ALL_MODULES: NavModule[] = [
     label: "Manager",
     icon: "users-plus",
     roles: ["hr", "manager"],
+    permission: "leave.approve",
     sectionLabel: "Manager Access",
     items: [
       { kind: "link", label: "Attendance Report",         to: "/report/team-attendance" },
@@ -81,11 +86,12 @@ export const ALL_MODULES: NavModule[] = [
     label: "HR",
     icon: "users",
     roles: ["hr"],
+    permission: "employee.view",
     sectionLabel: "HR Access",
     items: [
       { kind: "link", label: "Dashboard",    to: "/hr/dashboard" },
-      { kind: "link", label: "Company",      to: "/hr/companies" },
-      { kind: "link", label: "Employee",     to: "/employees/list" },
+      { kind: "link", label: "Company",      to: "/hr/companies", permission: "settings.manage" },
+      { kind: "link", label: "Employee",     to: "/employees/list", permission: "employee.view" },
       { kind: "link", label: "Annual Leave", to: "/hr/annual-leave" },
       {
         kind: "group",
@@ -125,6 +131,7 @@ export const ALL_MODULES: NavModule[] = [
     label: "Recruitment",
     icon: "briefcase",
     roles: ["hr", "manager"],
+    permission: "recruitment.read",
     sectionLabel: "Recruitment",
     items: [
       { kind: "link", label: "Job Listings", to: "/recruitment/jobs" },
@@ -148,6 +155,7 @@ export const ALL_MODULES: NavModule[] = [
     label: "Admin",
     icon: "settings",
     roles: ["hr", "manager"],
+    permission: "settings.manage",
     sectionLabel: "Admin",
     items: [
       { kind: "link", label: "Assets",         to: "/admin/assets" },
@@ -178,6 +186,7 @@ export const ALL_MODULES: NavModule[] = [
     label: "Reports",
     icon: "bar-chart",
     roles: ["hr", "manager"],
+    permission: "dashboard.view",
     sectionLabel: "Reports",
     items: [
       {
@@ -203,6 +212,25 @@ export const ALL_MODULES: NavModule[] = [
 
 ];
 
-export const getModulesForRole = (role: Role) => {
-  return ALL_MODULES.filter((m) => m.roles.includes(role));
+const filterItems = (items: NavItems[], permissions: readonly Permission[]): NavItems[] =>
+  items.reduce<NavItems[]>((visibleItems, item) => {
+    if (item.kind === "link") {
+      if (!item.permission || permissions.includes(item.permission)) visibleItems.push(item);
+      return visibleItems;
+    }
+    const children = item.children.filter(
+      (child) => !child.permission || permissions.includes(child.permission),
+    );
+    if (children.length > 0) visibleItems.push({ ...item, children });
+    return visibleItems;
+  }, []);
+
+export const getModulesForRole = (role: Role, permissions: readonly Permission[] = []) => {
+  return ALL_MODULES
+    .filter(
+      (module) =>
+        module.roles.includes(role) &&
+        (!module.permission || permissions.includes(module.permission)),
+    )
+    .map((module) => ({ ...module, items: filterItems(module.items, permissions) }));
 };

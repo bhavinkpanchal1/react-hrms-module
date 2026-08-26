@@ -1,6 +1,6 @@
 import { httpClient } from "@/shared/services/http/client";
 import { API_ENDPOINTS } from "@/shared/constants/api-endpoints";
-import type { Employee } from "../types/employee.type";
+import type { CreateEmployeeInput, Employee, UpdateEmployeeInput } from "../types/employee.type";
 import { COUNTRY_OPTIONS } from "@/shared/constants/locations/country";
 import { STATE_OPTIONS } from "@/shared/constants/locations/state";
 import { CITY_OPTIONS } from "@/shared/constants/locations/city";
@@ -8,7 +8,7 @@ import { CITY_OPTIONS } from "@/shared/constants/locations/city";
 const USE_MOCK = import.meta.env.VITE_USE_MOCK_API === "true";
 const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
 
-const mockEmployees: Employee[] = [
+let mockEmployees: Employee[] = [
   {
     id: 1,
 
@@ -28,18 +28,18 @@ const mockEmployees: Employee[] = [
     // Correspondence Address
     corresponding_address_line1: "21 Shree Residency",
     corresponding_address_line2: "Near Railway Station",
-    corresponding_country: COUNTRY_OPTIONS[0],
-    corresponding_state: STATE_OPTIONS[1],
-    corresponding_city: CITY_OPTIONS[0],
+    corresponding_country: COUNTRY_OPTIONS[0].value,
+    corresponding_state: STATE_OPTIONS[1].value,
+    corresponding_city: CITY_OPTIONS[0].value,
     corresponding_pincode: "390001",
 
     // Permanent Address
     same_as_above: true,
     permanent_address_line1: "21 Shree Residency",
     permanent_address_line2: "Near Railway Station",
-    permanent_country: COUNTRY_OPTIONS[0],
-    permanent_state: COUNTRY_OPTIONS[0],
-    permanent_city: COUNTRY_OPTIONS[0],
+    permanent_country: COUNTRY_OPTIONS[0].value,
+    permanent_state: STATE_OPTIONS[1].value,
+    permanent_city: CITY_OPTIONS[0].value,
     permanent_pincode: "390001",
 
     // Employment
@@ -75,6 +75,8 @@ const mockEmployees: Employee[] = [
     emergency_contact_name: "Kiran Panchal",
     emergency_contact_number: "9898989898",
     emergency_contact_relation: "Father",
+    created_at: "2025-01-10T00:00:00.000Z",
+    is_active: true,
   },
 
   {
@@ -135,9 +137,11 @@ const mockEmployees: Employee[] = [
     emergency_contact_name: "Raj Shah",
     emergency_contact_number: "9876501234",
     emergency_contact_relation: "Husband",
+    created_at: "2024-07-15T00:00:00.000Z",
+    is_active: true,
   },
 ];
-let nextEmpId = 1;
+let nextEmpId = 3;
 
 export const employeeApi = {
   getEmployees: async (): Promise<Employee[]> => {
@@ -161,15 +165,16 @@ export const employeeApi = {
   },
 
   createEmployee: async (
-    data: Omit<Employee, "id" | "employee_code" | "created_at">,
+    data: CreateEmployeeInput,
   ): Promise<Employee> => {
     if (USE_MOCK) {
       await delay(600);
       const e: Employee = {
         ...data,
         id: nextEmpId,
-        employee_code: `EMP-${String(nextEmpId).padStart(4, "0")}`,
+        employee_id: `EMP-${String(nextEmpId).padStart(4, "0")}`,
         created_at: new Date().toISOString(),
+        is_active: true,
       };
       nextEmpId += 1;
       mockEmployees = [...mockEmployees, e];
@@ -179,7 +184,7 @@ export const employeeApi = {
     return r.data;
   },
 
-  updateEmployee: async (id: number, data: Partial<Employee>): Promise<Employee> => {
+  updateEmployee: async (id: number, data: UpdateEmployeeInput): Promise<Employee> => {
     if (USE_MOCK) {
       await delay(400);
       mockEmployees = mockEmployees.map((e) => (e.id === id ? { ...e, ...data } : e));

@@ -9,42 +9,22 @@ export const useAttendanceTimer = ({
   clockInAt,
   clockOutAt,
 }: UseAttendanceTimerProps) => {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  
-  
+  const [now, setNow] = useState(() => Date.now());
+
   useEffect(() => {
-    if (!clockInAt) {
-      setElapsedSeconds(0);
-      return;
-    } 
+    if (!clockInAt || clockOutAt) return;
 
-    const start = new Date(clockInAt).getTime();
-
-    if (Number.isNaN(start)) {
-    setElapsedSeconds(0);
-    return;
-  }
-
-    // Employee already clocked out
-    if (clockOutAt) {
-      const end = new Date(clockOutAt).getTime();
-      setElapsedSeconds(Math.floor((end - start) / 1000));
-      return;
-    }
-
-    // Employee still working
-    const update = () => {
-      setElapsedSeconds(Math.floor((Date.now() - start) / 1000));
-    };
-
-    update();
-
-    const id = setInterval(update, 1000);
+    const id = setInterval(() => setNow(Date.now()), 1000);
 
     return () => clearInterval(id);
   }, [clockInAt, clockOutAt]);
 
   const isRunning = !!clockInAt && !clockOutAt;
+  const start = clockInAt ? new Date(clockInAt).getTime() : Number.NaN;
+  const end = clockOutAt ? new Date(clockOutAt).getTime() : now;
+  const elapsedSeconds = Number.isNaN(start) || Number.isNaN(end)
+    ? 0
+    : Math.max(0, Math.floor((end - start) / 1000));
   const hours = Math.floor(elapsedSeconds / 3600);
   const minutes = Math.floor((elapsedSeconds % 3600) / 60);
   const seconds = elapsedSeconds % 60;

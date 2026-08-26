@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/cn";
-import { Button } from "@/shared/ui";
-import { Moon, Sun } from "lucide-react";
+import { Button, Select } from "@/shared/ui";
+import { LogOut, Moon, Sun } from "lucide-react";
 import {
   useClockIn,
   useClockOut,
@@ -9,6 +9,8 @@ import {
 import { useCurrentPosition } from "@/modules/attendance/hooks/useCurrentPosition";
 import toast from "react-hot-toast";
 import { useAttendanceTimer } from "@/modules/attendance/hooks/useAttendanceTimer";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useState } from "react";
 
 
 interface TopHeaderProps {
@@ -27,6 +29,15 @@ export const TopHeader = ({
   const clockIn = useClockIn();
   const clockOut = useClockOut();
   const { data: todayAttendance } = useTodayAttendance();
+  const {
+    user,
+    activeCompanyId,
+    availableCompanies,
+    selectCompany,
+    logout,
+  } = useAuth();
+  const [isChangingCompany, setIsChangingCompany] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const {
     position,
@@ -66,6 +77,28 @@ export const TopHeader = ({
       toast.error(
         isClockedIn ? "Clock Out Failed" : "Clock In Failed",
       );
+    }
+  };
+
+  const handleCompanyChange = async (companyId: number) => {
+    setIsChangingCompany(true);
+    try {
+      await selectCompany(companyId);
+      toast.success("Active company updated");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to change company");
+    } finally {
+      setIsChangingCompany(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to sign out");
+      setIsLoggingOut(false);
     }
   };
 
@@ -113,6 +146,21 @@ export const TopHeader = ({
 
         {/* RIGHT — actions */}
         <div className="flex items-center gap-2">
+          <div className="w-32 sm:w-44">
+            <Select
+              aria-label="Active company"
+              value={activeCompanyId ?? ""}
+              disabled={isChangingCompany}
+              options={availableCompanies.map((company) => ({
+                value: company.id,
+                label: company.name,
+              }))}
+              onChange={(event) => void handleCompanyChange(Number(event.target.value))}
+            />
+          </div>
+          <span className="hidden text-xs text-slate-500 lg:inline dark:text-navy-300">
+            {user?.name}
+          </span>
           {isClockedIn && (
             <span className="text-sm font-medium ">{formattedTimer}</span>
           )}
@@ -143,6 +191,15 @@ export const TopHeader = ({
               <Sun className="size-6 text-amber-400 fill-amber-400" />
             )}
           </button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleLogout}
+            isLoading={isLoggingOut}
+            leftIcon={<LogOut className="size-4" />}
+          >
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
         </div>
       </div>
     </header>

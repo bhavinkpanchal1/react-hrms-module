@@ -3,7 +3,7 @@ import { Controller } from "react-hook-form";
 import type { EmployeeStepProps } from "../types/employeeStep.type";
 import { getToday } from "@/shared/utils/date";
 
-const EmployeeAttandenceStep = ({register, control, errors}: EmployeeStepProps) => {
+const EmployeeAttandenceStep = ({ control }: EmployeeStepProps) => {
   return (
     <section className="card p-6">
       <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-navy-100">

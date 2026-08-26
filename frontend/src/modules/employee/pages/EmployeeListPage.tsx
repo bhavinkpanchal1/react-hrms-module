@@ -70,7 +70,7 @@ const EmployeeListPage = () => {
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-800 dark:text-navy-100">{e.first_name} {e.last_name}</div>
-                      <div className="text-xs text-slate-400 dark:text-navy-400">{e.employee_code} · {e.email}</div>
+                      <div className="text-xs text-slate-400 dark:text-navy-400">{e.employee_id} · {e.email}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{e.department}</td>
                     <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{e.designation}</td>

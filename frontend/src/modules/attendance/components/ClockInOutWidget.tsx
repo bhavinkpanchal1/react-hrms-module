@@ -1,6 +1,5 @@
 // src/modules/attendance/components/HeaderAttendanceWidget.tsx
 
-import { useEffect, useState } from "react";
 import { Clock, LogIn, LogOut } from "lucide-react";
 
 import { Button } from "@/shared/ui/button/Button";
@@ -13,8 +12,9 @@ import {
 } from "../hooks/useAttendance";
 
 import { useCurrentPosition } from "../hooks/useCurrentPosition";
+import { useAttendanceTimer } from "../hooks/useAttendanceTimer";
 
-const formatTime = (date?: string) =>
+const formatTime = (date?: string | null) =>
   date
     ? new Date(date).toLocaleTimeString([], {
       hour: "2-digit",
@@ -35,29 +35,11 @@ export const HeaderAttendanceWidget = () => {
   const clockInMutation = useClockIn();
   const clockOutMutation = useClockOut();
 
-  const [elapsed, setElapsed] = useState("");
-
-  useEffect(() => {
-    if (!today?.clock_in_at || today?.clock_out_at) {
-      setElapsed("");
-      return;
-    }
-
-    const updateElapsed = () => {
-      const diff = Date.now() - new Date(today.clock_in_at).getTime();
-
-      const hours = Math.floor(diff / 3600000);
-      const minutes = Math.floor((diff % 3600000) / 60000);
-
-      setElapsed(`${hours}h ${minutes}m`);
-    };
-
-    updateElapsed();
-
-    const timer = setInterval(updateElapsed, 60000);
-
-    return () => clearInterval(timer);
-  }, [today?.clock_in_at, today?.clock_out_at]);
+  const { hours, minutes } = useAttendanceTimer({
+    clockInAt: today?.clock_in_at ?? null,
+    clockOutAt: today?.clock_out_at ?? null,
+  });
+  const elapsed = `${hours}h ${minutes}m`;
 
   const handleClockIn = async () => {
     if (!position) {

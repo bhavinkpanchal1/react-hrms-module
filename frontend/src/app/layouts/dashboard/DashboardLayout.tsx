@@ -6,11 +6,19 @@ import { useSidebarStore } from "@/shared/stores/sidebar.store";
 import { MainSideBarIcon } from "@/shared/ui/sidebar/MainSideBarIcon";
 import { ASideNavPanel } from "@/shared/ui/sidebar/ASideNavPanel";
 import { useSidebarRouteSync } from "@/shared/hooks/useSidebarRouteSync";
+import { useEffect } from "react";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 
 function DashboardLayout() {
   const { isDark, toggleTheme } = useTheme();
   const isPanelOpen = useSidebarStore((s) => s.isPanelOpen);
   const togglePanel = useSidebarStore((s) => s.togglePanel);
+  const setRole = useSidebarStore((s) => s.setRole);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) setRole(user.role, user.permissions);
+  }, [setRole, user]);
 
   // Keeps the highlighted sidebar module in sync with the current route —
   // handles reload and browsing to pages not reached via a sidebar click.
