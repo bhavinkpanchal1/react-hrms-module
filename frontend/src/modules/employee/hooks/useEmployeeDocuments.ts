@@ -1,35 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/constants/query-keys";
-import { empDocumentApi } from "../api/employee-document.api";
-
-export const useEmployeeDocuments = (employeeId: number) =>
-  useQuery({
-    queryKey: queryKeys.employee.documents(employeeId),
-    queryFn: () => empDocumentApi.getDocuments(employeeId),
-    enabled: !!employeeId,
-  });
-
-export const useUploadEmployeeDocument = (employeeId: number) => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: {
-      document_category: string;
-      document_name: string;
-      document_description?: string;
-      file: File;
-    }) => empDocumentApi.uploadDocument(employeeId, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.employee.documents(employeeId) });
-    },
-  });
-};
-
-export const useDeleteEmployeeDocument = (employeeId: number) => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (documentId: number) => empDocumentApi.deleteDocument(employeeId, documentId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.employee.documents(employeeId) });
-    },
-  });
-};
+import { empDocumentApi, type DocumentInput } from "../api/employee-document.api";
+import type { DocumentCategoryType, DocumentType } from "../types/document.type";
+export const useEmployeeDocuments=(employeeId:string)=>useQuery({queryKey:queryKeys.employee.documents(employeeId),queryFn:()=>empDocumentApi.getDocuments(employeeId),enabled:Boolean(employeeId)});
+const useDocumentMutation=<T,>(employeeId:string,mutationFn:(input:T)=>Promise<unknown>)=>{const qc=useQueryClient();return useMutation({mutationFn,onSuccess:()=>qc.invalidateQueries({queryKey:queryKeys.employee.documents(employeeId)})})};
+export const useUploadEmployeeDocument=(employeeId:string)=>useDocumentMutation<DocumentInput>(employeeId,input=>empDocumentApi.uploadDocument(employeeId,input));
+export const useUpdateEmployeeDocument=(employeeId:string)=>useDocumentMutation<{id:string;document_category:DocumentCategoryType;document_name:DocumentType;document_description?:string}>(employeeId,input=>empDocumentApi.updateMetadata(employeeId,input.id,input));
+export const useReplaceEmployeeDocument=(employeeId:string)=>useDocumentMutation<{id:string;file:File}>(employeeId,input=>empDocumentApi.replace(employeeId,input.id,input.file));
+export const useArchiveEmployeeDocument=(employeeId:string)=>useDocumentMutation<{id:string;archived:boolean}>(employeeId,input=>empDocumentApi.setArchived(employeeId,input.id,input.archived));

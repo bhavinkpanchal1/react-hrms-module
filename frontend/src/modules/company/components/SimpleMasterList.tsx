@@ -9,6 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button, Input, Pagination, TableRowSkeleton } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
 import EmptyState from "@/shared/ui/empty-state/EmptyState";
 
 interface SimpleMasterRecord {
@@ -40,9 +41,6 @@ interface SimpleMasterListProps<T extends SimpleMasterRecord> {
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const SimpleMasterList = <T extends SimpleMasterRecord>({
   title,

@@ -6,6 +6,8 @@ interface EmptyStateProps {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
 const EmptyState = ({
@@ -13,6 +15,8 @@ const EmptyState = ({
   title,
   description,
   action,
+  actionLabel,
+  onAction,
 }: EmptyStateProps) => {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -28,6 +32,11 @@ const EmptyState = ({
         </p>
       )}
       {action && <div className="mt-4">{action}</div>}
+      {!action && actionLabel && onAction && (
+        <button type="button" className="btn mt-4 bg-primary px-4 py-2 text-sm text-white" onClick={onAction}>
+          {actionLabel}
+        </button>
+      )}
     </div>
   );
 };

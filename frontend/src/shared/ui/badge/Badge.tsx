@@ -1,6 +1,6 @@
 import { cn } from '@/shared/lib/cn';
 
-export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
+export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' | 'danger' | 'secondary' | 'outline';
 
 export interface BadgeProps {
   label: string; variant?: BadgeVariant; className?: string;
@@ -13,6 +13,9 @@ const variantClasses: Record<BadgeVariant, string> = {
   warning: 'bg-warning/15 text-warning',
   error: 'bg-error/15 text-error',
   info: 'bg-info/15 text-info',
+  danger: 'bg-error/15 text-error',
+  secondary: 'bg-slate-150 text-slate-600 dark:bg-navy-600 dark:text-navy-200',
+  outline: 'border border-slate-300 bg-transparent text-slate-600 dark:border-navy-500 dark:text-navy-200',
 };
 
 export const Badge = ({ label, variant = 'default', className }: BadgeProps) => (

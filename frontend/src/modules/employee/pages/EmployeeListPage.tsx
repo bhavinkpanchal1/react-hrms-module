@@ -1,108 +1,37 @@
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Plus, Users, CheckCircle2, Pencil } from "lucide-react";
-import { useEmployees } from "../hooks/useEmployees";
-import { Button }            from "@/shared/ui/button/Button";
-import { Badge }             from "@/shared/ui/badge/Badge";
-import { TableRowSkeleton }  from "@/shared/ui/skeleton/Skeleton";
-import EmptyState            from "@/shared/ui/empty-state/EmptyState";
-import { EMPLOYMENT_TYPE_OPTIONS } from "../types/employee.type";
+/* eslint-disable react-hooks/set-state-in-effect -- selection resets whenever the server-list scope changes. */
+import { useEffect, useMemo, useState } from "react";
+import { Download, Plus, Search, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { Badge } from "@/shared/ui/badge/Badge";
+import { Button } from "@/shared/ui/button/Button";
+import { ConfirmationDialog } from "@/shared/ui/confirmation-dialog/ConfirmationDialog";
+import EmptyState from "@/shared/ui/empty-state/EmptyState";
+import { Input } from "@/shared/ui/input/Input";
+import { Pagination } from "@/shared/ui/pagination/Pagination";
+import { Select } from "@/shared/ui/select/Select";
+import { TableRowSkeleton } from "@/shared/ui/skeleton/Skeleton";
+import { useBulkEmployeeLifecycle, useBulkEmployeeOrganization, useEmployees, useEmployeeMasters, useExportEmployees } from "../hooks/useEmployees";
+import { LIFECYCLE_LABELS, LIFECYCLE_STATUSES, type EmployeeExportFormat, type EmployeeLifecycleStatus, type EmployeeListParams, type OrganizationAssignmentField } from "../types/employee.type";
 
-const EmployeeListPage = () => {
-  const { data: employees = [], isLoading } = useEmployees();
-  const [searchParams] = useSearchParams();
-  const justCreatedId = Number(searchParams.get("created")) || 0;
-  const justUpdatedId = Number(searchParams.get("updated")) || 0;
-  const navigate = useNavigate();
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">Employees</h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
-            {employees.length} employee{employees.length !== 1 ? "s" : ""} onboarded
-          </p>
-        </div>
-        <Button onClick={() => navigate("/employees/list/new")} leftIcon={<Plus className="size-4" />}>
-          Add Employee
-        </Button>
-      </div>
-
-      {justCreatedId > 0 && (
-        <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-          <CheckCircle2 className="size-4 shrink-0" />
-          Employee created successfully.
-        </div>
-      )}
-      {justUpdatedId > 0 && (
-        <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-          <CheckCircle2 className="size-4 shrink-0" />
-          Employee updated successfully.
-        </div>
-      )}
-
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="is-hoverable w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-150 dark:border-navy-600">
-                {["Employee", "Department", "Designation", "Type", "Joining Date", "Source", ""].map((h) => (
-                  <th key={h} className={`whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-navy-300 ${h === "" ? "text-right" : "text-left"}`}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-navy-600">
-              {isLoading
-                ? Array.from({ length: 3 }).map((_, i) => <TableRowSkeleton key={i} cols={7} />)
-                : employees.length === 0
-                ? (
-                  <tr><td colSpan={7}>
-                    <EmptyState icon={Users} title="No employees yet"
-                      description="Employees onboarded from the recruitment flow, or added directly, will appear here." />
-                  </td></tr>
-                )
-                : employees.map((e) => (
-                  <tr
-                    key={e.id}
-                    className={e.id === justCreatedId || e.id === justUpdatedId ? "bg-success/5" : undefined}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-slate-800 dark:text-navy-100">{e.first_name} {e.last_name}</div>
-                      <div className="text-xs text-slate-400 dark:text-navy-400">{e.employee_id} · {e.email}</div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{e.department}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{e.designation}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {EMPLOYMENT_TYPE_OPTIONS.find((o) => o.value === e.employment_type)?.label ?? e.employment_type}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-navy-400">
-                      {new Date(e.date_of_joining).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                    </td>
-                    <td className="px-4 py-3">
-                      {e.source_candidate_id
-                        ? <Badge label="Recruitment" variant="primary" />
-                        : <Badge label="Direct" variant="default" />}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/employees/list/${e.id}/edit`)}
-                        leftIcon={<Pencil className="size-3.5" />}
-                      >
-                        Edit
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+const DEFAULT_STATUSES:EmployeeLifecycleStatus[]=["probation","regular","notice_period","temp"];
+type BulkAction="lifecycle"|"organization"|"export";
+const EmployeeListPage=()=>{const navigate=useNavigate();const {activeCompanyId,user}=useAuth();const companyId=activeCompanyId??1;const isHr=user?.role==="hr";const masters=useEmployeeMasters();
+ const [search,setSearch]=useState("");const [statuses,setStatuses]=useState<EmployeeLifecycleStatus[]>(DEFAULT_STATUSES);const [branchIds,setBranchIds]=useState<string[]>([]);const [departmentIds,setDepartmentIds]=useState<string[]>([]);const [designationIds,setDesignationIds]=useState<string[]>([]);const [sortBy,setSortBy]=useState<EmployeeListParams["sortBy"]>("fullName");const [sortDirection,setSortDirection]=useState<EmployeeListParams["sortDirection"]>("asc");const [page,setPage]=useState(1);const [pageSize,setPageSize]=useState(20);
+ const [bulkMode,setBulkMode]=useState(false);const [selected,setSelected]=useState<string[]>([]);const [bulkAction,setBulkAction]=useState<BulkAction>("lifecycle");const [bulkStatus,setBulkStatus]=useState<EmployeeLifecycleStatus>("regular");const [orgField,setOrgField]=useState<OrganizationAssignmentField>("branchId");const [orgMasterId,setOrgMasterId]=useState("");const [format,setFormat]=useState<EmployeeExportFormat>("csv");const [confirm,setConfirm]=useState(false);const [notice,setNotice]=useState("");
+ const params=useMemo<EmployeeListParams>(()=>({companyId,page,pageSize,search,statuses,branchIds,departmentIds,designationIds,sortBy,sortDirection}),[companyId,page,pageSize,search,statuses,branchIds,departmentIds,designationIds,sortBy,sortDirection]);const query=useEmployees(params);const bulkLifecycle=useBulkEmployeeLifecycle();const bulkOrganization=useBulkEmployeeOrganization();const exporter=useExportEmployees();const rows=query.data?.items??[];
+ useEffect(()=>setSelected([]),[page,pageSize,search,statuses,branchIds,departmentIds,designationIds,sortBy,sortDirection]);
+ const options=(key:"branches"|"departments"|"designations")=>(masters.data?.[key]??[]).filter(item=>item.companyId===companyId).map(item=>({value:item.id,label:item.name}));
+ const organizationOptions=()=>{const key=orgField==="branchId"?"branches":orgField==="departmentId"?"departments":orgField==="designationId"?"designations":orgField==="weekOffMasterId"?"weekOffs":"holidayLists";return (masters.data?.[key]??[]).filter(item=>item.companyId===companyId&&item.status==="active").map(item=>({value:item.id,label:item.name}))};
+ const clear=()=>{setSearch("");setStatuses(DEFAULT_STATUSES);setBranchIds([]);setDepartmentIds([]);setDesignationIds([]);setPage(1)};const toggle=(id:string)=>setSelected(current=>current.includes(id)?current.filter(item=>item!==id):[...current,id]);
+ const deliver=async(scope:"current"|"all"|"selected",exportFormat:EmployeeExportFormat)=>{const result=await exporter.mutateAsync({companyId,scope,format:exportFormat,params:scope==="current"?params:undefined,employeeIds:scope==="selected"?selected:undefined});if(exportFormat==="clipboard")await navigator.clipboard.writeText(result.contents);else{const url=URL.createObjectURL(new Blob([result.contents],{type:result.mimeType}));const link=document.createElement("a");link.href=url;link.download=result.fileName;link.click();URL.revokeObjectURL(url)}setNotice(`${result.count} employee(s) exported from ${scope} scope.`)};
+ const confirmBulk=()=>{if(bulkAction==="export"){deliver("selected",format).then(()=>{setConfirm(false);setSelected([])});return}if(bulkAction==="lifecycle")bulkLifecycle.mutate({employeeIds:selected,change:{status:bulkStatus,reason:"Bulk lifecycle update"}},{onSuccess:()=>{setConfirm(false);setSelected([])}});else bulkOrganization.mutate({employeeIds:selected,field:orgField,masterId:orgMasterId,reason:"Bulk organization assignment"},{onSuccess:result=>{const outcome=result as {skipped:{id:string}[]};setNotice(outcome.skipped.length?`${outcome.skipped.length} closed or incompatible employee(s) were skipped.`:"Organization assignment completed.");setConfirm(false);setSelected([])}})};
+ const bulkDescription=bulkAction==="lifecycle"?`Set lifecycle to ${LIFECYCLE_LABELS[bulkStatus]}. History is recorded for each record.`:bulkAction==="organization"?`Assign ${organizationOptions().find(item=>item.value===orgMasterId)?.label??"the selected master"}. Closed or incompatible records will be reported and skipped.`:`Export only the ${selected.length} selected employee(s) as ${format.toUpperCase()}, excluding sensitive fields.`;
+ return <div className="space-y-5"><header className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">Employees</h2><p className="text-sm text-slate-500">Company-scoped employee directory</p></div>{isHr&&<div className="flex gap-2"><Button variant="outline" onClick={()=>{setBulkMode(value=>!value);setSelected([])}}>{bulkMode?"Close Bulk Actions":"Bulk Actions"}</Button><Button onClick={()=>navigate("/employees/list/new")} leftIcon={<Plus className="size-4"/>}>Add Employee</Button></div>}</header>
+ {notice&&<p className="rounded-lg bg-primary/10 p-3 text-sm text-primary">{notice}</p>}
+ <section className="card space-y-3 p-4"><div className="grid gap-3 md:grid-cols-3"><Input aria-label="Search employees" value={search} onChange={event=>{setSearch(event.target.value);setPage(1)}} placeholder="Search code, name, email, phone, organization..." leftIcon={<Search className="size-4"/>}/><Select mode="multiple" label="Status" options={LIFECYCLE_STATUSES.map(value=>({value,label:LIFECYCLE_LABELS[value]}))} value={statuses} onChange={value=>{setStatuses((value??[]) as EmployeeLifecycleStatus[]);setPage(1)}}/><Select mode="multiple" label="Branch" options={options("branches")} value={branchIds} onChange={value=>{setBranchIds((value??[]) as string[]);setPage(1)}}/><Select mode="multiple" label="Department" options={options("departments")} value={departmentIds} onChange={value=>{setDepartmentIds((value??[]) as string[]);setPage(1)}}/><Select mode="multiple" label="Designation" options={options("designations")} value={designationIds} onChange={value=>{setDesignationIds((value??[]) as string[]);setPage(1)}}/><div className="grid grid-cols-2 gap-2"><Select label="Sort" options={[{value:"fullName",label:"Employee Name"},{value:"employeeCode",label:"Employee Code"},{value:"joiningDate",label:"Joining Date"},{value:"department",label:"Department"},{value:"designation",label:"Designation"},{value:"branch",label:"Branch"},{value:"lifecycleStatus",label:"Status"},{value:"updatedAt",label:"Last Updated"}]} value={sortBy} onChange={event=>setSortBy(event.target.value as EmployeeListParams["sortBy"])}/><Select label="Direction" options={[{value:"asc",label:"Ascending"},{value:"desc",label:"Descending"}]} value={sortDirection} onChange={event=>setSortDirection(event.target.value as EmployeeListParams["sortDirection"])}/></div></div><div className="flex justify-between"><span className="text-xs text-slate-500">{statuses.length} status and {branchIds.length+departmentIds.length+designationIds.length} organization filter(s)</span><Button variant="ghost" size="sm" onClick={clear}>Clear Search & Filters</Button></div></section>
+ {isHr&&<section className="card space-y-3 p-3"><div className="flex flex-wrap gap-4"><ExportGroup label="Current Results" onExport={next=>deliver("current",next)}/><ExportGroup label="All Employees in this Company" onExport={next=>deliver("all",next)}/></div>{bulkMode&&<div className="flex flex-wrap items-end gap-2 border-t pt-3"><Select label={`${selected.length} selected · Bulk action`} options={[{value:"lifecycle",label:"Status Update"},{value:"organization",label:"Organization Assignment"},{value:"export",label:"Export Selected"}]} value={bulkAction} onChange={event=>setBulkAction(event.target.value as BulkAction)}/>{bulkAction==="lifecycle"&&<Select label="New status" options={LIFECYCLE_STATUSES.map(value=>({value,label:LIFECYCLE_LABELS[value]}))} value={bulkStatus} onChange={event=>setBulkStatus(event.target.value as EmployeeLifecycleStatus)}/>} {bulkAction==="organization"&&<><Select label="Assignment" options={[{value:"branchId",label:"Branch"},{value:"departmentId",label:"Department"},{value:"designationId",label:"Designation"},{value:"weekOffMasterId",label:"Week Off Master"},{value:"holidayListMasterId",label:"Holiday List Master"}]} value={orgField} onChange={event=>{setOrgField(event.target.value as OrganizationAssignmentField);setOrgMasterId("")}}/><Select label="Active master" options={organizationOptions()} placeholder="Select" value={orgMasterId} onChange={event=>setOrgMasterId(event.target.value)}/></>} {bulkAction==="export"&&<Select label="Format" options={[{value:"csv",label:"CSV"},{value:"excel",label:"Excel"},{value:"pdf",label:"PDF"},{value:"clipboard",label:"Clipboard"}]} value={format} onChange={event=>setFormat(event.target.value as EmployeeExportFormat)}/>}<Button disabled={!selected.length||(bulkAction==="organization"&&!orgMasterId)} onClick={()=>setConfirm(true)}>Review action</Button></div>}</section>}
+ <div className="card overflow-hidden"><div className="overflow-x-auto"><table className="is-hoverable w-full text-sm"><thead><tr>{bulkMode&&<th className="px-3"><input aria-label="Select current page" type="checkbox" checked={rows.length>0&&selected.length===rows.length} onChange={event=>setSelected(event.target.checked?rows.map(row=>row.id):[])}/></th>}{["Profile","Employee Code","Employee Name","Department","Designation","Branch","Joining Date","Status","Personal Email","Actions"].map(label=><th key={label} className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase text-slate-500">{label}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{query.isLoading?Array.from({length:5},(_,index)=><TableRowSkeleton key={index} cols={bulkMode?11:10}/>):query.isError?<tr><td colSpan={bulkMode?11:10} className="p-8 text-center"><p className="mb-3 text-error">Unable to load employees.</p><Button onClick={()=>query.refetch()}>Retry</Button></td></tr>:!rows.length?<tr><td colSpan={bulkMode?11:10}><EmptyState icon={Users} title={search||branchIds.length||departmentIds.length||designationIds.length?"No employees found":"No employees yet"} description="Clear Search & Filters or add an Employee."/></td></tr>:rows.map(employee=><tr key={employee.id}>{bulkMode&&<td className="px-3"><input aria-label={`Select ${employee.fullName}`} type="checkbox" checked={selected.includes(employee.id)} onChange={()=>toggle(employee.id)}/></td>}<td className="px-3 py-3"><div className="grid size-9 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{employee.firstName[0]}{employee.lastName[0]}</div></td><td className="px-3 py-3">{employee.employeeCode}</td><td className="px-3 py-3"><button className="font-medium text-primary hover:underline" onClick={()=>navigate(`/employees/list/${employee.id}`)}>{employee.fullName}</button></td><td className="px-3 py-3">{employee.department}</td><td className="px-3 py-3">{employee.designation}</td><td className="px-3 py-3">{employee.branch}</td><td className="px-3 py-3">{new Date(employee.joiningDate).toLocaleDateString()}</td><td className="px-3 py-3"><Badge label={LIFECYCLE_LABELS[employee.lifecycleStatus]} variant={employee.lifecycleStatus==="resigned"?"default":"primary"}/></td><td className="px-3 py-3">{employee.personalEmail}</td><td className="px-3 py-3">{isHr&&employee.lifecycleStatus!=="resigned"&&!employee.transferClosure&&<Button size="sm" variant="ghost" onClick={()=>navigate(`/employees/list/${employee.id}/edit`)}>Manage</Button>}</td></tr>)}</tbody></table></div>{query.data&&<><div className="flex justify-end p-2"><select aria-label="Page size" className="form-input rounded-lg border px-2 py-1 text-xs" value={pageSize} onChange={event=>{setPageSize(Number(event.target.value));setPage(1)}}><option>10</option><option>20</option><option>50</option><option>100</option></select></div><Pagination page={page} pageSize={pageSize} total={query.data.total} onPageChange={setPage}/></>}</div>
+ <ConfirmationDialog isOpen={confirm} title="Confirm bulk action" description={<p><strong>{selected.length}</strong> selected employee(s). {bulkDescription}</p>} onCancel={()=>setConfirm(false)} onConfirm={confirmBulk} isConfirming={bulkLifecycle.isPending||bulkOrganization.isPending||exporter.isPending} error={bulkLifecycle.error??bulkOrganization.error??exporter.error}/></div>};
+const ExportGroup=({label,onExport}:{label:string;onExport:(format:EmployeeExportFormat)=>void})=><div><p className="mb-1 text-xs font-medium">Export — {label}</p><div className="flex gap-1">{(["csv","excel","pdf","clipboard"] as const).map(format=><Button key={format} size="sm" variant="outline" leftIcon={<Download className="size-3"/>} onClick={()=>onExport(format)}>{format.toUpperCase()}</Button>)}</div></div>;
 export default EmployeeListPage;

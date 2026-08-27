@@ -1,70 +1,28 @@
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { queryKeys } from "@/shared/constants/query-keys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { attendanceApi } from "../api/attendance.api";
+import { attendanceService, setAttendanceMockContext } from "../api/attendance.service";
+import { mockActors } from "../api/attendance.mock";
+import type { AttendanceListParams, BulkAttendanceInput, GeofenceOverrideInput, ManualAttendanceInput, MonthlyAttendanceInput, RegularizationInput } from "../types/attendance.types";
 
-export const useTodayAttendance = () =>
-  useQuery({
-    queryKey: queryKeys.attendance.today(),
-    queryFn: attendanceApi.getTodayAttendance,
-  });
-
-export const useAttendanceHistory = (month: number, year: number) =>
-  useQuery({
-    queryKey: queryKeys.attendance.history(month, year),
-    queryFn: () => attendanceApi.getAttendanceHistory(month, year),
-  });
-
-export const useAttendanceCalendar = (month: number, year: number) =>
-  useQuery({
-    queryKey: queryKeys.attendance.calendar(month, year),
-    queryFn: () => attendanceApi.getAttendanceCalendar(month, year),
-  });
-
-export const useClockIn = () => {
-  const queryClient = useQueryClient();
-  
-
-  return useMutation({
-    mutationFn: attendanceApi.clockIn,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.attendance.today(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.attendance.all,
-      });
-    },
-  });
-};
-
-export const useClockOut = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: attendanceApi.clockOut,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.attendance.today(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.attendance.all,
-      });
-    },
-  });
-};
-
-export const useCreateRegularization = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: attendanceApi.createRegularization,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.attendance.regularizations(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.attendance.today(),
-      });
-    },
-  });
-};
+const useContext=()=>{const {user,activeCompanyId}=useAuth();const companyId=activeCompanyId??1;const actor=mockActors[user?.id??3]??mockActors[3];setAttendanceMockContext(companyId,actor);return{companyId,actor}};
+const useInvalidate=()=>{const client=useQueryClient();return()=>client.invalidateQueries({queryKey:queryKeys.attendance.all})};
+export const useTodayAttendance=()=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.today(c.companyId,c.actor.employeeId??"hr"),queryFn:()=>attendanceService.getTodayAttendance()})};
+export const useAttendanceHistory=(month:number,year:number)=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.history(c.companyId,c.actor.employeeId??"hr",month,year),queryFn:()=>attendanceService.getAttendanceHistory(month,year)})};
+export const useAttendanceCalendar=(month:number,year:number)=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.calendar(c.companyId,c.actor.employeeId??"hr",month,year),queryFn:()=>attendanceService.getAttendanceCalendar(month,year)})};
+export const useAttendanceList=(params:Omit<AttendanceListParams,"companyId"|"actor">)=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.list(c.companyId,{...params}),queryFn:()=>attendanceService.listAttendance({...params,...c})})};
+export const useAttendanceDetail=(id:string)=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.detail(c.companyId,id),queryFn:()=>attendanceService.getAttendance(id),enabled:Boolean(id)})};
+export const useAttendanceAudits=(id?:string)=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.audit(c.companyId,id??"all"),queryFn:()=>attendanceService.getHistory(id)})};
+export const useRegularizations=()=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.regularizations(c.companyId),queryFn:()=>attendanceService.listRegularizations()})};
+export const useAttendanceEmployees=()=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.configuration(c.companyId),queryFn:()=>attendanceService.employees()})};
+export const useMonthlyAttendance=(employeeId:string,year:number,month:number)=>{const c=useContext();return useQuery({queryKey:queryKeys.attendance.monthly(c.companyId,employeeId,year,month),queryFn:()=>attendanceService.getMonthlyAttendance(employeeId,year,month),enabled:Boolean(employeeId)})};
+export const useClockIn=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:attendanceService.clockIn.bind(attendanceService),onSuccess:invalidate})};
+export const useClockOut=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:attendanceService.clockOut.bind(attendanceService),onSuccess:invalidate})};
+export const useCreateRegularization=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:(input:RegularizationInput)=>attendanceService.createRegularization(input),onSuccess:invalidate})};
+export const useCancelRegularization=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:(id:string)=>attendanceService.cancelRegularization(id),onSuccess:invalidate})};
+export const useDecideRegularization=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:({id,status,reason}:{id:string;status:"APPROVED"|"REJECTED";reason:string})=>attendanceService.decideRegularization(id,status,reason),onSuccess:invalidate})};
+export const useCorrectAttendance=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:(input:ManualAttendanceInput)=>attendanceService.correctAttendance(input),onSuccess:invalidate})};
+export const useBulkAttendance=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:(input:BulkAttendanceInput)=>attendanceService.bulkAttendance(input),onSuccess:invalidate})};
+export const useSaveMonthlyAttendance=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:(input:MonthlyAttendanceInput)=>attendanceService.saveMonthlyAttendance(input),onSuccess:invalidate})};
+export const useExportAttendance=()=>{useContext();return useMutation({mutationFn:(params:AttendanceListParams)=>attendanceService.exportAttendance(params)})};
+export const useGeofenceOverride=()=>{useContext();const invalidate=useInvalidate();return useMutation({mutationFn:(input:GeofenceOverrideInput)=>attendanceService.overrideGeofence(input),onSuccess:invalidate})};

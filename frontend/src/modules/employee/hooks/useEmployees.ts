@@ -1,35 +1,23 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/shared/constants/query-keys';
-import { employeeApi } from '../api/employee.api';
-import type { CreateEmployeeInput, UpdateEmployeeInput } from '../types/employee.type';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/shared/constants/query-keys";
+import { employeeService } from "../api/employee.service";
+import type { BulkLifecycleInput, BulkOrganizationInput, ChangeLifecycleInput, CorrectEmployeeCodeInput, CreateEmployeeInput, EmployeeExportInput, EmployeeListParams, ReplaceBankInput, TransferEmployeeInput, UpdateOrganizationInput, UpdateProfileInput, UpdateReportingManagerInput, UpdateStatutoryInput } from "../types/employee.type";
 
-export const useEmployees = () =>
-  useQuery({ queryKey: queryKeys.employee.list(), queryFn: employeeApi.getEmployees });
-
-export const useEmployee = (id: number) =>
-  useQuery({
-    queryKey: queryKeys.employee.details(id),
-    queryFn: () => employeeApi.getEmployeeById(id),
-    enabled: !!id,
-  });
-
-export const useCreateEmployee = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: CreateEmployeeInput) =>
-      employeeApi.createEmployee(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employee.all }),
-  });
-};
-
-export const useUpdateEmployee = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateEmployeeInput }) =>
-      employeeApi.updateEmployee(id, data),
-    onSuccess: (_, variables) => {
-      qc.invalidateQueries({ queryKey: queryKeys.employee.list() });
-      qc.invalidateQueries({ queryKey: queryKeys.employee.details(variables.id) });
-    },
-  });
-};
+export const useEmployees = (params: EmployeeListParams) => useQuery({ queryKey: queryKeys.employee.list(params), queryFn: () => employeeService.list(params) });
+export const useEmployee = (id?: string) => useQuery({ queryKey: queryKeys.employee.detail(id ?? ""), queryFn: () => employeeService.get(id!), enabled: Boolean(id) });
+export const useEmployeeMasters = () => useQuery({ queryKey: queryKeys.employee.masters(), queryFn: employeeService.masters });
+export const useEmployeeBank = (id?: string, enabled = true) => useQuery({ queryKey: queryKeys.employee.bank(id ?? ""), queryFn: () => employeeService.bank(id!), enabled: Boolean(id) && enabled });
+export const useEmployeeStatutory = (id?: string, enabled = true) => useQuery({ queryKey: queryKeys.employee.statutory(id ?? ""), queryFn: () => employeeService.statutory(id!), enabled: Boolean(id) && enabled });
+export const useCreateEmployee = () => { const qc = useQueryClient(); return useMutation({ mutationFn: (data: CreateEmployeeInput) => employeeService.create(data), onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employee.all }) }); };
+export const useChangeEmployeeLifecycle = (id: string) => { const qc = useQueryClient(); return useMutation({ mutationFn: (data: ChangeLifecycleInput) => employeeService.changeLifecycle(id, data), onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employee.all }) }); };
+export const useCorrectEmployeeCode = (id: string) => { const qc = useQueryClient(); return useMutation({ mutationFn: (data: CorrectEmployeeCodeInput) => employeeService.correctCode(id, data), onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employee.all }) }); };
+const useEmployeeMutation = <T,>(mutate: (input: T) => Promise<unknown>) => { const qc=useQueryClient(); return useMutation({mutationFn:mutate,onSuccess:()=>qc.invalidateQueries({queryKey:queryKeys.employee.all})}); };
+export const useUpdateEmployeeProfile=(id:string)=>useEmployeeMutation<UpdateProfileInput>(input=>employeeService.updateProfile(id,input));
+export const useUpdateEmployeeOrganization=(id:string)=>useEmployeeMutation<UpdateOrganizationInput>(input=>employeeService.updateOrganization(id,input));
+export const useReplaceEmployeeBank=(id:string)=>useEmployeeMutation<ReplaceBankInput>(input=>employeeService.replaceBank(id,input));
+export const useUpdateEmployeeStatutory=(id:string)=>useEmployeeMutation<UpdateStatutoryInput>(input=>employeeService.updateStatutory(id,input));
+export const useTransferEmployee=(id:string)=>useEmployeeMutation<TransferEmployeeInput>(input=>employeeService.transfer(id,input));
+export const useBulkEmployeeLifecycle=()=>useEmployeeMutation<BulkLifecycleInput>(input=>employeeService.bulkLifecycle(input));
+export const useBulkEmployeeOrganization=()=>useEmployeeMutation<BulkOrganizationInput>(input=>employeeService.bulkUpdateOrganization(input));
+export const useUpdateReportingManager=(id:string)=>useEmployeeMutation<UpdateReportingManagerInput>(input=>employeeService.updateReportingManager(id,input));
+export const useExportEmployees=()=>useMutation({mutationFn:(input:EmployeeExportInput)=>employeeService.exportEmployees(input)});

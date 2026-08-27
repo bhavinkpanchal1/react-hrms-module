@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { AlertTriangle, CalendarDays, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button, Modal, Select } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
+import { Button, ConfirmationDialog, Modal, Select } from "@/shared/ui";
 import EmptyState from "@/shared/ui/empty-state/EmptyState";
 import { formatDisplayDate } from "@/shared/lib/date-utils";
 import { HolidayForm } from "./HolidayForm";
@@ -22,9 +23,6 @@ import type {
 interface HolidayTabProps {
   companyId: CompanyEntityId;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const HolidayTab = ({ companyId }: HolidayTabProps) => {
   const [holidayListId, setHolidayListId] = useState<CompanyEntityId>(0);
@@ -226,41 +224,19 @@ export const HolidayTab = ({ companyId }: HolidayTabProps) => {
         </Modal>
       )}
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(holidayToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deleteHoliday.isPending) setHolidayToDelete(null);
         }}
         title="Delete Holiday"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setHolidayToDelete(null)}
-              disabled={deleteHoliday.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deleteHoliday.isPending}
-            >
-              Delete Holiday
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{holidayToDelete?.name}</strong> from the selected Holiday List?
-        </p>
-        {deleteHoliday.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteHoliday.error, "Unable to delete Holiday")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{holidayToDelete?.name}</strong> from the selected Holiday List?</>}
+        onConfirm={confirmDelete}
+        isConfirming={deleteHoliday.isPending}
+        error={deleteHoliday.error}
+        errorFallback="Unable to delete Holiday"
+        confirmLabel="Delete Holiday"
+      />
     </>
   );
 };

@@ -45,6 +45,7 @@ const attendancePage = lazy(() => import("@/modules/attendance/pages/AttendanceP
 const companyListPage = lazy(
   () => import("@/modules/company/pages/CompanyListPage"),
 );
+const employeeDetailPage = lazy(() => import("@/modules/employee/pages/EmployeeDetailPage"));
 const companyDetailPage = lazy(
   () => import("@/modules/company/pages/CompanyDetailPage"),
 );
@@ -79,6 +80,7 @@ export const router = createBrowserRouter([
       // Employee
       { path: "/employees/list/", element: lazy_(React.createElement(employeeListPage)) },
       { path: "/employees/list/new", element: lazy_(React.createElement(employeeCreatePage)) },
+      { path: "/employees/list/:id", element: lazy_(React.createElement(employeeDetailPage)) },
       { path: "/employees/list/:id/edit", element: lazy_(React.createElement(employeeEditPage)) },
 
       // Recruitment — 5 routes, all correctly lazy-loaded
@@ -122,6 +124,8 @@ export const router = createBrowserRouter([
         path: "/attendance",
         element: lazy_(React.createElement(attendancePage)),
       },
+      { path: "/attendance/detail/:id", element: lazy_(React.createElement(attendancePage)) },
+      { path: "/attendance/monthly", element: lazy_(React.createElement(attendancePage)) },
       {
         path: "/leave",
         element: <div className="card p-6">Leave — coming soon</div>,

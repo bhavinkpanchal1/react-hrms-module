@@ -10,9 +10,11 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
 import {
   Badge,
   Button,
+  ConfirmationDialog,
   Input,
   Modal,
   Pagination,
@@ -48,9 +50,6 @@ const formatDate = (value: string) =>
     month: "short",
     year: "numeric",
   });
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 const CompanyListPage = () => {
   const navigate = useNavigate();
@@ -361,40 +360,17 @@ const CompanyListPage = () => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(companyToDelete)}
-        onClose={closeDelete}
+        onCancel={closeDelete}
         title="Delete Company"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={closeDelete}
-              disabled={deleteCompany.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deleteCompany.isPending}
-            >
-              Delete Company
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{companyToDelete?.company_name}</strong>? This action cannot be
-          undone in the current mock session.
-        </p>
-        {deleteCompany.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteCompany.error, "Unable to delete company")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{companyToDelete?.company_name}</strong>? This action cannot be undone in the current mock session.</>}
+        onConfirm={confirmDelete}
+        isConfirming={deleteCompany.isPending}
+        error={deleteCompany.error}
+        errorFallback="Unable to delete company"
+        confirmLabel="Delete Company"
+      />
     </div>
   );
 };

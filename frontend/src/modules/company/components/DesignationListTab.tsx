@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { Button, Modal, Select } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
+import { ConfirmationDialog, Modal, Select } from "@/shared/ui";
 import { DesignationForm } from "./DesignationForm";
 import { SimpleMasterList } from "./SimpleMasterList";
 import { useDepartments } from "../hooks/useDepartments";
@@ -19,9 +20,6 @@ import type {
 interface DesignationListTabProps {
   companyId: CompanyEntityId;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const DesignationListTab = ({ companyId }: DesignationListTabProps) => {
   const [page, setPage] = useState(1);
@@ -193,41 +191,19 @@ export const DesignationListTab = ({ companyId }: DesignationListTabProps) => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(designationToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deleteDesignation.isPending) setDesignationToDelete(null);
         }}
         title="Delete Designation"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setDesignationToDelete(null)}
-              disabled={deleteDesignation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deleteDesignation.isPending}
-            >
-              Delete Designation
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{designationToDelete?.name}</strong>? This removes the Designation from the current mock session.
-        </p>
-        {deleteDesignation.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteDesignation.error, "Unable to delete designation")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{designationToDelete?.name}</strong>? This removes the Designation from the current mock session.</>}
+        onConfirm={confirmDelete}
+        isConfirming={deleteDesignation.isPending}
+        error={deleteDesignation.error}
+        errorFallback="Unable to delete designation"
+        confirmLabel="Delete Designation"
+      />
     </>
   );
 };

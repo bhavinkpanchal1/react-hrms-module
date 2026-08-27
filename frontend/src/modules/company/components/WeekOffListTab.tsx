@@ -8,7 +8,8 @@ import {
   Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { Badge, Button, Modal, TableRowSkeleton } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
+import { Badge, Button, ConfirmationDialog, Modal, TableRowSkeleton } from "@/shared/ui";
 import EmptyState from "@/shared/ui/empty-state/EmptyState";
 import { WeekOffForm } from "./WeekOffForm";
 import {
@@ -23,9 +24,6 @@ import type { CompanyEntityId, WeekOff } from "../types/company.types";
 interface WeekOffListTabProps {
   companyId: CompanyEntityId;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const WeekOffListTab = ({ companyId }: WeekOffListTabProps) => {
   const [formOpen, setFormOpen] = useState(false);
@@ -236,41 +234,19 @@ export const WeekOffListTab = ({ companyId }: WeekOffListTabProps) => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(weekOffToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deleteWeekOff.isPending) setWeekOffToDelete(null);
         }}
         title="Delete Week Off"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setWeekOffToDelete(null)}
-              disabled={deleteWeekOff.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deleteWeekOff.isPending}
-            >
-              Delete Week Off
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{weekOffToDelete?.policy_name}</strong>? This removes the policy from the current mock session.
-        </p>
-        {deleteWeekOff.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteWeekOff.error, "Unable to delete Week Off policy")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{weekOffToDelete?.policy_name}</strong>? This removes the policy from the current mock session.</>}
+        onConfirm={confirmDelete}
+        isConfirming={deleteWeekOff.isPending}
+        error={deleteWeekOff.error}
+        errorFallback="Unable to delete Week Off policy"
+        confirmLabel="Delete Week Off"
+      />
     </div>
   );
 };

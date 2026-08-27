@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button, Modal } from "@/shared/ui";
+import { ConfirmationDialog, Modal } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
 import { AssetTypeForm } from "./AssetTypeForm";
 import { SimpleMasterList } from "./SimpleMasterList";
 import {
@@ -15,9 +16,6 @@ import type { AssetType, CompanyEntityId } from "../types/company.types";
 interface AssetTypeTabProps {
   companyId: CompanyEntityId;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const AssetTypeTab = ({ companyId }: AssetTypeTabProps) => {
   const [page, setPage] = useState(1);
@@ -145,41 +143,21 @@ export const AssetTypeTab = ({ companyId }: AssetTypeTabProps) => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(assetTypeToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deleteAssetType.isPending) setAssetTypeToDelete(null);
         }}
         title="Delete Asset Type"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setAssetTypeToDelete(null)}
-              disabled={deleteAssetType.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deleteAssetType.isPending}
-            >
-              Delete Asset Type
-            </Button>
-          </>
+        description={
+          <>Delete <strong>{assetTypeToDelete?.name}</strong>? This removes the Asset Type from the current mock session.</>
         }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{assetTypeToDelete?.name}</strong>? This removes the Asset Type from the current mock session.
-        </p>
-        {deleteAssetType.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteAssetType.error, "Unable to delete Asset Type")}
-          </div>
-        )}
-      </Modal>
+        onConfirm={confirmDelete}
+        isConfirming={deleteAssetType.isPending}
+        error={deleteAssetType.error}
+        errorFallback="Unable to delete Asset Type"
+        confirmLabel="Delete Asset Type"
+      />
     </>
   );
 };

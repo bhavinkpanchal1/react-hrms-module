@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button, Modal } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
+import { ConfirmationDialog, Modal } from "@/shared/ui";
 import { DepartmentForm } from "./DepartmentForm";
 import { SimpleMasterList } from "./SimpleMasterList";
 import {
@@ -15,9 +16,6 @@ import type { CompanyEntityId, Department } from "../types/company.types";
 interface DepartmentListTabProps {
   companyId: CompanyEntityId;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const DepartmentListTab = ({ companyId }: DepartmentListTabProps) => {
   const [page, setPage] = useState(1);
@@ -145,41 +143,19 @@ export const DepartmentListTab = ({ companyId }: DepartmentListTabProps) => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(departmentToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deleteDepartment.isPending) setDepartmentToDelete(null);
         }}
         title="Delete Department"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setDepartmentToDelete(null)}
-              disabled={deleteDepartment.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deleteDepartment.isPending}
-            >
-              Delete Department
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{departmentToDelete?.name}</strong>? This removes the Department from the current mock session.
-        </p>
-        {deleteDepartment.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteDepartment.error, "Unable to delete department")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{departmentToDelete?.name}</strong>? This removes the Department from the current mock session.</>}
+        onConfirm={confirmDelete}
+        isConfirming={deleteDepartment.isPending}
+        error={deleteDepartment.error}
+        errorFallback="Unable to delete department"
+        confirmLabel="Delete Department"
+      />
     </>
   );
 };

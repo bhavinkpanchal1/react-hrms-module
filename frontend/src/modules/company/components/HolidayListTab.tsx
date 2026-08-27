@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button, Input, Modal } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
+import { ConfirmationDialog, Input, Modal } from "@/shared/ui";
 import { HolidayListForm } from "./HolidayListForm";
 import { SimpleMasterList } from "./SimpleMasterList";
 import {
@@ -15,9 +16,6 @@ import type { CompanyEntityId, HolidayList } from "../types/company.types";
 interface HolidayListTabProps {
   companyId: CompanyEntityId;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const HolidayListTab = ({ companyId }: HolidayListTabProps) => {
   const [page, setPage] = useState(1);
@@ -172,41 +170,19 @@ export const HolidayListTab = ({ companyId }: HolidayListTabProps) => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(holidayListToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deleteHolidayList.isPending) setHolidayListToDelete(null);
         }}
         title="Delete Holiday List"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setHolidayListToDelete(null)}
-              disabled={deleteHolidayList.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deleteHolidayList.isPending}
-            >
-              Delete Holiday List
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{holidayListToDelete?.name}</strong> for {holidayListToDelete?.year}? This removes the Holiday List from the current mock session.
-        </p>
-        {deleteHolidayList.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteHolidayList.error, "Unable to delete Holiday List")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{holidayListToDelete?.name}</strong> for {holidayListToDelete?.year}? This removes the Holiday List from the current mock session.</>}
+        onConfirm={confirmDelete}
+        isConfirming={deleteHolidayList.isPending}
+        error={deleteHolidayList.error}
+        errorFallback="Unable to delete Holiday List"
+        confirmLabel="Delete Holiday List"
+      />
     </>
   );
 };

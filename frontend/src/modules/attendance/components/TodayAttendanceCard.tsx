@@ -2,10 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/shared/ui";
 import { formatTime } from "@/shared/utils/date";
 import { Clock } from "lucide-react";
-import type { AttendanceRecord } from "../types/attendance.types";
+import type { LegacyAttendanceRecord } from "../types/attendance.types";
 
 interface TodayAttendanceCardProps {
-  todayAttendance?: AttendanceRecord;
+  todayAttendance?: LegacyAttendanceRecord;
   formattedTimer: string;
 }
 

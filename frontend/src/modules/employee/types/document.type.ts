@@ -164,8 +164,8 @@ export const DOCUMENT_TYPE_VALUES = DOCUMENT_TYPE_OPTIONS.map(
 
 
 export interface EmployeeDocument {
-  id: number;
-  employee_id: number;
+  id: string;
+  employee_id: string;
 
   document_category: DocumentCategoryType;
   document_name: DocumentType;
@@ -179,4 +179,7 @@ export interface EmployeeDocument {
 
   uploaded_at: string;
   uploaded_by: string;
+  archived: boolean;
+  version: number;
+  versions: { version: number; file_name: string; uploaded_at: string; uploaded_by: string }[];
 }

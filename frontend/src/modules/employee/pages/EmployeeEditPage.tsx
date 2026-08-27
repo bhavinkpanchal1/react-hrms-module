@@ -1,210 +1,38 @@
-import { useEffect, useState } from "react";
+/* eslint-disable react-hooks/rules-of-hooks -- ProfileForm is mounted only after its required employee prop resolves. */
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm, type Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Save, UserCheck } from "lucide-react";
-import { Button, StepNavigation } from "@/shared/ui";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { Button } from "@/shared/ui/button/Button";
+import { Input } from "@/shared/ui/input/Input";
+import { Select } from "@/shared/ui/select/Select";
 import { PageSpinner } from "@/shared/ui/spinner/Spinner";
-import { useEmployee, useUpdateEmployee } from "../hooks/useEmployees";
-import { employeeSchema, type EmployeeFormData } from "../schema/employee.schema";
-import { useStepWizard } from "@/shared/hooks/useStepWizard";
-import { EmployeePersonalStep } from "../forms/EmployeePersonalStep";
-import { EmployeeAddressStep } from "../forms/EmployeeAddressStep";
-import { EmployeeAccountDetailsStep } from "../forms/EmployeeAccountDetailsStep";
-import { EmployeeEmergencyStep } from "../forms/EmployeeEmergencyStep";
-import { EmployeeEmploymentStep } from "../forms/EmployeeEmploymentStep";
-import { EmployeeReviewStep } from "../forms/EmployeeReviewStep";
-import { EmployeePermissionsStep } from "../forms/EmployeePermissionsStep";
-import { EmployeeDocumentStep } from "../forms/EmployeeDocumentStep";
-import { EMPLOYEE_EDIT_FORM_STEPS } from "../constants/employeeFormSteps";
-import type { EmployeeStepProps } from "../types/employeeStep.type";
+import { useChangeEmployeeLifecycle, useCorrectEmployeeCode, useEmployee, useEmployeeBank, useEmployeeMasters, useEmployees, useEmployeeStatutory, useReplaceEmployeeBank, useTransferEmployee, useUpdateEmployeeOrganization, useUpdateEmployeeProfile, useUpdateEmployeeStatutory, useUpdateReportingManager } from "../hooks/useEmployees";
+import type { ChangeLifecycleInput, ReplaceBankInput, StatutoryRecord, TransferEmployeeInput, UpdateOrganizationInput, UpdateProfileInput } from "../types/employee.type";
 
-// Steps that render with the shared {register, control, errors} contract —
-// Documents is intentionally excluded: it needs employeeId, not form
-// field bindings, and is rendered as its own special case below (same
-// pattern as Review).
-const STEP_COMPONENTS = {
-  personal: EmployeePersonalStep,
-  address: EmployeeAddressStep,
-  employment: EmployeeEmploymentStep,
-  account_details: EmployeeAccountDetailsStep,
-  emergency: EmployeeEmergencyStep,
-  permissions: EmployeePermissionsStep,
-} satisfies Record<string, React.ComponentType<EmployeeStepProps>>;
+type Section="profile"|"organization"|"manager"|"bank"|"statutory"|"lifecycle"|"code"|"transfer";
+const sections: {key:Section;label:string}[]=[{key:"profile",label:"Profile"},{key:"organization",label:"Organization"},{key:"manager",label:"Reporting Manager"},{key:"bank",label:"Bank"},{key:"statutory",label:"Statutory"},{key:"lifecycle",label:"Lifecycle"},{key:"code",label:"Code correction"},{key:"transfer",label:"Company transfer"}];
+const EmployeeEditPage=()=>{const {id=""}=useParams();const navigate=useNavigate();const {user,activeCompanyId}=useAuth();const employee=useEmployee(id);const masters=useEmployeeMasters();const bank=useEmployeeBank(id);const statutory=useEmployeeStatutory(id);const managers=useEmployees({companyId:activeCompanyId??1,page:1,pageSize:100,search:"",statuses:[],branchIds:[],departmentIds:[],designationIds:[],sortBy:"fullName",sortDirection:"asc"});const [section,setSection]=useState<Section>("profile");const [message,setMessage]=useState("");
+ const profileMutation=useUpdateEmployeeProfile(id);const orgMutation=useUpdateEmployeeOrganization(id);const managerMutation=useUpdateReportingManager(id);const bankMutation=useReplaceEmployeeBank(id);const statutoryMutation=useUpdateEmployeeStatutory(id);const lifecycleMutation=useChangeEmployeeLifecycle(id);const codeMutation=useCorrectEmployeeCode(id);const transferMutation=useTransferEmployee(id);
+ if(employee.isLoading)return <PageSpinner/>;if(!employee.data)return <div className="card p-8">Employee not found.</div>;const e=employee.data;if(user?.role!=="hr")return <div className="card p-8 text-center">You do not have permission to edit Employee data.</div>;if(e.lifecycleStatus==="resigned"||e.transferClosure)return <div className="card p-8 text-center"><p className="mb-3">Closed employees are read-only. Audited correction requires a separately approved field allowlist.</p><Button onClick={()=>navigate(`/employees/list/${e.id}`)}>Back to detail</Button></div>;
+ const done=()=>{setMessage("Changes saved successfully.");employee.refetch();};const fail=(error:Error)=>setMessage(error.message);
+ return <div className="space-y-5"><header className="flex items-center gap-3"><Button variant="ghost" onClick={()=>navigate(`/employees/list/${e.id}`)}><ArrowLeft className="size-4"/></Button><div><h2 className="text-xl font-semibold">Manage {e.fullName}</h2><p className="text-sm text-slate-500">Each responsibility is saved through a separate command.</p></div></header><nav className="flex flex-wrap gap-2">{sections.map(item=><Button key={item.key} variant={section===item.key?"primary":"outline"} size="sm" onClick={()=>{setSection(item.key);setMessage("")}}>{item.label}</Button>)}</nav>{message&&<p className="rounded-lg bg-primary/10 p-3 text-sm text-primary">{message}</p>}
+ {section==="profile"&&<ProfileForm employee={e} pending={profileMutation.isPending} onSave={value=>profileMutation.mutate(value,{onSuccess:done,onError:fail})}/>}
+ {section==="organization"&&masters.data&&<OrganizationForm employee={e} masters={masters.data} pending={orgMutation.isPending} onSave={value=>orgMutation.mutate(value,{onSuccess:done,onError:fail})}/>}
+ {section==="manager"&&<ReportingManagerForm employeeId={e.id} currentId={e.reportingManager?.id} employees={managers.data?.items??[]} pending={managerMutation.isPending} onSave={(reportingManagerId,reason)=>managerMutation.mutate({reportingManagerId:reportingManagerId||undefined,reason},{onSuccess:done,onError:fail})}/>}
+ {section==="bank"&&<BankForm current={bank.data?.find(x=>x.active)} historyCount={Math.max(0,(bank.data?.length??0)-1)} pending={bankMutation.isPending} onSave={value=>bankMutation.mutate(value,{onSuccess:done,onError:fail})}/>}
+ {section==="statutory"&&<StatutoryForm value={statutory.data??{}} pending={statutoryMutation.isPending} onSave={value=>statutoryMutation.mutate(value,{onSuccess:done,onError:fail})}/>}
+ {section==="lifecycle"&&<LifecycleForm employee={e} pending={lifecycleMutation.isPending} onSave={value=>lifecycleMutation.mutate(value,{onSuccess:done,onError:fail})}/>}
+ {section==="code"&&<CodeForm code={e.employeeCode} pending={codeMutation.isPending} onSave={(newCode,reason)=>codeMutation.mutate({newCode,reason},{onSuccess:done,onError:fail})}/>}
+ {section==="transfer"&&masters.data&&<TransferForm sourceCompanyId={e.companyId} masters={masters.data} pending={transferMutation.isPending} onSave={value=>transferMutation.mutate(value,{onSuccess:result=>{const transfer=result as {destination:{id:string}};navigate(`/employees/list/${transfer.destination.id}`)},onError:fail})}/>}</div>};
 
-// Editing an EXISTING employee — free navigation between sections via the
-// step nav, each section has its own "Update Section" button that saves
-// just that section's fields and stays put (never forces you to the
-// Review tab), plus a single combined "Update All" action on Review for
-// convenience once everything's been checked.
-const EmployeeEditPage = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const employeeId = Number(id);
-
-  const { data: employee, isLoading, error } = useEmployee(employeeId);
-  const updateEmployee = useUpdateEmployee();
-  const [savedStepKey, setSavedStepKey] = useState<string | null>(null);
-  const [mutationError, setMutationError] = useState<string | null>(null);
-
-  const form = useForm<EmployeeFormData>({
-    resolver: zodResolver(employeeSchema) as Resolver<EmployeeFormData>,
-  });
-  const { register, handleSubmit, reset, getValues, control, formState: { errors } } = form;
-
-  // Existing, presumably-valid record — every section starts "Completed"
-  // rather than "Pending", since there's nothing left to finish; errors
-  // only show up once the user actually changes something invalid.
-  const wizard = useStepWizard({
-    steps: EMPLOYEE_EDIT_FORM_STEPS,
-    mode: "edit",
-    form,
-    initialCompletedSteps: EMPLOYEE_EDIT_FORM_STEPS.map((s) => s.key),
-  });
-
-  const stepProps: EmployeeStepProps = { register, control, errors };
-
-  useEffect(() => {
-    if (!employee) return;
-    reset(employee);
-  }, [employee, reset]);
-
-  const handleSaveStep = () => {
-    setMutationError(null);
-    setSavedStepKey(null);
-    wizard.saveStep(async (stepKey, values) => {
-      await updateEmployee.mutateAsync(
-        { id: employeeId, data: values },
-        {
-          onError: (error) => {
-            setMutationError(error instanceof Error ? error.message : "Unable to save this section.");
-          },
-        },
-      );
-      setSavedStepKey(stepKey);
-    });
-  };
-
-  const handleUpdateAll = handleSubmit((data) => {
-    setMutationError(null);
-    updateEmployee.mutate(
-      { id: employeeId, data },
-      {
-        onSuccess: () => navigate(`/employees/list?updated=${employeeId}`),
-        onError: (error) => {
-          setMutationError(error instanceof Error ? error.message : "Unable to update employee.");
-        },
-      },
-    );
-  });
-
-  if (isLoading) return <PageSpinner />;
-  if (error || !employee) {
-    return (
-      <div className="flex h-64 items-center justify-center text-slate-500 dark:text-navy-300">
-        Employee not found.
-      </div>
-    );
-  }
-
-  const isReview = wizard.currentStepKey === "review";
-  const isDocuments = wizard.currentStepKey === "documents";
-
-  const renderStep = () => {
-    if (isReview) {
-      return (
-        <EmployeeReviewStep
-          values={getValues()}
-          onEditSection={wizard.goToStep}
-          errorSectionKeys={wizard.errorSteps}
-        />
-      );
-    }
-    if (isDocuments) {
-      // Documents needs employeeId, not the shared form-field props —
-      // this was previously wired into STEP_COMPONENTS with the generic
-      // {register, control, errors} props, which gave it no way to know
-      // which employee's documents to fetch (it fell back to a hardcoded
-      // constant list instead of ever calling the real API).
-      return <EmployeeDocumentStep employeeId={employeeId} />;
-    }
-    const StepComponent = STEP_COMPONENTS[wizard.currentStepKey as keyof typeof STEP_COMPONENTS];
-    return StepComponent ? <StepComponent {...stepProps} /> : null;
-  };
-
-  return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">
-          Edit Employee — {employee.first_name} {employee.last_name}
-        </h2>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
-          Jump to any section directly. Save a section on its own, or review everything and update all at once.
-        </p>
-      </div>
-
-      {mutationError && (
-        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-          {mutationError}
-        </div>
-      )}
-
-      <StepNavigation
-        steps={EMPLOYEE_EDIT_FORM_STEPS}
-        mode="edit"
-        currentStepKey={wizard.currentStepKey}
-        completedSteps={wizard.completedSteps}
-        errorSteps={wizard.errorSteps}
-        onStepClick={(key) => {
-          setSavedStepKey(null);
-          wizard.goToStep(key);
-        }}
-      />
-
-      <form onSubmit={(e) => e.preventDefault()} noValidate className="space-y-5">
-        {renderStep()}
-
-        {savedStepKey === wizard.currentStepKey && !isReview && !isDocuments && (
-          <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-            Section saved.
-          </div>
-        )}
-
-        <div className="flex flex-wrap justify-between gap-3 border-t border-slate-100 pt-5 dark:border-navy-700">
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={wizard.goBack} disabled={wizard.isFirstStep}>
-              Back
-            </Button>
-            {!wizard.isLastStep && (
-              <Button type="button" variant="primary" onClick={wizard.goNext}>
-                Next
-              </Button>
-            )}
-          </div>
-
-          {isReview ? (
-            <Button
-              type="button"
-              onClick={handleUpdateAll}
-              isLoading={updateEmployee.isPending}
-              leftIcon={<UserCheck className="size-4" />}
-            >
-              Update All
-            </Button>
-          ) : isDocuments ? null : (            
-            <Button
-              type="button"
-              onClick={handleSaveStep}
-              isLoading={updateEmployee.isPending}
-              leftIcon={<Save className="size-4" />}
-            >
-              Update Section
-            </Button>
-          )}
-        </div>
-      </form>
-    </div>
-  );
-};
-
+const Shell=({title,children,onSubmit,pending}:{title:string;children:React.ReactNode;onSubmit:(event:React.FormEvent)=>void;pending:boolean})=><form onSubmit={onSubmit} className="card grid gap-4 p-5 md:grid-cols-3"><h3 className="col-span-full font-semibold">{title}</h3>{children}<div className="col-span-full flex justify-end"><Button type="submit" isLoading={pending}>Save changes</Button></div></form>;
+const ProfileForm=({employee,onSave,pending}:{employee:ReturnType<typeof useEmployee>["data"];onSave:(value:UpdateProfileInput)=>void;pending:boolean})=>{if(!employee)return null;const [value,setValue]=useState<UpdateProfileInput>({firstName:employee.firstName,middleName:employee.middleName,lastName:employee.lastName,gender:employee.gender,maritalStatus:employee.maritalStatus,bloodGroup:employee.bloodGroup,personalEmail:employee.personalEmail,phone:employee.phone,dob:employee.dob,aadhaarName:employee.aadhaarName,aadhaarNumber:employee.aadhaarNumber,pan:employee.pan,permanentAddress:{...employee.permanentAddress},correspondenceAddress:{...employee.correspondenceAddress},emergencyContact:{...employee.emergencyContact}});const set=(key:keyof UpdateProfileInput,next:unknown)=>setValue(v=>({...v,[key]:next}));return <Shell title="Profile and protected data" pending={pending} onSubmit={event=>{event.preventDefault();onSave(value)}}>{([['firstName','First name'],['middleName','Middle name'],['lastName','Last name'],['gender','Gender'],['maritalStatus','Marital status'],['bloodGroup','Blood group'],['personalEmail','Personal email'],['phone','Phone'],['dob','DOB'],['aadhaarName','Aadhaar name'],['aadhaarNumber','Aadhaar number'],['pan','PAN']] as const).map(([key,label])=><Input key={key} label={label} required={!["middleName","gender","maritalStatus","bloodGroup"].includes(key)} type={key==="dob"?"date":"text"} value={value[key]??""} onChange={event=>set(key,event.target.value)}/>)}<h4 className="col-span-full font-medium">Addresses</h4>{(["permanentAddress","correspondenceAddress"] as const).flatMap(addressKey=>(["line1","city","state","country","pincode"] as const).map(field=><Input key={`${addressKey}-${field}`} label={`${addressKey==="permanentAddress"?"Permanent":"Correspondence"} ${field}`} value={value[addressKey][field]??""} onChange={event=>setValue(v=>({...v,[addressKey]:{...v[addressKey],[field]:event.target.value}}))}/>))}<h4 className="col-span-full font-medium">Emergency contact</h4>{(["name","phone","relationship"] as const).map(field=><Input key={field} required label={field} value={value.emergencyContact[field]} onChange={event=>setValue(v=>({...v,emergencyContact:{...v.emergencyContact,[field]:event.target.value}}))}/>)}</Shell>};
+const OrganizationForm=({employee,masters,onSave,pending}:{employee:NonNullable<ReturnType<typeof useEmployee>["data"]>;masters:NonNullable<ReturnType<typeof useEmployeeMasters>["data"]>;onSave:(value:UpdateOrganizationInput)=>void;pending:boolean})=>{const [value,setValue]=useState<UpdateOrganizationInput>({branchId:employee.branchId,departmentId:employee.departmentId,designationId:employee.designationId,weekOffMasterId:employee.weekOffMasterId,holidayListMasterId:employee.holidayListMasterId,reportingManagerId:employee.reportingManager?.id,reason:""});const opts=(key:"branches"|"departments"|"designations"|"weekOffs"|"holidayLists")=>masters[key].filter(x=>x.companyId===employee.companyId&&(x.status==="active"||x.id===value[key==="weekOffs"?"weekOffMasterId":key==="holidayLists"?"holidayListMasterId":`${key.slice(0,-1)}Id` as keyof UpdateOrganizationInput])).map(x=>({value:x.id,label:`${x.name}${x.status==="inactive"?" (current, inactive)":""}`,disabled:x.status==="inactive"}));return <Shell title={`Organization · ${employee.company} (Company cannot be changed here)`} pending={pending} onSubmit={event=>{event.preventDefault();onSave(value)}}>{([['branchId','Branch','branches'],['departmentId','Department','departments'],['designationId','Designation','designations'],['weekOffMasterId','Week off master','weekOffs'],['holidayListMasterId','Holiday list','holidayLists']] as const).map(([key,label,masterKey])=><Select key={key} label={label} options={opts(masterKey)} value={value[key]} onChange={event=>setValue(v=>({...v,[key]:event.target.value}))}/>) }<Input label="Reason for organization change" required value={value.reason} onChange={event=>setValue(v=>({...v,reason:event.target.value}))}/></Shell>};
+const BankForm=({current,historyCount,onSave,pending}:{current?:{accountNumber:string;accountHolder:string;bankName:string;branchName:string;ifsc:string};historyCount:number;onSave:(value:ReplaceBankInput)=>void;pending:boolean})=>{const [value,setValue]=useState<ReplaceBankInput>({accountNumber:current?.accountNumber??"",accountHolder:current?.accountHolder??"",bankName:current?.bankName??"",branchName:current?.branchName??"",ifsc:current?.ifsc??"",effectiveFrom:new Date().toISOString().slice(0,10),reason:""});return <Shell title={`Manage bank · ${historyCount} historical account(s) retained`} pending={pending} onSubmit={event=>{event.preventDefault();onSave(value)}}>{Object.entries(value).map(([key,item])=><Input key={key} label={key} required value={item} type={key==="effectiveFrom"?"date":"text"} onChange={event=>setValue(v=>({...v,[key]:event.target.value}))}/>)}</Shell>};
+const StatutoryForm=({value:initial,onSave,pending}:{value:StatutoryRecord;onSave:(value:StatutoryRecord)=>void;pending:boolean})=>{const [value,setValue]=useState(initial);const fields:(keyof StatutoryRecord)[]=["uan","pfNumber","pfJoiningDate","esicNumber","esicJoiningDate"];return <Shell title="Current statutory record (no statutory history)" pending={pending} onSubmit={event=>{event.preventDefault();onSave(value)}}>{fields.map(key=><Input key={key} label={key} type={key.endsWith("Date")?"date":"text"} value={value[key]??""} onChange={event=>setValue(v=>({...v,[key]:event.target.value}))}/>)}</Shell>};
+const LifecycleForm=({employee,onSave,pending}:{employee:NonNullable<ReturnType<typeof useEmployee>["data"]>;onSave:(value:ChangeLifecycleInput)=>void;pending:boolean})=>{const [value,setValue]=useState<ChangeLifecycleInput>({status:employee.lifecycleStatus,noticeStartDate:employee.noticeStartDate,endDate:employee.endDate,resignationDate:employee.resignationDate,reason:""});return <Shell title="Lifecycle action" pending={pending} onSubmit={event=>{event.preventDefault();onSave(value)}}><Select label="Status" options={[{value:"probation",label:"Probation"},{value:"regular",label:"Regular"},{value:"notice_period",label:"Notice Period"},{value:"resigned",label:"Resigned"},{value:"temp",label:"Temp"}]} value={value.status} onChange={event=>setValue(v=>({...v,status:event.target.value as ChangeLifecycleInput["status"]}))}/>{value.status==="notice_period"&&<Input label="Notice start date" type="date" value={value.noticeStartDate??""} onChange={event=>setValue(v=>({...v,noticeStartDate:event.target.value}))}/>} {(value.status==="notice_period"||value.status==="resigned")&&<Input required label="Last working date" type="date" value={value.endDate??""} onChange={event=>setValue(v=>({...v,endDate:event.target.value}))}/>} {value.status==="resigned"&&<Input required label="Resignation date" type="date" value={value.resignationDate??""} onChange={event=>setValue(v=>({...v,resignationDate:event.target.value}))}/>}<Input label="Reason" value={value.reason??""} onChange={event=>setValue(v=>({...v,reason:event.target.value}))}/></Shell>};
+const CodeForm=({code,onSave,pending}:{code:string;onSave:(code:string,reason:string)=>void;pending:boolean})=>{const [next,setNext]=useState(code);const [reason,setReason]=useState("");return <Shell title="Dedicated Employee Code correction" pending={pending} onSubmit={event=>{event.preventDefault();onSave(next,reason)}}><Input label="New Employee Code" required value={next} onChange={event=>setNext(event.target.value)}/><Input label="Mandatory correction reason" required value={reason} onChange={event=>setReason(event.target.value)}/></Shell>};
+const TransferForm=({sourceCompanyId,masters,onSave,pending}:{sourceCompanyId:number;masters:NonNullable<ReturnType<typeof useEmployeeMasters>["data"]>;onSave:(value:TransferEmployeeInput)=>void;pending:boolean})=>{const company=masters.companies.find(item=>item.id!==sourceCompanyId);const [value,setValue]=useState<TransferEmployeeInput>({destinationCompanyId:company?.id??0,exitDate:"",joiningDate:"",branchId:"",departmentId:"",designationId:"",weekOffMasterId:"",holidayListMasterId:""});const opts=(key:"branches"|"departments"|"designations"|"weekOffs"|"holidayLists")=>masters[key].filter(x=>x.companyId===value.destinationCompanyId&&x.status==="active").map(x=>({value:x.id,label:x.name}));return <Shell title="Company transfer · creates a separate destination Employee" pending={pending} onSubmit={event=>{event.preventDefault();onSave(value)}}><Select label="Destination company" options={masters.companies.filter(x=>x.id!==sourceCompanyId).map(x=>({value:x.id,label:x.name}))} value={value.destinationCompanyId} onChange={event=>setValue(v=>({...v,destinationCompanyId:Number(event.target.value),branchId:"",departmentId:"",designationId:"",weekOffMasterId:"",holidayListMasterId:""}))}/><Input required label="Source exit/transfer date" type="date" value={value.exitDate} onChange={event=>setValue(v=>({...v,exitDate:event.target.value}))}/><Input required label="Destination joining date" type="date" value={value.joiningDate} onChange={event=>setValue(v=>({...v,joiningDate:event.target.value}))}/>{([['branchId','Branch','branches'],['departmentId','Department','departments'],['designationId','Designation','designations'],['weekOffMasterId','Week off master','weekOffs'],['holidayListMasterId','Holiday list','holidayLists']] as const).map(([key,label,masterKey])=><Select key={key} required label={label} placeholder="Select manually" options={opts(masterKey)} value={value[key]} onChange={event=>setValue(v=>({...v,[key]:event.target.value}))}/>)}</Shell>};
+const ReportingManagerForm=({employeeId,currentId,employees,onSave,pending}:{employeeId:string;currentId?:string;employees:{id:string;fullName:string;lifecycleStatus:string;transferClosure?:unknown}[];onSave:(managerId:string,reason:string)=>void;pending:boolean})=>{const [managerId,setManagerId]=useState(currentId??"");const [reason,setReason]=useState("");const options=[{value:"",label:"No reporting manager"},...employees.filter(employee=>employee.id!==employeeId&&employee.lifecycleStatus!=="resigned"&&!employee.transferClosure).map(employee=>({value:employee.id,label:employee.fullName}))];return <Shell title="Company-scoped Reporting Manager" pending={pending} onSubmit={event=>{event.preventDefault();onSave(managerId,reason)}}><Select label="Reporting Manager" options={options} value={managerId} onChange={event=>setManagerId(event.target.value)}/><Input required label="Reason for change" value={reason} onChange={event=>setReason(event.target.value)}/></Shell>};
 export default EmployeeEditPage;

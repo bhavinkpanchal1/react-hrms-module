@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Download, Eye } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button, Modal } from "@/shared/ui";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
+import { Button, ConfirmationDialog, Modal } from "@/shared/ui";
 import { formatDateTime } from "@/shared/utils/date";
 import { PolicyForm } from "./PolicyForm";
 import { SimpleMasterList } from "./SimpleMasterList";
@@ -18,9 +19,6 @@ import type { CompanyEntityId, Policy } from "../types/company.types";
 interface PolicyListTabProps {
   companyId: CompanyEntityId;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 const formatBytes = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -185,41 +183,19 @@ export const PolicyListTab = ({ companyId }: PolicyListTabProps) => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(policyToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deletePolicy.isPending) setPolicyToDelete(null);
         }}
         title="Delete Policy"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setPolicyToDelete(null)}
-              disabled={deletePolicy.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              isLoading={deletePolicy.isPending}
-            >
-              Delete Policy
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{policyToDelete?.policy_name}</strong>? This removes the Policy and its mock file from the current session.
-        </p>
-        {deletePolicy.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deletePolicy.error, "Unable to delete Policy")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{policyToDelete?.policy_name}</strong>? This removes the Policy and its mock file from the current session.</>}
+        onConfirm={confirmDelete}
+        isConfirming={deletePolicy.isPending}
+        error={deletePolicy.error}
+        errorFallback="Unable to delete Policy"
+        confirmLabel="Delete Policy"
+      />
     </>
   );
 };

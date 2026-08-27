@@ -10,9 +10,11 @@ import {
   Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { getErrorMessage } from "@/shared/lib/get-error-message";
 import {
   Badge,
   Button,
+  ConfirmationDialog,
   Input,
   Modal,
   Pagination,
@@ -39,9 +41,6 @@ const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
   { value: "inactive", label: "Inactive" },
 ] as const;
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const BranchListTab = ({ companyId }: BranchListTabProps) => {
   const [page, setPage] = useState(1);
@@ -321,37 +320,19 @@ export const BranchListTab = ({ companyId }: BranchListTabProps) => {
         />
       </Modal>
 
-      <Modal
+      <ConfirmationDialog
         isOpen={Boolean(branchToDelete)}
-        onClose={() => {
+        onCancel={() => {
           if (!deleteBranch.isPending) setBranchToDelete(null);
         }}
         title="Delete Branch"
-        size="sm"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setBranchToDelete(null)}
-              disabled={deleteBranch.isPending}
-            >
-              Cancel
-            </Button>
-            <Button variant="danger" onClick={confirmDelete} isLoading={deleteBranch.isPending}>
-              Delete Branch
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-navy-200">
-          Delete <strong>{branchToDelete?.branch_name}</strong>? This removes the Branch from the current mock session.
-        </p>
-        {deleteBranch.error && (
-          <div className="mt-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-            {getErrorMessage(deleteBranch.error, "Unable to delete branch")}
-          </div>
-        )}
-      </Modal>
+        description={<>Delete <strong>{branchToDelete?.branch_name}</strong>? This removes the Branch from the current mock session.</>}
+        onConfirm={confirmDelete}
+        isConfirming={deleteBranch.isPending}
+        error={deleteBranch.error}
+        errorFallback="Unable to delete branch"
+        confirmLabel="Delete Branch"
+      />
     </div>
   );
 };

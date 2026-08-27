@@ -132,9 +132,13 @@ export const queryKeys = {
 
   employee: {
     all: ["employee"] as const,
-    list: () => [...queryKeys.employee.all, "list"] as const,
-    details: (id: number) => [...queryKeys.employee.all, id] as const,
-    documents: (employeeId: number) =>
+    list: (params?: unknown) => [...queryKeys.employee.all, "list", params] as const,
+    details: (id: string | number) => [...queryKeys.employee.all, id] as const,
+    detail: (id: string) => [...queryKeys.employee.all, "detail", id] as const,
+    masters: () => [...queryKeys.employee.all, "masters"] as const,
+    bank: (id: string) => [...queryKeys.employee.all, "bank", id] as const,
+    statutory: (id: string) => [...queryKeys.employee.all, "statutory", id] as const,
+    documents: (employeeId: string | number) =>
       [...queryKeys.employee.details(employeeId), "documents"] as const,
     document: (employeeId: number, documentId: number) =>
       [...queryKeys.employee.documents(employeeId), documentId] as const,
@@ -142,15 +146,16 @@ export const queryKeys = {
 
   attendance: {
     all: ["attendance"] as const,
-    today: () => [...queryKeys.attendance.all, "today"] as const,
-    history: (month: number, year: number) =>
-      [...queryKeys.attendance.all, "history", month, year] as const,
-    calendar: (month: number, year: number) =>
-      [...queryKeys.attendance.all, "calendar", month, year] as const,
-    regularizations: () =>
-      [...queryKeys.attendance.all, "regularizations"] as const,
-    regularization: (id: number) =>
-      [...queryKeys.attendance.regularizations(), id] as const,
+    today: (companyId = 1, employeeId: string | number = "current") => [...queryKeys.attendance.all, companyId, "today", employeeId] as const,
+    list: (companyId: number, params: object) => [...queryKeys.attendance.all, companyId, "list", params] as const,
+    detail: (companyId: number, id: string) => [...queryKeys.attendance.all, companyId, "detail", id] as const,
+    audit: (companyId: number, id: string) => [...queryKeys.attendance.all, companyId, "audit", id] as const,
+    history: (companyId: number, employeeId: string, month: number, year: number) => [...queryKeys.attendance.all, companyId, "history", employeeId, month, year] as const,
+    calendar: (companyId: number, employeeId: string, month: number, year: number) => [...queryKeys.attendance.all, companyId, "calendar", employeeId, month, year] as const,
+    regularizations: (companyId = 1) => [...queryKeys.attendance.all, companyId, "regularizations"] as const,
+    regularization: (id: number) => [...queryKeys.attendance.regularizations(), id] as const,
+    monthly: (companyId:number,employeeId:string,year:number,month:number)=>[...queryKeys.attendance.all,companyId,"monthly",employeeId,year,month] as const,
+    configuration: (companyId:number)=>[...queryKeys.attendance.all,companyId,"configuration"] as const,
     pendingRegularizations: () =>
       [...queryKeys.attendance.all, "pending-regularizations"] as const,
   },
