@@ -4,7 +4,7 @@ import {
   candidateSchema,
   type CandidateFormData,
 } from "../schema/candidate.schema";
-import { Button, StepNavigation } from "@/shared/ui";
+import { Button, StepNavigation, type StepDefinition } from "@/shared/ui";
 import { useStepWizard } from "@/shared/hooks/useStepWizard";
 import type { Job } from "../types";
 import { CANDIDATE_STEPS } from "../constant/candidate-steps";
@@ -49,25 +49,29 @@ export const CandidateForm = ({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="card overflow-hidden">
+        <div className="border-b border-slate-200 px-4 py-5 dark:border-navy-500 sm:px-5">
         <StepNavigation
-          steps={CANDIDATE_STEPS}
+          steps={CANDIDATE_STEPS as unknown as StepDefinition[]}
           mode={mode}
           currentStepKey={wizard.currentStepKey}
           completedSteps={wizard.completedSteps}
           errorSteps={wizard.errorSteps}
           onStepClick={wizard.goToStep}
         />
+        </div>
 
         {/* Step Content */}
+        <div className="px-4 py-5 sm:px-5 lg:p-6">
         {wizard.currentStepKey === "basic" && <CandidateBasicStep jobs={jobs} />}
         {wizard.currentStepKey === "personal" && <CandidatePersonalStep />}
         {wizard.currentStepKey === "professional" && <CandidateProfessionalStep />}
         {wizard.currentStepKey === "education" && <CandidateEducationalStep />}
         {wizard.currentStepKey === "additional" && <CandidateAdditionalStep />}
+        </div>
 
         {/* Navigation */}
-        <div className="flex justify-between border-t border-slate-100 pt-5 dark:border-navy-700">
+        <div className="flex flex-wrap justify-between gap-3 border-t border-slate-200 px-4 py-4 dark:border-navy-500 sm:px-5">
           <Button
             type="button"
             variant="outline"

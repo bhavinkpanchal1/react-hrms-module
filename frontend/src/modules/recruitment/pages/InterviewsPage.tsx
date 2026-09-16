@@ -1,156 +1,17 @@
-import { useInterviews } from "../hooks/useInterviews";
+import { useState } from "react";
+import { CalendarClock, ExternalLink, MapPin, Monitor } from "lucide-react";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { Button, Textarea } from "@/shared/ui";
 import { Badge, type BadgeVariant } from "@/shared/ui/badge/Badge";
-import { TableRowSkeleton } from "@/shared/ui/skeleton/Skeleton";
 import EmptyState from "@/shared/ui/empty-state/EmptyState";
-import type { InterviewStatus } from "../types/interview.type";
-import { CalendarClock, MapPin, Monitor } from "lucide-react";
-
-const statusVariant = {
-  scheduled: "info",
-  completed: "success",
-  cancelled: "error",
-  no_show: "warning",
-} satisfies Record<InterviewStatus, BadgeVariant>;
-
-const InterviewsPage = () => {
-  const { data: interviews = [], isLoading } = useInterviews();
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">
-            Interviews
-          </h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
-            Scheduled and completed interview sessions
-          </p>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          {
-            label: "Total",
-            value: interviews.length,
-            cls: "text-slate-800 dark:text-navy-100",
-          },
-          {
-            label: "Scheduled",
-            value: interviews.filter((i) => i.status === "scheduled").length,
-            cls: "text-info",
-          },
-          {
-            label: "Completed",
-            value: interviews.filter((i) => i.status === "completed").length,
-            cls: "text-success",
-          },
-          {
-            label: "Cancelled",
-            value: interviews.filter((i) => i.status === "cancelled").length,
-            cls: "text-error",
-          },
-        ].map((s) => (
-          <div key={s.label} className="card px-4 py-3">
-            <p className="text-xs text-slate-400 dark:text-navy-400">
-              {s.label}
-            </p>
-            <p className={`mt-1 text-2xl font-semibold ${s.cls}`}>{s.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="is-hoverable w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-150 dark:border-navy-600">
-                {[
-                  "Candidate",
-                  "Job",
-                  "Interviewer",
-                  "Date & Time",
-                  "Duration",
-                  "Mode",
-                  "Status",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-navy-300"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-navy-600">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRowSkeleton key={i} cols={7} />
-                ))
-              ) : interviews.length === 0 ? (
-                <tr>
-                  <td colSpan={7}>
-                    <EmptyState
-                      icon={CalendarClock}
-                      title="No interviews yet"
-                      description="Interviews will appear here once candidates move to the interview stage."
-                    />
-                  </td>
-                </tr>
-              ) : (
-                interviews.map((iv) => (
-                  <tr key={iv.id}>
-                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-navy-100">
-                      {iv.candidate_name}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {iv.job_title}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {iv.interviewer}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {new Date(iv.scheduled_at).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {iv.duration_minutes} min
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {iv.mode === "online" ? (
-                        <div className="flex items-center gap-2">
-                          <Monitor className="size-4 text-info" />
-                          <span>Online</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="size-4 text-warning" />
-                          <span>In Person</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge
-                        label={iv.status.replace("_", " ")}
-                        variant={statusVariant[iv.status]}
-                      />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+import { useApplications } from "../hooks/useApplications";
+import { useCandidates } from "../hooks/useCandidates";
+import { useJobs } from "../hooks/useJobs";
+import { useInterviews, useReviewerEmployees, useReviewerInterviews, useUpdateReviewerFeedback } from "../hooks/useInterviews";
+import type { InterviewStatus, ReviewerInterviewProjection } from "../types/interview.type";
+const variants:Record<InterviewStatus,BadgeVariant>={SCHEDULED:"info",COMPLETED:"success",CANCELLED:"error",NO_SHOW:"warning"};
+const ReviewerCard=({interview}:{interview:ReviewerInterviewProjection})=>{const [feedback,setFeedback]=useState(interview.feedback??"");const save=useUpdateReviewerFeedback();return <div className="card space-y-3 p-5"><div className="flex justify-between"><div><h3 className="font-semibold">{interview.candidateName}</h3><p className="text-sm text-slate-500">{interview.jobTitle} · Round {interview.roundNumber}: {interview.roundName}</p></div><Badge label="SCHEDULED" variant="info"/></div><p className="text-sm">{new Date(interview.scheduledAt).toLocaleString("en-IN")} · {interview.mode}</p>{interview.notes&&<p className="text-sm">Notes: {interview.notes}</p>}<div className="flex gap-3 text-sm">{interview.meetingLink&&<a className="text-primary" href={interview.meetingLink} target="_blank" rel="noreferrer"><ExternalLink className="mr-1 inline size-4"/>Join meeting</a>}{interview.resume&&<a className="text-primary" href={interview.resume.fileUrl} target="_blank" rel="noreferrer">Resume: {interview.resume.fileName}</a>}</div><Textarea label="Feedback" rows={4} value={feedback} onChange={e=>setFeedback(e.target.value)}/><Button size="sm" isLoading={save.isPending} onClick={()=>save.mutate({id:interview.id,feedback})}>Save Feedback</Button></div>};
+const ReviewerInterviews=()=>{const assigned=useReviewerInterviews();return <div className="space-y-5"><div><h2 className="text-xl font-semibold">My Interviews</h2><p className="text-sm text-slate-500">Your active assigned Interviews</p></div>{assigned.data?.length?<div className="grid gap-4 lg:grid-cols-2">{assigned.data.map(interview=><ReviewerCard key={interview.id} interview={interview}/>)}</div>:<div className="card"><EmptyState icon={CalendarClock} title="No active assigned Interviews" description="Only scheduled Interviews assigned to you appear here."/></div>}</div>};
+const HrInterviews=()=>{const {data:interviews=[]}=useInterviews();const {data:applications=[]}=useApplications();const {data:candidates=[]}=useCandidates();const {data:jobs=[]}=useJobs();const {data:employees=[]}=useReviewerEmployees();return <div className="space-y-5"><div><h2 className="text-xl font-semibold">Interviews</h2><p className="text-sm text-slate-500">Company Interview register and history</p></div><div className="card overflow-x-auto"><table className="w-full text-sm"><thead><tr>{["Candidate / Job","Round","Reviewer","Date & Time","Mode","Status"].map(head=><th key={head} className="px-4 py-3 text-left">{head}</th>)}</tr></thead><tbody>{interviews.map(interview=>{const application=applications.find(item=>item.id===interview.applicationId);const candidate=candidates.find(item=>item.id===application?.candidateId);const job=jobs.find(item=>item.id===application?.jobId);return <tr key={interview.id} className="border-t"><td className="px-4 py-3"><b>{candidate?`${candidate.first_name} ${candidate.last_name}`:"Unknown"}</b><br/><span className="text-xs text-slate-500">{job?.title}</span></td><td className="px-4 py-3">{interview.roundNumber} · {interview.roundName}</td><td className="px-4 py-3">{employees.find(employee=>employee.id===interview.reviewerEmployeeId)?.fullName??interview.reviewerEmployeeId}</td><td className="px-4 py-3">{new Date(interview.scheduledAt).toLocaleString("en-IN")}</td><td className="px-4 py-3">{interview.mode==="ONLINE"?<Monitor className="inline size-4"/>:<MapPin className="inline size-4"/>} {interview.mode}</td><td className="px-4 py-3"><Badge label={interview.status.replace("_"," ")} variant={variants[interview.status]}/></td></tr>})}</tbody></table>{!interviews.length&&<EmptyState icon={CalendarClock} title="No Interviews" description="Scheduled Interviews will appear here."/>}</div></div>};
+const InterviewsPage=()=>{const {user}=useAuth();return user?.role==="hr"?<HrInterviews/>:<ReviewerInterviews/>};
 export default InterviewsPage;

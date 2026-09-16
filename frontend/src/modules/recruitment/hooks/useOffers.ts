@@ -1,24 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/shared/constants/query-keys';
-import { recruitmentApi } from '../api/recruitment.api';
-import type { Offer } from '../types';
-
-export const useOffers = () =>
-  useQuery({ queryKey: queryKeys.recruitment.offers(), queryFn: recruitmentApi.getOffers });
-
-export const useCreateOffer = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Omit<Offer, 'id' | 'issued_at'>) => recruitmentApi.createOffer(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.recruitment.offers() }),
-  });
-};
-
-export const useUpdateOfferStatus = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, status }: { id: number; status: Offer['status'] }) =>
-      recruitmentApi.updateOfferStatus(id, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.recruitment.offers() }),
-  });
-};
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { queryKeys } from "@/shared/constants/query-keys";
+import { recruitmentApi } from "../api/recruitment.api";
+import type { ConvertApplicationInput, CreateOfferInput } from "../types";
+const useContext=()=>{const {activeCompanyId,user}=useAuth();const companyId=activeCompanyId??1;recruitmentApi.setCompanyContext(companyId,user?.role,user?.name,user?.id);return {companyId,user};};
+const invalidate=(qc:ReturnType<typeof useQueryClient>,companyId:number)=>{qc.invalidateQueries({queryKey:queryKeys.recruitment.offers(companyId)});qc.invalidateQueries({queryKey:queryKeys.recruitment.applications(companyId)});};
+export const useOffers=()=>{const {companyId,user}=useContext();return useQuery({queryKey:queryKeys.recruitment.offers(companyId),queryFn:recruitmentApi.getOffers,enabled:user?.role==="hr"});};
+const useOfferAction=<T,>(fn:(input:T)=>Promise<unknown>)=>{const qc=useQueryClient();const {companyId}=useContext();return useMutation({mutationFn:fn,onSuccess:()=>invalidate(qc,companyId)});};
+export const useCreateOffer=()=>useOfferAction<CreateOfferInput>(recruitmentApi.createOffer);
+export const useAcceptOffer=()=>useOfferAction<number>(recruitmentApi.acceptOffer);
+export const useDeclineOffer=()=>useOfferAction<number>(recruitmentApi.declineOffer);
+export const useExpireOffer=()=>useOfferAction<number>(recruitmentApi.expireOffer);
+export const useRecruitmentConversionContext=(applicationId?:number,offerId?:number)=>{const {companyId,user}=useContext();return useQuery({queryKey:[...queryKeys.recruitment.applications(companyId),applicationId,"conversion",offerId],queryFn:()=>recruitmentApi.getRecruitmentConversionContext(applicationId!,offerId!),enabled:user?.role==="hr"&&Boolean(applicationId&&offerId)});};
+export const useConvertApplicationToEmployee=()=>{const qc=useQueryClient();const {companyId}=useContext();return useMutation({mutationFn:(input:ConvertApplicationInput)=>recruitmentApi.convertApplicationToEmployee(input),onSuccess:()=>{qc.invalidateQueries({queryKey:queryKeys.recruitment.applications(companyId)});qc.invalidateQueries({queryKey:queryKeys.recruitment.offers(companyId)});qc.invalidateQueries({queryKey:queryKeys.recruitment.candidates(companyId)});qc.invalidateQueries({queryKey:queryKeys.employee.all});}});};

@@ -20,17 +20,17 @@ interface JobTableProps {
 export const JobTable = ({ jobs, isLoading, onEdit, onDelete }: JobTableProps) => (
   <div className="card overflow-hidden">
     <div className="overflow-x-auto">
-      <table className="is-hoverable w-full text-sm">
+      <table className="is-hoverable w-full text-left">
         <thead>
-          <tr className="border-b border-slate-150 dark:border-navy-600">
+          <tr className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
             {['Job Title', 'Department', 'Location', 'Exp.', 'Openings', 'Status', ''].map((h) => (
-              <th key={h} className={`whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-navy-300 ${h === '' ? 'text-right' : 'text-left'}`}>
+              <th key={h} className={`whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 sm:px-5 ${h === '' ? 'text-right' : 'text-left'}`}>
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-navy-600">
+        <tbody>
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => <TableRowSkeleton key={i} cols={7} />)
             : jobs.length === 0
@@ -41,16 +41,16 @@ export const JobTable = ({ jobs, isLoading, onEdit, onDelete }: JobTableProps) =
               </td></tr>
             )
             : jobs.map((job) => (
-              <tr key={job.id}>
-                <td className="px-4 py-3 font-medium text-slate-800 dark:text-navy-100">{job.title}</td>
-                <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{job.department}</td>
-                <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{job.location}</td>
-                <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{job.experience} yr{job.experience !== 1 ? 's' : ''}</td>
-                <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{job.openings}</td>
-                <td className="px-4 py-3">
+              <tr key={job.id} className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800 dark:text-navy-100 sm:px-5">{job.title}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-navy-200 sm:px-5">{job.department}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-navy-200 sm:px-5">{job.location}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-navy-200 sm:px-5">{job.experience} yr{job.experience !== 1 ? 's' : ''}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-navy-200 sm:px-5">{job.openings}</td>
+                <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                   <Badge label={job.status.replace('_', ' ')} variant={statusVariant[job.status as JobStatus]} />
                 </td>
-                <td className="px-4 py-3">
+                <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                   <div className="flex items-center justify-end gap-1">
                     <Button variant="ghost" size="sm" onClick={() => onEdit(job)} leftIcon={<Pencil className="size-3.5" />}>Edit</Button>
                     <Button variant="ghost" size="sm" onClick={() => onDelete(job.id)} leftIcon={<Trash2 className="size-3.5" />} className="text-error hover:bg-error/10">Delete</Button>

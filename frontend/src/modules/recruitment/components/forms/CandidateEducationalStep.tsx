@@ -12,14 +12,14 @@ export const CandidateEducationalStep = () => {
   return (
     <div className="space-y-6">
       {/* Section Header */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-navy-600 dark:bg-navy-700">
+      <div>
         <div className="mb-6 flex items-center gap-3 border-b border-slate-200 pb-4 dark:border-navy-600">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <GraduationCap className="size-5" />
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-navy-100">
+            <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
               Education Information
             </h3>
 

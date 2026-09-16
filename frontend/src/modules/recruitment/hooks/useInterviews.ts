@@ -1,47 +1,22 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/shared/constants/query-keys';
-import { recruitmentApi } from '../api/recruitment.api';
-import type { Interview } from '../types/interview.type';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { employeeService } from "@/modules/employee/api/employee.service";
+import { queryKeys } from "@/shared/constants/query-keys";
+import { recruitmentApi } from "../api/recruitment.api";
+import type { NextRoundInput, NoShowAttribution, RescheduleInterviewInput, ScheduleInterviewInput } from "../types/interview.type";
 
-
-export const useInterviews = () =>
-  useQuery({ queryKey: queryKeys.recruitment.interviews(), queryFn: recruitmentApi.getInterviews });
-
-export const useCreateInterview = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Omit<Interview, 'id'>) => recruitmentApi.createInterview(data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.recruitment.interviews() });
-      qc.invalidateQueries({ queryKey: queryKeys.recruitment.candidates() });
-    },
-  });
-};
-
-// Used for both recording an interview response and rescheduling an
-// existing round — see recruitmentApi.updateInterview for why these share
-// one mutation.
-export const useUpdateInterview = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Interview> }) =>
-      recruitmentApi.updateInterview(id, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.recruitment.interviews() });
-      qc.invalidateQueries({ queryKey: queryKeys.recruitment.candidates() });
-    },
-  });
-};
-
-// Derived — reuses the interviews list cache instead of firing a new
-// request, since the mock/API already returns the full list.
-export const useCandidateInterviews = (candidateId: number) =>
-  useQuery({
-    queryKey: queryKeys.recruitment.interviews(),
-    queryFn: recruitmentApi.getInterviews,
-    enabled: !!candidateId,
-    select: (interviews) =>
-      interviews
-        .filter((iv) => iv.candidateId === candidateId)
-        .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at)),
-  });
+const useContext = () => { const { activeCompanyId, user } = useAuth(); const companyId = activeCompanyId ?? 1; recruitmentApi.setCompanyContext(companyId, user?.role, user?.name, user?.id); return { companyId, user }; };
+const invalidate = (qc: ReturnType<typeof useQueryClient>, companyId:number) => { qc.invalidateQueries({ queryKey: queryKeys.recruitment.interviews(companyId) }); qc.invalidateQueries({ queryKey: queryKeys.recruitment.applications(companyId) }); };
+export const useInterviews = () => { const { companyId, user } = useContext(); return useQuery({ queryKey: [...queryKeys.recruitment.interviews(companyId), "hr"], queryFn: recruitmentApi.getInterviews, enabled: user?.role === "hr" }); };
+export const useReviewerInterviews = () => { const { companyId, user } = useContext(); return useQuery({ queryKey: [...queryKeys.recruitment.interviews(companyId), "reviewer", user?.id], queryFn: recruitmentApi.getReviewerInterviews, enabled: !!user && user.role !== "hr" }); };
+export const useReviewerEmployees = () => { const { companyId, user } = useContext(); return useQuery({ queryKey: ["employee", "interview-reviewers", companyId], enabled: user?.role === "hr", queryFn: () => employeeService.list({ companyId, page: 1, pageSize: 500, search: "", statuses: ["probation", "regular", "notice_period", "temp"], branchIds: [], departmentIds: [], designationIds: [], sortBy: "fullName", sortDirection: "asc" }).then((result) => result.items) }); };
+export const useApplicationInterviews = (applicationId: number) => { const { companyId, user } = useContext(); return useQuery({ queryKey: [...queryKeys.recruitment.interviews(companyId), applicationId], queryFn: recruitmentApi.getInterviews, enabled: !!applicationId && user?.role === "hr", select: (items) => items.filter((item) => item.applicationId === applicationId).sort((a,b) => a.roundNumber-b.roundNumber) }); };
+const useInterviewMutation = <T,>(fn: (input: T) => Promise<unknown>) => { const qc = useQueryClient(); const {companyId}=useContext(); return useMutation({ mutationFn: fn, onSuccess: () => invalidate(qc,companyId) }); };
+export const useCreateInterview = () => useInterviewMutation<ScheduleInterviewInput>(recruitmentApi.createInterview);
+export const useSubmitInterview = () => useInterviewMutation<{ id:number; data:NextRoundInput }>(({id,data}) => recruitmentApi.submitInterview(id,data));
+export const useRescheduleInterview = () => useInterviewMutation<{ id:number; data:RescheduleInterviewInput }>(({id,data}) => recruitmentApi.rescheduleInterview(id,data));
+export const useCancelInterview = () => useInterviewMutation<{ id:number; reason:string }>(({id,reason}) => recruitmentApi.cancelInterview(id,reason));
+export const useMarkInterviewNoShow = () => useInterviewMutation<{ id:number; attribution:NoShowAttribution; reason:string }>(({id,attribution,reason}) => recruitmentApi.markInterviewNoShow(id,attribution,reason));
+export const useNextInterviewRound = () => useInterviewMutation<{ id:number; data:NextRoundInput }>(({id,data}) => recruitmentApi.nextInterviewRound(id,data));
+export const usePassAndCompleteInterview = () => useInterviewMutation<number>((id) => recruitmentApi.passAndCompleteInterview(id));
+export const useUpdateReviewerFeedback = () => { const qc=useQueryClient(); const {companyId}=useContext(); return useMutation({ mutationFn: ({id,feedback}:{id:number;feedback:string}) => recruitmentApi.updateReviewerFeedback(id,feedback), onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.recruitment.interviews(companyId) }) }); };

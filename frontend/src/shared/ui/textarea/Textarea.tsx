@@ -17,11 +17,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       )}
       <textarea ref={ref} {...props}
         className={cn(
-          'form-input w-full resize-y rounded-lg border bg-white px-3 py-2 text-sm text-slate-800 min-h-[80px]',
-          'placeholder:text-slate-400 dark:bg-navy-700 dark:text-navy-100 dark:placeholder:text-navy-400',
+          'form-textarea min-h-[80px] w-full resize-y rounded-lg border bg-transparent px-3 py-2 text-sm text-slate-800',
+          'placeholder:text-slate-400/70 hover:border-slate-400 dark:text-navy-100 dark:placeholder:text-navy-300 dark:hover:border-navy-400',
           error
             ? 'border-error focus:border-error focus:ring-1 focus:ring-error/30'
-            : 'border-slate-300 focus:border-primary focus:ring-1 focus:ring-primary/30 dark:border-navy-500',
+            : 'border-slate-300 focus:border-primary dark:border-navy-450 dark:focus:border-accent',
           className,
         )}
       />

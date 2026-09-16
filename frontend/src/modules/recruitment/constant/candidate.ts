@@ -47,28 +47,6 @@ export const MARITAL_STATUS_OPTIONS = [
   { value: "married", label: 'Married' },
 ] as const;
 
-export const CANDIDATE_STATUS_VALUES = [
-  "applied",
-  "screening",
-  "interview",
-  "offer",
-  "onboarding",
-  "hired",
-  "rejected",
-] as const;
-
-export const CANDIDATE_STATUS_OPTIONS = [
-  { value: "applied", label: 'Applied' },
-  { value: "screening", label: 'Screening' },
-  { value: "interview", label: 'Interview' },
-  { value: "offer", label: 'Offer' },
-  {value: "onboarding", label: "Onboarding"},
-  { value: "hired", label: 'Hired' },
-  { value: "rejected", label: 'Rejected' },
-];
-
 export type Gender = typeof GENDERS_OPTIONS[number]["value"];
 
 export type MaritalStatus = typeof MARITAL_STATUS_OPTIONS[number]["value"];
-
-export type CandidateStatus = typeof CANDIDATE_STATUS_OPTIONS[number]["value"];

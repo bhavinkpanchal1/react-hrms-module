@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Button, Select } from "@/shared/ui";
 import { useState } from "react";
+import type { ReactNode } from "react";
 
 const SessionLoader = () => (
   <div className="grid min-h-screen place-items-center bg-slate-50 dark:bg-navy-900">
@@ -67,4 +68,14 @@ export const UnauthenticatedRoute = () => {
   if (status === "loading") return <SessionLoader />;
   if (status === "authenticated") return <Navigate to="/" replace />;
   return <Outlet />;
+};
+
+export const RoleHomeRedirect = () => {
+  const { user } = useAuth();
+  return <Navigate to={user?.role === "hr" ? "/recruitment/jobs" : "/recruitment/interviews"} replace />;
+};
+
+export const HrPage = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  return user?.role === "hr" ? children : <Navigate to="/recruitment/interviews" replace />;
 };

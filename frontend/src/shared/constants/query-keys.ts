@@ -120,14 +120,18 @@ export const queryKeys = {
 
   recruitment: {
     all: ["recruitment"] as const,
-    jobs: () => [...queryKeys.recruitment.all, "jobs"] as const,
-    jobDetail: (id: number) => [...queryKeys.recruitment.jobs(), id] as const,
-    candidates: () => [...queryKeys.recruitment.all, "candidates"] as const,
-    candidate: (id: number) =>
-      [...queryKeys.recruitment.candidates(), id] as const,
-    pipeline: () => [...queryKeys.recruitment.all, "pipeline"] as const,
-    interviews: () => [...queryKeys.recruitment.all, "interviews"] as const,
-    offers: () => [...queryKeys.recruitment.all, "offers"] as const,
+    jobs: (companyId = 1) => [...queryKeys.recruitment.all, companyId, "jobs"] as const,
+    jobDetail: (id: number, companyId = 1) => [...queryKeys.recruitment.jobs(companyId), id] as const,
+    candidates: (companyId = 1) => [...queryKeys.recruitment.all, companyId, "candidates"] as const,
+    candidate: (id: number, companyId = 1) =>
+      [...queryKeys.recruitment.candidates(companyId), id] as const,
+    documents: (candidateId: number, companyId = 1) =>
+      [...queryKeys.recruitment.candidate(candidateId, companyId), "documents"] as const,
+    applications: (companyId = 1) => [...queryKeys.recruitment.all, companyId, "applications"] as const,
+    application: (id: number, companyId = 1) => [...queryKeys.recruitment.applications(companyId), id] as const,
+    pipeline: (companyId = 1) => [...queryKeys.recruitment.all, companyId, "pipeline"] as const,
+    interviews: (companyId = 1) => [...queryKeys.recruitment.all, companyId, "interviews"] as const,
+    offers: (companyId = 1) => [...queryKeys.recruitment.all, companyId, "offers"] as const,
   },
 
   employee: {

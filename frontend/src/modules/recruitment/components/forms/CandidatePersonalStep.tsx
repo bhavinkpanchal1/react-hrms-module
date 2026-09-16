@@ -21,8 +21,8 @@ export const CandidatePersonalStep = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-200 pb-4 dark:border-navy-600">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-navy-100">
+      <div className="border-b border-slate-200 pb-4 dark:border-navy-500">
+        <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
           Personal Information
         </h3>
 

@@ -1,54 +1,10 @@
-import { useForm, Controller } from "react-hook-form"
-import { Button, DatePicker, Select,  } from "@/shared/ui";
-import { interviewSchema, type InterviewFormData } from "../schema/interview.schema";
-import { INTERVIEW_MODES, INTERVIEW_ROUND } from "../types/interview.type";
-import { EMPLOYEE_LIST } from "../../employee/constants/employee";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, DatePicker, Input, Select, Textarea } from "@/shared/ui";
+import { interviewSchema, type InterviewFormData } from "../schema/interview.schema";
+import { INTERVIEW_MODES } from "../types/interview.type";
 
-interface InterviewFormProps {
-  onSubmit: (data: InterviewFormData) => void;
-  onCancel: () => void;
-  isSubmitting: boolean;
-  defaultValues?: Partial<InterviewFormData>;
-  submitLabel?: string;
-}
-
-export const InterviewForm = ({ onSubmit, onCancel, isSubmitting, defaultValues, submitLabel = "Submit" }: InterviewFormProps) => {
-  const { register, handleSubmit, control, formState: { errors } } = useForm<InterviewFormData>({
-    resolver: zodResolver(interviewSchema),
-    defaultValues,
-  });
-  return (
-    <div className="scrollbar-sm overflow-y-auto">
-      <form onSubmit={ handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Controller
-            control={control}
-            name="scheduled_at"
-            render={({ field, fieldState }) => (
-              <DatePicker
-                mode="datetime"
-                label="Date & Time"
-                required
-                placeholder="Select date & time"
-                value={field.value}
-                onChange={field.onChange}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
-          <Select label="Round" required options={INTERVIEW_ROUND} placeholder="— Select round —" error={errors.round?.message} {...register('round')}
-          />
-          <Select label="Mode" required options={INTERVIEW_MODES} placeholder="— Select mode —" error={errors.mode?.message} {...register('mode')}
-          />
-          <Select label="Interviewer" required options={EMPLOYEE_LIST} placeholder="— Select interviewer —" error={errors.interviewer?.message} {...register('interviewer')}
-          />
-        </div>
-        <div className="mt-6 flex justify-end gap-3">
-          <Button type="button" variant="secondary" size="md" onClick={onCancel}>Cancel</Button>
-          <Button type="submit" variant="primary" size="md" isLoading={isSubmitting}>{submitLabel}</Button>
-        </div>
-      </form>
-    </div>
-  )
-}
+export const InterviewForm = ({ onSubmit, onCancel, isSubmitting, defaultValues, submitLabel = "Submit", roundNumber, reviewers }: { onSubmit: (data: InterviewFormData) => void; onCancel: () => void; isSubmitting: boolean; defaultValues?: Partial<InterviewFormData>; submitLabel?: string; roundNumber: number; reviewers: { value: string; label: string }[] }) => {
+  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<InterviewFormData>({ resolver: zodResolver(interviewSchema), defaultValues: { mode: "ONLINE", ...defaultValues } }); const mode = watch("mode");
+  return <form onSubmit={handleSubmit(onSubmit)} className="space-y-5"><div className="rounded-lg bg-primary/10 p-3 text-sm font-medium text-primary">Round {roundNumber} · generated automatically</div><div className="grid grid-cols-1 gap-5 sm:grid-cols-2"><Input label="Round name" required placeholder="Technical Interview" error={errors.roundName?.message} {...register("roundName")} /><Controller control={control} name="scheduledAt" render={({ field, fieldState }) => <DatePicker mode="datetime" label="Date & Time" required value={field.value} onChange={field.onChange} error={fieldState.error?.message} />} /><Select label="Reviewer" required options={reviewers} placeholder="Select active Employee" error={errors.reviewerEmployeeId?.message} {...register("reviewerEmployeeId")} /><Select label="Mode" required options={INTERVIEW_MODES} error={errors.mode?.message} {...register("mode")} />{mode === "ONLINE" ? <Input label="Meeting link" required placeholder="https://meet.example.com/..." error={errors.meetingLink?.message} {...register("meetingLink")} /> : <Input label="Location / details" required placeholder="Meeting room or address" error={errors.locationDetails?.message} {...register("locationDetails")} />}<div className="sm:col-span-2"><Textarea label="Notes" rows={3} error={errors.notes?.message} {...register("notes")} /></div></div><div className="flex justify-end gap-3"><Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button><Button type="submit" isLoading={isSubmitting}>{submitLabel}</Button></div></form>;
+};

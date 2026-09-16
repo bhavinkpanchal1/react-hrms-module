@@ -1,139 +1,25 @@
-import { FileText, UserPlus }  from 'lucide-react';
-import { useNavigate }         from 'react-router-dom';
-import { useOffers, useUpdateOfferStatus } from '../hooks/useOffers';
-import { useCandidates, useUpdateCandidateStatus } from '../hooks/useCandidates';
-import { Badge }               from '@/shared/ui/badge/Badge';
-import { Button }              from '@/shared/ui/button/Button';
-import { TableRowSkeleton }    from '@/shared/ui/skeleton/Skeleton';
-import EmptyState              from '@/shared/ui/empty-state/EmptyState';
-import type { OfferStatus }    from '../types';
-import type { BadgeVariant }   from '@/shared/ui/badge/Badge';
+import { FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useEmployees } from "@/modules/employee/hooks/useEmployees";
+import { Badge, type BadgeVariant } from "@/shared/ui/badge/Badge";
+import { Button } from "@/shared/ui/button/Button";
+import { TableRowSkeleton } from "@/shared/ui/skeleton/Skeleton";
+import EmptyState from "@/shared/ui/empty-state/EmptyState";
+import { useApplications } from "../hooks/useApplications";
+import { useCandidates } from "../hooks/useCandidates";
+import { useJobs } from "../hooks/useJobs";
+import { useAcceptOffer, useDeclineOffer, useExpireOffer, useOffers } from "../hooks/useOffers";
+import type { OfferStatus } from "../types";
+const variants:Record<OfferStatus,BadgeVariant>={OFFERED:"warning",ACCEPTED:"success",DECLINED:"error",EXPIRED:"default"};
+const date=(value?:string|null)=>value?new Date(value).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"—";
 
-const statusVariant: Record<OfferStatus, BadgeVariant> = {
-  pending:   'warning',
-  accepted:  'success',
-  rejected:  'error',
-  expired:   'default',
-  withdrawn: 'default',
+const HrOffersPage=()=>{
+  const navigate=useNavigate(); const {activeCompanyId}=useAuth(); const companyId=activeCompanyId??1;
+  const {data:offers=[],isLoading}=useOffers(); const {data:applications=[]}=useApplications(); const {data:candidates=[]}=useCandidates(); const {data:jobs=[]}=useJobs();
+  const employees=useEmployees({companyId,page:1,pageSize:500,search:"",statuses:[],branchIds:[],departmentIds:[],designationIds:[],sortBy:"fullName",sortDirection:"asc"});
+  const accept=useAcceptOffer(); const decline=useDeclineOffer(); const expire=useExpireOffer();
+  return <div className="space-y-5"><div><h2 className="text-xl font-semibold">Offers</h2><p className="text-sm text-slate-500">Application-owned Offer lifecycle and history</p></div><div className="grid grid-cols-2 gap-4 sm:grid-cols-4">{(["OFFERED","ACCEPTED","DECLINED","EXPIRED"] as OfferStatus[]).map(status=><div className="card px-4 py-3" key={status}><p className="text-xs text-slate-400">{status}</p><p className="mt-1 text-2xl font-semibold">{offers.filter(offer=>offer.status===status).length}</p></div>)}</div><div className="card overflow-x-auto"><table className="w-full text-sm"><thead><tr>{["Candidate / Job","Salary / CTC","Joining","Offered","Expiry","Status","Notes","Actions"].map(h=><th key={h} className="px-4 py-3 text-left text-xs uppercase">{h}</th>)}</tr></thead><tbody>{isLoading?Array.from({length:3}).map((_,i)=><TableRowSkeleton key={i} cols={8}/>):offers.map(offer=>{const application=applications.find(item=>item.id===offer.applicationId);const candidate=candidates.find(item=>item.id===application?.candidateId);const job=jobs.find(item=>item.id===application?.jobId);const convertedEmployee=employees.data?.items.find(employee=>employee.recruitmentProvenance?.applicationId===String(application?.id));return <tr className="border-t" key={offer.id}><td className="px-4 py-3"><b>{candidate?`${candidate.first_name} ${candidate.last_name}`:"Unknown"}</b><br/><span className="text-xs text-slate-500">{job?.title}</span></td><td className="px-4 py-3">₹{offer.salary.toLocaleString("en-IN")} / yr</td><td className="px-4 py-3">{date(offer.joiningDate)}</td><td className="px-4 py-3">{date(offer.offeredAt)}</td><td className="px-4 py-3">{date(offer.expiryDate)}</td><td className="px-4 py-3"><Badge label={offer.status} variant={variants[offer.status]}/></td><td className="max-w-52 px-4 py-3 text-xs">{offer.notes||"—"}</td><td className="px-4 py-3">{offer.status==="OFFERED"&&<div className="flex gap-1"><Button size="sm" variant="ghost" className="text-success" isLoading={accept.isPending} onClick={()=>accept.mutate(offer.id)}>Accept</Button><Button size="sm" variant="ghost" className="text-error" isLoading={decline.isPending} onClick={()=>decline.mutate(offer.id)}>Decline</Button>{offer.expiryDate&&new Date(offer.expiryDate)<=new Date()&&<Button size="sm" variant="ghost" isLoading={expire.isPending} onClick={()=>expire.mutate(offer.id)}>Mark Expired</Button>}</div>}{offer.status==="ACCEPTED"&&application?.status==="OFFER_ACCEPTED"&&<Button size="sm" onClick={()=>navigate(`/employees/list/new?candidateId=${application.candidateId}&applicationId=${application.id}&offerId=${offer.id}`)}>Convert to Employee</Button>}{application?.status==="CONVERTED"&&<button className="text-left text-xs text-success" onClick={()=>convertedEmployee&&navigate(`/employees/list/${convertedEmployee.id}`)}>Converted{convertedEmployee&&<><br/>Employee ID: {convertedEmployee.employeeCode}</>}</button>}</td></tr>})}</tbody></table>{!isLoading&&!offers.length&&<EmptyState icon={FileText} title="No Offers" description="Eligible Offers created by HR will appear here."/>}</div></div>;
 };
-
-const OffersPage = () => {
-  const { data: offers = [], isLoading } = useOffers();
-  const { data: candidates = [] } = useCandidates();
-  const updateStatus = useUpdateOfferStatus();
-  const updateCandidateStatus = useUpdateCandidateStatus();
-  const navigate = useNavigate();
-
-  // Accepting an offer moves the candidate to 'onboarding', not 'hired' —
-  // 'hired' is reserved for once an actual employee record exists (see the
-  // Onboard action below). Two separate mutations, but one user action.
-  const handleAccept = (offerId: number, candidateId: number) => {
-    updateStatus.mutate({ id: offerId, status: 'accepted' });
-    updateCandidateStatus.mutate({ id: candidateId, status: 'onboarding' });
-  };
-
-  return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-800 dark:text-navy-100">Offers</h2>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-navy-300">
-          Track offer letters issued to candidates
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          { label: 'Total',    value: offers.length,                                        cls: 'text-slate-800 dark:text-navy-100' },
-          { label: 'Pending',  value: offers.filter((o) => o.status === 'pending').length,  cls: 'text-warning' },
-          { label: 'Accepted', value: offers.filter((o) => o.status === 'accepted').length, cls: 'text-success' },
-          { label: 'Rejected', value: offers.filter((o) => o.status === 'rejected').length, cls: 'text-error'   },
-        ].map((s) => (
-          <div key={s.label} className="card px-4 py-3">
-            <p className="text-xs text-slate-400 dark:text-navy-400">{s.label}</p>
-            <p className={`mt-1 text-2xl font-semibold ${s.cls}`}>{s.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="is-hoverable w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-150 dark:border-navy-600">
-                {['Candidate', 'Job', 'Offered Salary', 'Joining Date', 'Issued On', 'Status', 'Actions'].map((h) => (
-                  <th key={h} className={`whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-navy-300 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-navy-600">
-              {isLoading
-                ? Array.from({ length: 2 }).map((_, i) => <TableRowSkeleton key={i} cols={7} />)
-                : offers.length === 0
-                ? (
-                  <tr><td colSpan={7}>
-                    <EmptyState icon={FileText} title="No offers yet"
-                      description="Offers will appear here once they are issued to candidates." />
-                  </td></tr>
-                )
-                : offers.map((o) => {
-                  const candidate = candidates.find((c) => c.id === o.candidateId);
-                  return (
-                  <tr key={o.id}>
-                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-navy-100">{o.candidate_name}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">{o.job_title}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      ₹{o.offered_salary.toLocaleString('en-IN')} / yr
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-navy-300">
-                      {new Date(o.joining_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-navy-400">
-                      {new Date(o.issued_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge label={o.status} variant={statusVariant[o.status]} />
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {o.status === 'pending' && (
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm"
-                            isLoading={updateStatus.isPending || updateCandidateStatus.isPending}
-                            onClick={() => handleAccept(o.id, o.candidateId)}
-                            className="text-success hover:bg-success/10">
-                            Accept
-                          </Button>
-                          <Button variant="ghost" size="sm"
-                            isLoading={updateStatus.isPending}
-                            onClick={() => updateStatus.mutate({ id: o.id, status: 'rejected' })}
-                            className="text-error hover:bg-error/10">
-                            Decline
-                          </Button>
-                        </div>
-                      )}
-                      {o.status === 'accepted' && !candidate?.converted_to_employee && (
-                        <Button variant="ghost" size="sm"
-                          onClick={() => navigate(`/employees/list/new?candidateId=${o.candidateId}&offerId=${o.id}`)}
-                          leftIcon={<UserPlus className="size-4" />}
-                          className="text-primary hover:bg-primary/10">
-                          Onboard
-                        </Button>
-                      )}
-                      {candidate?.converted_to_employee && (
-                        <Badge label="Onboarded" variant="success" />
-                      )}
-                    </td>
-                  </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+const OffersPage=()=>{const {user}=useAuth();return user?.role==="hr"?<HrOffersPage/>:<div className="card"><EmptyState icon={FileText} title="Offer access restricted" description="Offer management is available only to HR."/></div>};
 export default OffersPage;

@@ -9,12 +9,12 @@ export const CandidateProfessionalStep = () => {
   } = useFormContext<CandidateFormData>();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
       {/* Current Employment */}
       <div>
         <div className="mb-5 border-b border-slate-200 pb-3 dark:border-navy-600">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-navy-100">
+          <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
             Current Employment
           </h3>
 
@@ -43,7 +43,7 @@ export const CandidateProfessionalStep = () => {
       {/* Compensation */}
       <div>
         <div className="mb-5 border-b border-slate-200 pb-3 dark:border-navy-600">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-navy-100">
+          <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
             Compensation
           </h3>
 
@@ -82,7 +82,7 @@ export const CandidateProfessionalStep = () => {
       {/* Availability */}
       <div>
         <div className="mb-5 border-b border-slate-200 pb-3 dark:border-navy-600">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-navy-100">
+          <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
             Availability
           </h3>
 

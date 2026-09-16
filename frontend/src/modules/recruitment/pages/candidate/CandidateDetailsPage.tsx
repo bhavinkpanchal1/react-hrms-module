@@ -18,6 +18,11 @@ import {
   STATE_OPTIONS,
 } from "../../constant/candidate";
 import { useLocation } from "@/shared/hooks/useLocation";
+import { useCandidateApplications } from "../../hooks/useApplications";
+import { useJobs } from "../../hooks/useJobs";
+import { CandidateStatusBadge } from "../../components/CandidateStatusBadge";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { RecruitmentDocumentsCard } from "../../components/RecruitmentDocumentsCard";
 
 const InfoItem = ({
   label,
@@ -35,7 +40,7 @@ const InfoItem = ({
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="font-inter text-xs uppercase tracking-wide text-slate-400 dark:text-navy-300">{label}</p>
 
       <p className="mt-1 font-medium text-slate-700 dark:text-navy-50">
         {displayValue}
@@ -47,11 +52,14 @@ const InfoItem = ({
 const CandidateDetailsPage = () => {
   const navigate = useNavigate();
   const { countries } = useLocation();
+  const { user } = useAuth();
 
   const { id } = useParams();
   const candidateId = Number(id);
 
   const { data: candidate, isLoading, error } = useCandidate(candidateId);
+  const { data: applications = [] } = useCandidateApplications(candidateId);
+  const { data: jobs = [] } = useJobs();
 
   if (isLoading) {
     return (
@@ -70,11 +78,11 @@ const CandidateDetailsPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 gap-4 pb-8 sm:gap-5 lg:gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between lg:py-6">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-800 dark:text-navy-50">
+          <h1 className="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
             Candidate Profile
           </h1>
 
@@ -83,28 +91,28 @@ const CandidateDetailsPage = () => {
           </p>
         </div>
 
-        <Button
+        {user?.role === "hr" && <Button
           onClick={() =>
             navigate(`/recruitment/candidates/${candidate.id}/edit`)
           }
           leftIcon={<Pencil size={16} />}
         >
           Edit Candidate
-        </Button>
+        </Button>}
       </div>
 
       {/* Hero Card */}
-      <Card className="overflow-hidden">
-        <div className="bg-linear-to-r from-primary/10 to-primary/5 p-8">
+      <Card className="card gap-0 overflow-hidden rounded-lg py-0 shadow-soft ring-0">
+        <div className="bg-primary/10 p-5 dark:bg-accent-light/10 sm:p-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-5">
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary text-3xl font-bold text-white">
+              <div className="flex size-20 shrink-0 items-center justify-center rounded-lg bg-primary text-2xl font-semibold text-white dark:bg-accent">
                 {candidate.first_name[0]}
                 {candidate.last_name[0]}
               </div>
 
               <div>
-                <h2 className="text-3xl font-bold text-slate-800 dark:text-navy-50">
+                <h2 className="text-xl font-medium text-slate-800 dark:text-navy-50 sm:text-2xl">
                   {candidate.first_name} {candidate.last_name}
                 </h2>
 
@@ -112,16 +120,9 @@ const CandidateDetailsPage = () => {
                   {candidate.current_position || "Candidate"}
                 </p>
 
-                <p className="text-sm text-slate-400">
-                  Applied for {candidate.job_title}
-                </p>
-
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
-                    {candidate.status}
-                  </span>
-
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600 dark:bg-navy-700 dark:text-navy-100">
+                  <CandidateStatusBadge status={candidate.status} />
+                  <span className="badge rounded-full bg-slate-150 text-slate-600 dark:bg-navy-600 dark:text-navy-200">
                     {candidate.source}
                   </span>
                 </div>
@@ -130,11 +131,6 @@ const CandidateDetailsPage = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <InfoItem label="Candidate ID" value={candidate.id} />
-
-              <InfoItem
-                label="Applied On"
-                value={new Date(candidate.applied_at).toLocaleDateString()}
-              />
 
               <InfoItem
                 label="Experience"
@@ -150,12 +146,14 @@ const CandidateDetailsPage = () => {
         </div>
       </Card>
 
+      <RecruitmentDocumentsCard candidateId={candidate.id} applications={applications} jobs={jobs} />
+
       {/* Personal Information */}
-      <Card>
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0">
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <User className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">Personal Information</h3>
+            <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Personal Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -169,11 +167,11 @@ const CandidateDetailsPage = () => {
       </Card>
 
       {/* Address */}
-      <Card>
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0">
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <MapPin className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">Address Information</h3>
+            <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Address Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -205,11 +203,11 @@ const CandidateDetailsPage = () => {
       </Card>
 
       {/* Professional */}
-      <Card>
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0">
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <Briefcase className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">Professional Information</h3>
+            <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Professional Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -243,15 +241,14 @@ const CandidateDetailsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Interview Rounds */}
-      <InterviewRoundsCard candidate={candidate} />
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0"><CardContent className="p-5 sm:p-6"><h3 className="mb-4 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Applications</h3><div className="space-y-4">{applications.map((application) => <div key={application.id} className="rounded-lg border border-slate-200 p-4 dark:border-navy-500"><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div><p className="font-medium text-slate-700 dark:text-navy-100">{jobs.find((job) => job.id === application.jobId)?.title ?? "Unknown job"}</p><p className="font-inter text-xs text-slate-400 dark:text-navy-300">Applied {new Date(application.appliedAt).toLocaleDateString()}</p></div><CandidateStatusBadge status={application.status} /></div><InterviewRoundsCard candidate={candidate} application={application} /></div>)}</div></CardContent></Card>
 
       {/* Education */}
-      <Card>
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0">
         <CardContent className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <GraduationCap className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold">Education Information</h3>
+            <h3 className="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Education Information</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
@@ -271,9 +268,9 @@ const CandidateDetailsPage = () => {
       </Card>
 
       {/* Links */}
-      <Card>
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0">
         <CardContent className="p-6">
-          <h3 className="mb-6 text-lg font-semibold">Links & Profiles</h3>
+          <h3 className="mb-6 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Links & Profiles</h3>
 
           <div className="flex flex-wrap gap-3">
             {candidate.linkedin_url && (
@@ -281,7 +278,7 @@ const CandidateDetailsPage = () => {
                 href={candidate.linkedin_url}
                 target="_blank"
                 rel="noreferrer"
-                className="btn"
+                className="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500"
               >
                 {/* <Linked size={16} /> */}
                 LinkedIn
@@ -293,7 +290,7 @@ const CandidateDetailsPage = () => {
                 href={candidate.github_url}
                 target="_blank"
                 rel="noreferrer"
-                className="btn"
+                className="btn gap-2 border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500"
               >
                 <GitBranch size={16} />
                 GitHub
@@ -305,7 +302,7 @@ const CandidateDetailsPage = () => {
                 href={candidate.portfolio_url}
                 target="_blank"
                 rel="noreferrer"
-                className="btn"
+                className="btn gap-2 border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500"
               >
                 <Globe size={16} />
                 Portfolio
@@ -316,15 +313,15 @@ const CandidateDetailsPage = () => {
       </Card>
 
       {/* Skills */}
-      <Card>
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0">
         <CardContent className="p-6">
-          <h3 className="mb-4 text-lg font-semibold">Skills</h3>
+          <h3 className="mb-4 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Skills</h3>
           <div className="flex flex-wrap gap-2">
             {candidate.skills && candidate.skills.length > 0 ? (
               candidate.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                  className="badge rounded-full bg-primary/10 text-primary dark:bg-accent-light/15 dark:text-accent-light"
                 >
                   {skill}
                 </span>
@@ -336,13 +333,13 @@ const CandidateDetailsPage = () => {
             )}
           </div>
 
-          <h3 className="mt-6 mb-4 text-lg font-semibold">Certifications</h3>
+          <h3 className="mb-4 mt-6 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Certifications</h3>
           <div className="flex flex-wrap gap-2">
             {candidate.certifications && candidate.certifications.length > 0 ? (
               candidate.certifications.map((cert) => (
                 <span
                   key={cert}
-                  className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600 dark:bg-navy-700 dark:text-navy-100"
+                  className="badge rounded-full bg-slate-150 text-slate-600 dark:bg-navy-600 dark:text-navy-200"
                 >
                   {cert}
                 </span>
@@ -357,9 +354,9 @@ const CandidateDetailsPage = () => {
       </Card>
 
       {/* Notes */}
-      <Card>
+      <Card className="card gap-0 rounded-lg py-0 shadow-soft ring-0">
         <CardContent className="p-6">
-          <h3 className="mb-4 text-lg font-semibold">Recruiter Notes</h3>
+          <h3 className="mb-4 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">Recruiter Notes</h3>
 
           <p className="leading-7 text-slate-600 dark:text-navy-200">
             {candidate.notes || "No notes available"}

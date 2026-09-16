@@ -76,8 +76,8 @@ export const Modal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={closeDisabled ? undefined : onClose} />
-      <div ref={dialogRef} tabIndex={-1} className={cn('relative z-10 w-full rounded-xl bg-white shadow-xl outline-none dark:bg-navy-750', sizeClasses[size])}
+      <div className="absolute inset-0 bg-slate-900/60 transition-opacity" onClick={closeDisabled ? undefined : onClose} />
+      <div ref={dialogRef} tabIndex={-1} className={cn('relative z-10 w-full rounded-lg bg-white shadow-soft outline-none dark:bg-navy-700 dark:shadow-soft-dark', sizeClasses[size])}
         role="dialog" aria-modal="true" aria-labelledby={titleId}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-150 px-6 py-4 dark:border-navy-600">

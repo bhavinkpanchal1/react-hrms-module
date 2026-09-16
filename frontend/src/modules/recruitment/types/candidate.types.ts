@@ -1,14 +1,16 @@
-import type { Gender, MaritalStatus, CandidateStatus } from "../constant/candidate";
+import type { Gender, MaritalStatus } from "../constant/candidate";
 
 export interface Candidate {
   id: number;
+  companyId: number;
+  status: CandidateLifecycleStatus;
+  deactivationReason?: string | null;
 
   // Basic
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
-  jobId: number;
   source: string;
   notes?: string;
 
@@ -41,7 +43,6 @@ export interface Candidate {
   graduation_year: number;
 
   // Additional
-  resume_url?: string | null;
   referenced_by?: string;
 
   linkedin_url?: string | null;
@@ -51,17 +52,17 @@ export interface Candidate {
   skills?: string[];
   certifications?: string[];
 
-  // System Fields
-  job_title: string;
-  applied_at: string;
-  status: CandidateStatus;
-  converted_to_employee?: boolean;
 }
 
-export type CreateCandidateInput = Omit<
-  Candidate,
-  | "id"
-  | "job_title"
-  | "status"
-  | "applied_at"
->;
+// The existing create form supplies jobId as initial Application context.
+// It is never persisted on Candidate.
+export type CandidateLifecycleStatus = "ACTIVE" | "INACTIVE";
+
+export type CreateCandidateInput = Omit<Candidate, "id" | "companyId" | "status" | "deactivationReason"> & {
+  jobId: number;
+  allowDuplicate?: boolean;
+};
+
+export type CandidateDuplicateMatch = Pick<Candidate, "id" | "first_name" | "last_name" | "email" | "phone" | "status"> & {
+  matchedBy: ("EMAIL" | "MOBILE")[];
+};

@@ -1,14 +1,23 @@
-export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'expired' | 'withdrawn';
+export type OfferStatus = "OFFERED" | "ACCEPTED" | "DECLINED" | "EXPIRED";
 
 export interface Offer {
   id: number;
-  candidateId: number;
-  candidate_name: string;
-  job_title: string;
-  offered_salary: number;
-  joining_date: string;
+  companyId: number;
+  applicationId: number;
+  salary: number;
+  joiningDate: string;
   status: OfferStatus;
-  issued_at: string;
-  expires_at?: string;
+  offeredAt: string;
+  acceptedAt?: string | null;
+  declinedAt?: string | null;
+  expiryDate?: string | null;
   notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+
+export type CreateOfferInput = Pick<Offer, "applicationId" | "salary" | "joiningDate" | "expiryDate" | "notes">;
+export interface RecruitmentConversionContext { applicationId: number; candidateId: number; offerId: number; companyId: number; firstName: string; lastName: string; personalEmail: string; phone: string; dob: string; joiningDate: string; alreadyConverted: boolean; employeeId?: string }
+export interface ConvertApplicationInput { applicationId: number; offerId: number; employee: CreateEmployeeInput }
+export interface RecruitmentConversionResult { employeeId: string; applicationId: number; candidateId: number; convertedAt: string; alreadyConverted: boolean }
+import type { CreateEmployeeInput } from "@/modules/employee/types/employee.type";

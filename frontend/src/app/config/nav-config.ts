@@ -41,6 +41,7 @@ export const ALL_MODULES: NavModule[] = [
     sectionLabel: "My Access",
     items: [
       { kind: "link", label: "Attendance", to: "/attendance", permission: "attendance.read" },
+      { kind: "link", label: "My Interviews", to: "/recruitment/interviews" },
       { kind: "link", label: "Salary", to: "/employee/salary" },
       { kind: "link", label: "Notifications", to: "/notifications" },
       { kind: "link", label: "Company Policy", to: "/policy" },
@@ -130,7 +131,7 @@ export const ALL_MODULES: NavModule[] = [
     id: "recruitment",
     label: "Recruitment",
     icon: "briefcase",
-    roles: ["hr", "manager"],
+    roles: ["hr"],
     permission: "recruitment.read",
     sectionLabel: "Recruitment",
     items: [

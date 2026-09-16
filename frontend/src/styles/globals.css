@@ -5,7 +5,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
 
 /* ─── Dark mode variant (class-based, matches Lineone) ──────────── */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -13,37 +12,37 @@
 /* ─── Self-hosted fonts ──────────────────────────────────────────── */
 @font-face {
   font-family: 'Poppins';
-  src: url('../assets/fonts/Poppins/Poppins-Regular.woff2') format('woff2');
+  src: url('../assets/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
   font-weight: 400; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Poppins';
-  src: url('../assets/fonts/Poppins/Poppins-Medium.woff2') format('woff2');
+  src: url('../assets/fonts/Poppins/Poppins-Medium.ttf') format('truetype');
   font-weight: 500; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Poppins';
-  src: url('../assets/fonts/Poppins/Poppins-SemiBold.woff2') format('woff2');
+  src: url('../assets/fonts/Poppins/Poppins-SemiBold.ttf') format('truetype');
   font-weight: 600; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Poppins';
-  src: url('../assets/fonts/Poppins/Poppins-Bold.woff2') format('woff2');
+  src: url('../assets/fonts/Poppins/Poppins-Bold.ttf') format('truetype');
   font-weight: 700; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Inter';
-  src: url('../assets/fonts/Inter/Inter-Regular.woff2') format('woff2');
+  src: url('../assets/fonts/Inter/static/Inter-Regular.ttf') format('truetype');
   font-weight: 400; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Inter';
-  src: url('../assets/fonts/Inter/Inter-Medium.woff2') format('woff2');
+  src: url('../assets/fonts/Inter/static/Inter-Medium.ttf') format('truetype');
   font-weight: 500; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Inter';
-  src: url('../assets/fonts/Inter/Inter-SemiBold.woff2') format('woff2');
+  src: url('../assets/fonts/Inter/static/Inter-SemiBold.ttf') format('truetype');
   font-weight: 600; font-style: normal; font-display: swap;
 }
 
@@ -125,7 +124,7 @@
   }
 
   body {
-    @apply min-h-full font-sans text-sm leading-5 antialiased dark:bg-navy-900 dark:text-navy-200 bg-background text-foreground;
+    @apply min-h-full bg-slate-50 font-sans text-sm leading-5 text-slate-500 antialiased dark:bg-navy-900 dark:text-navy-200;
   }
 
   /* Responsive layout dimensions */
@@ -142,7 +141,7 @@
     }
   }
   @media (min-width: 1280px) {
-    :root { --margin-x: 2rem; }
+    :root { --margin-x: 4rem; }
   }
 
   /* Borders default to slate-200 (matches Lineone *,::before,::after rule) */
@@ -194,11 +193,20 @@
   }
 
   /* Form input — exact match to Lineone .form-input */
-  .form-input {
+  .form-input,
+  .form-select,
+  .form-textarea {
     @apply appearance-none tracking-wide outline-none
            placeholder:font-light focus:outline-none
            transition-all duration-200 ease-in-out;
     contain: paint;
+  }
+
+  .form-select {
+    @apply bg-center bg-no-repeat pr-8;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%235C6B8A' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-size: 1.5em 1.5em;
   }
 
   /* Table hover/zebra — exact match to Lineone */
@@ -210,7 +218,7 @@
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -252,7 +260,7 @@
 }
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #1e293b; /* slate-800 */
   --card: #ffffff;
   --card-foreground: #64748b; /* slate-500, matches .card */

@@ -65,10 +65,6 @@ export const candidateEducationSchema = z.object({
 });
 
 export const candidateAdditionalSchema = z.object({
-  resume_url: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().url("Please enter a valid URL").optional(),
-  ),
   referenced_by: z.string().optional(),
   linkedin_url: z.preprocess(
     (value) => (value === "" ? undefined : value),

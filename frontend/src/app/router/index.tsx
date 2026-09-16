@@ -1,9 +1,9 @@
 // src/app/router/index.tsx — complete fixed version
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import DashboardLayout from "../layouts/dashboard/DashboardLayout";
 import { AuthLayout } from "../layouts/AuthLayout";
 import React, { lazy, Suspense } from "react";
-import { AuthenticatedRoute, UnauthenticatedRoute } from "@/modules/auth/components/RouteGuards";
+import { AuthenticatedRoute, HrPage, RoleHomeRedirect, UnauthenticatedRoute } from "@/modules/auth/components/RouteGuards";
 
 // ── Page-level code splitting ─────────────────────────────────────
 const loginPage = lazy(() => import("@/modules/auth/pages/LoginPage"));
@@ -75,7 +75,7 @@ export const router = createBrowserRouter([
     children: [{
       element: <DashboardLayout />,
       children: [
-      { index: true, element: <Navigate to="/recruitment/jobs" replace /> },
+      { index: true, element: <RoleHomeRedirect /> },
 
       // Employee
       { path: "/employees/list/", element: lazy_(React.createElement(employeeListPage)) },
@@ -84,10 +84,10 @@ export const router = createBrowserRouter([
       { path: "/employees/list/:id/edit", element: lazy_(React.createElement(employeeEditPage)) },
 
       // Recruitment — 5 routes, all correctly lazy-loaded
-      { path: "/recruitment/jobs", element: lazy_(React.createElement(jobsPage)) },
+      { path: "/recruitment/jobs", element: <HrPage>{lazy_(React.createElement(jobsPage))}</HrPage> },
       {
         path: "/recruitment/candidates",
-        element: <Outlet />,
+        element: <HrPage><Outlet /></HrPage>,
         children: [
           { index: true, element: lazy_(React.createElement(candidatesPage)) },
           { path: "new", element: lazy_(React.createElement(candidateCreatePage)) },
@@ -95,7 +95,7 @@ export const router = createBrowserRouter([
           { path: ":id/edit", element: lazy_(React.createElement(candidateEditPage)) },
         ],
       },
-      { path: "/recruitment/pipeline", element: lazy_(React.createElement(pipelinePage)) },
+      { path: "/recruitment/pipeline", element: <HrPage>{lazy_(React.createElement(pipelinePage))}</HrPage> },
 
       //Interview
       {
@@ -109,7 +109,7 @@ export const router = createBrowserRouter([
         ],
       },
 
-      { path: "/recruitment/offers", element: lazy_(React.createElement(offersPage)) },
+      { path: "/recruitment/offers", element: <HrPage>{lazy_(React.createElement(offersPage))}</HrPage> },
 
       // Company
       { path: "/hr/companies", element: lazy_(React.createElement(companyListPage)) },
@@ -143,5 +143,5 @@ export const router = createBrowserRouter([
   },
 
   // Fallback
-  { path: "*", element: <Navigate to="/recruitment/jobs" replace /> },
+  { path: "*", element: <RoleHomeRedirect /> },
 ]);

@@ -2,6 +2,8 @@ export const API_ENDPOINTS = {
   recruitment: {
     jobs: "/recruitment/jobs/",
     candidates: "/recruitment/candidates/",
+    applications: "/recruitment/applications/",
+    documents: "/recruitment/documents/",
     interviews: "/recruitment/interviews/",
     offers: "/recruitment/offers/",
     pipeline: "/recruitment/pipeline/",

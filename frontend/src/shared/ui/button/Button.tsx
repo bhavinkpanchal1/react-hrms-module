@@ -14,11 +14,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-white hover:bg-primary-focus focus:ring-2 focus:ring-primary/40',
-  secondary: 'bg-slate-150 text-slate-800 hover:bg-slate-200 dark:bg-navy-600 dark:text-navy-100 dark:hover:bg-navy-500',
-  danger: 'bg-error text-white hover:bg-error-focus focus:ring-2 focus:ring-error/40',
-  ghost: 'text-slate-600 hover:bg-slate-100 dark:text-navy-200 dark:hover:bg-navy-600',
-  outline: 'border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-navy-500 dark:text-navy-200 dark:hover:bg-navy-600',
+  primary: 'bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus',
+  secondary: 'bg-slate-150 text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450',
+  danger: 'bg-error text-white hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90',
+  ghost: 'text-slate-600 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20',
+  outline: 'border border-slate-300 text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500',
 };
 const sizeClasses: Record<ButtonSize, string> = {
   sm: 'px-3 py-1.5 text-xs gap-1.5',

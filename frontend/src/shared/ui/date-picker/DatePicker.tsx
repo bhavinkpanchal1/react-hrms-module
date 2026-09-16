@@ -340,11 +340,11 @@ export const DatePicker = ({
         <Popover.Trigger
           disabled={disabled}
           className={cn(
-            "form-input flex w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2 text-left text-sm text-slate-800",
-            "dark:bg-navy-700 dark:text-navy-100",
+            "form-input flex w-full items-center justify-between gap-2 rounded-lg border bg-transparent px-3 py-2 text-left text-sm text-slate-800 hover:border-slate-400",
+            "dark:text-navy-100 dark:hover:border-navy-400",
             error
               ? "border-error focus:border-error focus:ring-1 focus:ring-error/30"
-              : "border-slate-300 focus:border-primary focus:ring-1 focus:ring-primary/30 dark:border-navy-500",
+              : "border-slate-300 focus:border-primary dark:border-navy-450 dark:focus:border-accent",
             disabled && "cursor-not-allowed opacity-60",
           )}
         >

@@ -59,7 +59,6 @@ export const CANDIDATE_STEPS: StepDefinition<CandidateFormData>[] = [
       "portfolio_url",
       "skills",
       "certifications",
-      "resume_url",
       "notes",
     ],
   },

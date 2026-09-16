@@ -8,22 +8,15 @@ export const CandidateAdditionalStep = () => {
     formState: { errors },
   } = useFormContext<CandidateFormData>();
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
   {/* Resume & Reference */}
-  <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-navy-600 dark:bg-navy-700">
-    <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-navy-100">
+  <div className="border-b border-slate-200 pb-5 dark:border-navy-500">
+    <h3 className="mb-4 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
       Resume & Reference
     </h3>
 
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-      <Input
-        label="Resume URL"
-        placeholder="https://drive.google.com/..."
-        error={errors.resume_url?.message}
-        {...register("resume_url")}
-      />
-
       <Input
         label="Referred By"
         placeholder="Employee name or reference source"
@@ -34,8 +27,8 @@ export const CandidateAdditionalStep = () => {
   </div>
 
   {/* Professional Links */}
-  <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-navy-600 dark:bg-navy-700">
-    <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-navy-100">
+  <div className="border-b border-slate-200 pb-5 dark:border-navy-500">
+    <h3 className="mb-4 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
       Professional Links
     </h3>
 
@@ -66,8 +59,8 @@ export const CandidateAdditionalStep = () => {
   </div>
 
   {/* Skills */}
-  <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-navy-600 dark:bg-navy-700">
-    <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-navy-100">
+  <div>
+    <h3 className="mb-4 text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
       Skills & Certifications
     </h3>
 

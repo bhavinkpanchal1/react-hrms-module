@@ -2,6 +2,7 @@ export type JobStatus = 'draft' | 'open' | 'closed' | 'on_hold';
 
 export interface Job {
   id: number;
+  companyId: number;
   title: string;
   department: string;
   departmentId?: number;
